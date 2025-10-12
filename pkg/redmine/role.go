@@ -1,0 +1,71 @@
+package redmine
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+type Role struct {
+	ID          int      `json:"id,omitempty"`
+	Name        string   `json:"name,omitempty"`
+	Assignable  bool     `json:"assignable,omitempty"`
+	Permissions []string `json:"permissions,omitempty"`
+}
+
+type RolesResponse struct {
+	Roles []Role `json:"roles"`
+}
+
+type RoleResponse struct {
+	Role Role `json:"role"`
+}
+
+// ListRoles retrieves the list of all roles
+func (c *Client) ListRoles() (*RolesResponse, error) {
+	endpoint := fmt.Sprintf("%s/roles.json", c.baseURL)
+
+	resp, err := c.do(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var result RolesResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ShowRole retrieves permissions for a specific role
+func (c *Client) ShowRole(id int) (*RoleResponse, error) {
+	endpoint := fmt.Sprintf("%s/roles/%d.json", c.baseURL, id)
+
+	resp, err := c.do(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var result RoleResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return &result, nil
+}
