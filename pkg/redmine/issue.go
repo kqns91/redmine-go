@@ -1,0 +1,279 @@
+package redmine
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strconv"
+)
+
+type Issue struct {
+	ID          int           `json:"id,omitempty"`
+	Project     Resource      `json:"project,omitempty"`
+	Tracker     Resource      `json:"tracker,omitempty"`
+	Status      Resource      `json:"status,omitempty"`
+	Priority    Resource      `json:"priority,omitempty"`
+	Author      Resource      `json:"author,omitempty"`
+	AssignedTo  Resource      `json:"assigned_to,omitempty"`
+	Category    Resource      `json:"category,omitempty"`
+	Subject     string        `json:"subject,omitempty"`
+	Description string        `json:"description,omitempty"`
+	StartDate   string        `json:"start_date,omitempty"`
+	DueDate     string        `json:"due_date,omitempty"`
+	DoneRatio   int           `json:"done_ratio,omitempty"`
+	IsPrivate   bool          `json:"is_private,omitempty"`
+	EstimatedHours float64    `json:"estimated_hours,omitempty"`
+	CustomFields []CustomField `json:"custom_fields,omitempty"`
+	CreatedOn   string        `json:"created_on,omitempty"`
+	UpdatedOn   string        `json:"updated_on,omitempty"`
+	ClosedOn    string        `json:"closed_on,omitempty"`
+}
+
+type IssuesResponse struct {
+	Issues     []Issue `json:"issues"`
+	TotalCount int     `json:"total_count,omitempty"`
+	Offset     int     `json:"offset,omitempty"`
+	Limit      int     `json:"limit,omitempty"`
+}
+
+type IssueResponse struct {
+	Issue Issue `json:"issue"`
+}
+
+type IssueRequest struct {
+	Issue Issue `json:"issue"`
+}
+
+type ListIssuesOptions struct {
+	ProjectID    int
+	SubprojectID string
+	TrackerID    int
+	StatusID     string
+	AssignedToID string
+	Include      string
+	Limit        int
+	Offset       int
+	Sort         string
+}
+
+// ListIssues retrieves a list of issues
+func (c *Client) ListIssues(opts *ListIssuesOptions) (*IssuesResponse, error) {
+	endpoint := fmt.Sprintf("%s/issues.json", c.baseURL)
+
+	if opts != nil {
+		params := url.Values{}
+		if opts.ProjectID > 0 {
+			params.Add("project_id", strconv.Itoa(opts.ProjectID))
+		}
+		if opts.SubprojectID != "" {
+			params.Add("subproject_id", opts.SubprojectID)
+		}
+		if opts.TrackerID > 0 {
+			params.Add("tracker_id", strconv.Itoa(opts.TrackerID))
+		}
+		if opts.StatusID != "" {
+			params.Add("status_id", opts.StatusID)
+		}
+		if opts.AssignedToID != "" {
+			params.Add("assigned_to_id", opts.AssignedToID)
+		}
+		if opts.Include != "" {
+			params.Add("include", opts.Include)
+		}
+		if opts.Limit > 0 {
+			params.Add("limit", strconv.Itoa(opts.Limit))
+		}
+		if opts.Offset > 0 {
+			params.Add("offset", strconv.Itoa(opts.Offset))
+		}
+		if opts.Sort != "" {
+			params.Add("sort", opts.Sort)
+		}
+		if len(params) > 0 {
+			endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
+		}
+	}
+
+	resp, err := c.do(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var result IssuesResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return &result, nil
+}
+
+type ShowIssueOptions struct {
+	Include string
+}
+
+// ShowIssue retrieves a single issue by ID
+func (c *Client) ShowIssue(id int, opts *ShowIssueOptions) (*IssueResponse, error) {
+	endpoint := fmt.Sprintf("%s/issues/%d.json", c.baseURL, id)
+
+	if opts != nil && opts.Include != "" {
+		params := url.Values{}
+		params.Add("include", opts.Include)
+		endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
+	}
+
+	resp, err := c.do(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var result IssueResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// CreateIssue creates a new issue
+func (c *Client) CreateIssue(issue Issue) (*IssueResponse, error) {
+	endpoint := fmt.Sprintf("%s/issues.json", c.baseURL)
+
+	reqBody := IssueRequest{Issue: issue}
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to create issue: %s", string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var result IssueResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// UpdateIssue updates an existing issue
+func (c *Client) UpdateIssue(id int, issue Issue) error {
+	endpoint := fmt.Sprintf("%s/issues/%d.json", c.baseURL, id)
+
+	reqBody := IssueRequest{Issue: issue}
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to update issue: %s", string(body))
+	}
+
+	return nil
+}
+
+// DeleteIssue deletes an issue
+func (c *Client) DeleteIssue(id int) error {
+	endpoint := fmt.Sprintf("%s/issues/%d.json", c.baseURL, id)
+
+	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to delete issue: %s", string(body))
+	}
+
+	return nil
+}
+
+type WatcherRequest struct {
+	UserID int `json:"user_id"`
+}
+
+// AddWatcher adds a watcher to an issue
+func (c *Client) AddWatcher(issueID int, userID int) error {
+	endpoint := fmt.Sprintf("%s/issues/%d/watchers.json", c.baseURL, issueID)
+
+	reqBody := WatcherRequest{UserID: userID}
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to add watcher: %s", string(body))
+	}
+
+	return nil
+}
+
+// RemoveWatcher removes a watcher from an issue
+func (c *Client) RemoveWatcher(issueID int, userID int) error {
+	endpoint := fmt.Sprintf("%s/issues/%d/watchers/%d.json", c.baseURL, issueID, userID)
+
+	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to remove watcher: %s", string(body))
+	}
+
+	return nil
+}
