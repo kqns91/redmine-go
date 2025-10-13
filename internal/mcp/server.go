@@ -16,6 +16,7 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 	// Initialize use cases
 	useCases := &usecase.UseCases{
 		Project: usecase.NewProjectUseCase(client),
+		Issue:   usecase.NewIssueUseCase(client),
 	}
 
 	// Create MCP server
@@ -24,8 +25,9 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 		Version: "1.0.0",
 	}, nil)
 
-	// Register all project tools
+	// Register all tools
 	handlers.RegisterProjectTools(server, useCases)
+	handlers.RegisterIssueTools(server, useCases)
 
 	return server, nil
 }
