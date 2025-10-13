@@ -15,8 +15,12 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 
 	// Initialize use cases
 	useCases := &usecase.UseCases{
-		Project: usecase.NewProjectUseCase(client),
-		Issue:   usecase.NewIssueUseCase(client),
+		Project:  usecase.NewProjectUseCase(client),
+		Issue:    usecase.NewIssueUseCase(client),
+		User:     usecase.NewUserUseCase(client),
+		Category: usecase.NewCategoryUseCase(client),
+		Search:   usecase.NewSearchUseCase(client),
+		Metadata: usecase.NewMetadataUseCase(client),
 	}
 
 	// Create MCP server
@@ -28,6 +32,10 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 	// Register all tools
 	handlers.RegisterProjectTools(server, useCases)
 	handlers.RegisterIssueTools(server, useCases)
+	handlers.RegisterUserTools(server, useCases)
+	handlers.RegisterCategoryTools(server, useCases)
+	handlers.RegisterSearchTools(server, useCases)
+	handlers.RegisterMetadataTools(server, useCases)
 
 	return server, nil
 }
