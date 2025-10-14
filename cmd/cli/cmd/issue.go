@@ -33,6 +33,7 @@ var issueListCmd = &cobra.Command{
 		limit, _ := cmd.Flags().GetInt("limit")
 		offset, _ := cmd.Flags().GetInt("offset")
 		sort, _ := cmd.Flags().GetString("sort")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ListIssuesOptions{
 			ProjectID:    projectID,
@@ -52,7 +53,6 @@ var issueListCmd = &cobra.Command{
 		}
 
 		// Format output based on --format flag
-		format := GetOutputFormat()
 		switch format {
 		case formatJSON:
 			return formatter.OutputJSON(result)
@@ -78,6 +78,7 @@ var issueGetCmd = &cobra.Command{
 		}
 
 		include, _ := cmd.Flags().GetString("include")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ShowIssueOptions{
 			Include: include,
@@ -89,7 +90,6 @@ var issueGetCmd = &cobra.Command{
 		}
 
 		// Format output based on --format flag
-		format := GetOutputFormat()
 		switch format {
 		case formatJSON:
 			return formatter.OutputJSON(result)
@@ -417,9 +417,11 @@ func init() {
 	issueListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	issueListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
 	issueListCmd.Flags().String("sort", "", "ソート順")
+	issueListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
 	// Flags for get command
 	issueGetCmd.Flags().String("include", "", "追加で取得する情報")
+	issueGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, table, text)")
 
 	// Flags for create command
 	issueCreateCmd.Flags().Int("project-id", 0, "プロジェクトID (必須)")

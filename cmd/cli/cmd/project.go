@@ -33,6 +33,7 @@ var projectListCmd = &cobra.Command{
 		include, _ := cmd.Flags().GetString("include")
 		limit, _ := cmd.Flags().GetInt("limit")
 		offset, _ := cmd.Flags().GetInt("offset")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ListProjectsOptions{
 			Include: include,
@@ -46,7 +47,6 @@ var projectListCmd = &cobra.Command{
 		}
 
 		// Format output based on --format flag
-		format := GetOutputFormat()
 		switch format {
 		case formatJSON:
 			return formatter.OutputJSON(result)
@@ -67,6 +67,7 @@ var projectGetCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		include, _ := cmd.Flags().GetString("include")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ShowProjectOptions{
 			Include: include,
@@ -78,7 +79,6 @@ var projectGetCmd = &cobra.Command{
 		}
 
 		// Format output based on --format flag
-		format := GetOutputFormat()
 		switch format {
 		case formatJSON:
 			return formatter.OutputJSON(result)
@@ -319,9 +319,11 @@ func init() {
 	projectListCmd.Flags().String("include", "", "追加で取得する情報 (例: trackers,issue_categories)")
 	projectListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	projectListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
+	projectListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
 	// Flags for get command
 	projectGetCmd.Flags().String("include", "", "追加で取得する情報 (例: trackers,issue_categories)")
+	projectGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, table, text)")
 
 	// Flags for create command
 	projectCreateCmd.Flags().String("name", "", "プロジェクト名 (必須)")
