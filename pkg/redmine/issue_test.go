@@ -71,7 +71,7 @@ func TestCreateIssue(t *testing.T) {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
 
-		var req IssueRequest
+		var req IssueCreateRequestWrapper
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
 		}
@@ -80,11 +80,21 @@ func TestCreateIssue(t *testing.T) {
 			t.Errorf("Expected subject 'New Issue', got '%s'", req.Issue.Subject)
 		}
 
+		if req.Issue.ProjectID != 1 {
+			t.Errorf("Expected project_id 1, got %d", req.Issue.ProjectID)
+		}
+
+		if req.Issue.TrackerID != 2 {
+			t.Errorf("Expected tracker_id 2, got %d", req.Issue.TrackerID)
+		}
+
 		w.WriteHeader(http.StatusCreated)
 		response := IssueResponse{
 			Issue: Issue{
 				ID:      123,
 				Subject: req.Issue.Subject,
+				Project: Resource{ID: req.Issue.ProjectID, Name: "Test Project"},
+				Tracker: Resource{ID: req.Issue.TrackerID, Name: "Bug"},
 			},
 		}
 		_ = json.NewEncoder(w).Encode(response)
@@ -93,16 +103,22 @@ func TestCreateIssue(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	issue := Issue{
-		Subject: "New Issue",
+	req := IssueCreateRequest{
+		ProjectID: 1,
+		TrackerID: 2,
+		Subject:   "New Issue",
 	}
-	result, err := client.CreateIssue(context.Background(), issue)
+	result, err := client.CreateIssue(context.Background(), req)
 	if err != nil {
 		t.Fatalf("CreateIssue failed: %v", err)
 	}
 
 	if result.Issue.ID != 123 {
 		t.Errorf("Expected issue ID 123, got %d", result.Issue.ID)
+	}
+
+	if result.Issue.Subject != "New Issue" {
+		t.Errorf("Expected subject 'New Issue', got '%s'", result.Issue.Subject)
 	}
 }
 

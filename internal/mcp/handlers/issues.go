@@ -165,34 +165,23 @@ type CreateIssueOutput struct {
 
 func handleCreateIssue(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args CreateIssueArgs) (*mcp.CallToolResult, CreateIssueOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args CreateIssueArgs) (*mcp.CallToolResult, CreateIssueOutput, error) {
-		issue := redmine.Issue{
-			Project:        redmine.Resource{ID: args.ProjectID},
+		req := redmine.IssueCreateRequest{
+			ProjectID:      args.ProjectID,
+			TrackerID:      args.TrackerID,
 			Subject:        args.Subject,
+			StatusID:       args.StatusID,
+			PriorityID:     args.PriorityID,
+			CategoryID:     args.CategoryID,
+			AssignedToID:   args.AssignedToID,
 			Description:    args.Description,
 			StartDate:      args.StartDate,
 			DueDate:        args.DueDate,
 			DoneRatio:      args.DoneRatio,
-			IsPrivate:      args.IsPrivate,
 			EstimatedHours: args.EstimatedHours,
+			IsPrivate:      args.IsPrivate,
 		}
 
-		if args.TrackerID > 0 {
-			issue.Tracker = redmine.Resource{ID: args.TrackerID}
-		}
-		if args.StatusID > 0 {
-			issue.Status = redmine.Resource{ID: args.StatusID}
-		}
-		if args.PriorityID > 0 {
-			issue.Priority = redmine.Resource{ID: args.PriorityID}
-		}
-		if args.AssignedToID > 0 {
-			issue.AssignedTo = redmine.Resource{ID: args.AssignedToID}
-		}
-		if args.CategoryID > 0 {
-			issue.Category = redmine.Resource{ID: args.CategoryID}
-		}
-
-		result, err := useCases.Issue.CreateIssue(ctx, issue)
+		result, err := useCases.Issue.CreateIssue(ctx, req)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, CreateIssueOutput{}, fmt.Errorf("failed to create issue: %w", err)
 		}
@@ -231,36 +220,23 @@ type UpdateIssueOutput struct {
 
 func handleUpdateIssue(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args UpdateIssueArgs) (*mcp.CallToolResult, UpdateIssueOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args UpdateIssueArgs) (*mcp.CallToolResult, UpdateIssueOutput, error) {
-		issue := redmine.Issue{
+		req := redmine.IssueUpdateRequest{
+			ProjectID:      args.ProjectID,
+			TrackerID:      args.TrackerID,
 			Subject:        args.Subject,
+			StatusID:       args.StatusID,
+			PriorityID:     args.PriorityID,
+			CategoryID:     args.CategoryID,
+			AssignedToID:   args.AssignedToID,
 			Description:    args.Description,
 			StartDate:      args.StartDate,
 			DueDate:        args.DueDate,
 			DoneRatio:      args.DoneRatio,
-			IsPrivate:      args.IsPrivate,
 			EstimatedHours: args.EstimatedHours,
+			IsPrivate:      args.IsPrivate,
 		}
 
-		if args.ProjectID > 0 {
-			issue.Project = redmine.Resource{ID: args.ProjectID}
-		}
-		if args.TrackerID > 0 {
-			issue.Tracker = redmine.Resource{ID: args.TrackerID}
-		}
-		if args.StatusID > 0 {
-			issue.Status = redmine.Resource{ID: args.StatusID}
-		}
-		if args.PriorityID > 0 {
-			issue.Priority = redmine.Resource{ID: args.PriorityID}
-		}
-		if args.AssignedToID > 0 {
-			issue.AssignedTo = redmine.Resource{ID: args.AssignedToID}
-		}
-		if args.CategoryID > 0 {
-			issue.Category = redmine.Resource{ID: args.CategoryID}
-		}
-
-		err := useCases.Issue.UpdateIssue(ctx, args.ID, issue)
+		err := useCases.Issue.UpdateIssue(ctx, args.ID, req)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UpdateIssueOutput{}, fmt.Errorf("failed to update issue: %w", err)
 		}

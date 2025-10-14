@@ -29,13 +29,13 @@ func (u *IssueUseCase) ShowIssue(ctx context.Context, id int, opts *redmine.Show
 }
 
 // CreateIssue creates a new issue.
-func (u *IssueUseCase) CreateIssue(ctx context.Context, issue redmine.Issue) (*redmine.IssueResponse, error) {
-	return u.client.CreateIssue(ctx, issue)
+func (u *IssueUseCase) CreateIssue(ctx context.Context, req redmine.IssueCreateRequest) (*redmine.IssueResponse, error) {
+	return u.client.CreateIssue(ctx, req)
 }
 
 // UpdateIssue updates an existing issue.
-func (u *IssueUseCase) UpdateIssue(ctx context.Context, id int, issue redmine.Issue) error {
-	return u.client.UpdateIssue(ctx, id, issue)
+func (u *IssueUseCase) UpdateIssue(ctx context.Context, id int, req redmine.IssueUpdateRequest) error {
+	return u.client.UpdateIssue(ctx, id, req)
 }
 
 // DeleteIssue deletes an issue.

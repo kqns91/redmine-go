@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// Issue represents an issue returned by GET endpoints
 type Issue struct {
 	ID             int           `json:"id,omitempty"`
 	Project        Resource      `json:"project,omitempty"`
@@ -33,6 +34,42 @@ type Issue struct {
 	ClosedOn       string        `json:"closed_on,omitempty"`
 }
 
+// IssueCreateRequest represents the request body for creating a new issue
+type IssueCreateRequest struct {
+	ProjectID      int           `json:"project_id"`
+	TrackerID      int           `json:"tracker_id"`
+	Subject        string        `json:"subject"`
+	StatusID       int           `json:"status_id,omitempty"`
+	PriorityID     int           `json:"priority_id,omitempty"`
+	CategoryID     int           `json:"category_id,omitempty"`
+	AssignedToID   int           `json:"assigned_to_id,omitempty"`
+	Description    string        `json:"description,omitempty"`
+	StartDate      string        `json:"start_date,omitempty"`
+	DueDate        string        `json:"due_date,omitempty"`
+	DoneRatio      int           `json:"done_ratio,omitempty"`
+	EstimatedHours float64       `json:"estimated_hours,omitempty"`
+	IsPrivate      bool          `json:"is_private,omitempty"`
+	CustomFields   []CustomField `json:"custom_fields,omitempty"`
+}
+
+// IssueUpdateRequest represents the request body for updating an existing issue
+type IssueUpdateRequest struct {
+	ProjectID      int           `json:"project_id,omitempty"`
+	TrackerID      int           `json:"tracker_id,omitempty"`
+	Subject        string        `json:"subject,omitempty"`
+	StatusID       int           `json:"status_id,omitempty"`
+	PriorityID     int           `json:"priority_id,omitempty"`
+	CategoryID     int           `json:"category_id,omitempty"`
+	AssignedToID   int           `json:"assigned_to_id,omitempty"`
+	Description    string        `json:"description,omitempty"`
+	StartDate      string        `json:"start_date,omitempty"`
+	DueDate        string        `json:"due_date,omitempty"`
+	DoneRatio      int           `json:"done_ratio,omitempty"`
+	EstimatedHours float64       `json:"estimated_hours,omitempty"`
+	IsPrivate      bool          `json:"is_private,omitempty"`
+	CustomFields   []CustomField `json:"custom_fields,omitempty"`
+}
+
 type IssuesResponse struct {
 	Issues     []Issue `json:"issues"`
 	TotalCount int     `json:"total_count,omitempty"`
@@ -44,8 +81,12 @@ type IssueResponse struct {
 	Issue Issue `json:"issue"`
 }
 
-type IssueRequest struct {
-	Issue Issue `json:"issue"`
+type IssueCreateRequestWrapper struct {
+	Issue IssueCreateRequest `json:"issue"`
+}
+
+type IssueUpdateRequestWrapper struct {
+	Issue IssueUpdateRequest `json:"issue"`
 }
 
 type ListIssuesOptions struct {
@@ -153,10 +194,10 @@ func (c *Client) ShowIssue(ctx context.Context, id int, opts *ShowIssueOptions) 
 }
 
 // CreateIssue creates a new issue
-func (c *Client) CreateIssue(ctx context.Context, issue Issue) (*IssueResponse, error) {
+func (c *Client) CreateIssue(ctx context.Context, req IssueCreateRequest) (*IssueResponse, error) {
 	endpoint := c.baseURL + "/issues.json"
 
-	reqBody := IssueRequest{Issue: issue}
+	reqBody := IssueCreateRequestWrapper{Issue: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
@@ -188,10 +229,10 @@ func (c *Client) CreateIssue(ctx context.Context, issue Issue) (*IssueResponse, 
 }
 
 // UpdateIssue updates an existing issue
-func (c *Client) UpdateIssue(ctx context.Context, id int, issue Issue) error {
+func (c *Client) UpdateIssue(ctx context.Context, id int, req IssueUpdateRequest) error {
 	endpoint := fmt.Sprintf("%s/issues/%d.json", c.baseURL, id)
 
-	reqBody := IssueRequest{Issue: issue}
+	reqBody := IssueUpdateRequestWrapper{Issue: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)

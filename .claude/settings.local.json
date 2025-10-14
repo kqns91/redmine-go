@@ -6,7 +6,11 @@
       "Bash(go test:*)",
       "Bash(go mod:*)",
       "Bash(go get:*)",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "mcp__serena__replace_symbol_body",
+      "mcp__serena__find_symbol",
+      "mcp__serena__insert_after_symbol",
+      "WebFetch(domain:www.redmine.org)"
     ],
     "deny": [],
     "ask": []

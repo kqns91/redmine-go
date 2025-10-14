@@ -130,10 +130,14 @@ var issueCreateCmd = &cobra.Command{
 			return errors.New("--subject フラグは必須です")
 		}
 
-		issue := redmine.Issue{
-			Project:        redmine.Resource{ID: projectID},
-			Tracker:        redmine.Resource{ID: trackerID},
+		req := redmine.IssueCreateRequest{
+			ProjectID:      projectID,
+			TrackerID:      trackerID,
 			Subject:        subject,
+			StatusID:       statusID,
+			PriorityID:     priorityID,
+			CategoryID:     categoryID,
+			AssignedToID:   assignedToID,
 			Description:    description,
 			StartDate:      startDate,
 			DueDate:        dueDate,
@@ -142,20 +146,7 @@ var issueCreateCmd = &cobra.Command{
 			IsPrivate:      isPrivate,
 		}
 
-		if statusID > 0 {
-			issue.Status = redmine.Resource{ID: statusID}
-		}
-		if priorityID > 0 {
-			issue.Priority = redmine.Resource{ID: priorityID}
-		}
-		if categoryID > 0 {
-			issue.Category = redmine.Resource{ID: categoryID}
-		}
-		if assignedToID > 0 {
-			issue.AssignedTo = redmine.Resource{ID: assignedToID}
-		}
-
-		result, err := client.CreateIssue(context.Background(), issue)
+		result, err := client.CreateIssue(context.Background(), req)
 		if err != nil {
 			return fmt.Errorf("チケットの作成に失敗しました: %w", err)
 		}
@@ -193,8 +184,12 @@ var issueUpdateCmd = &cobra.Command{
 		estimatedHours, _ := cmd.Flags().GetFloat64("estimated-hours")
 		isPrivate, _ := cmd.Flags().GetBool("is-private")
 
-		issue := redmine.Issue{
+		req := redmine.IssueUpdateRequest{
 			Subject:        subject,
+			StatusID:       statusID,
+			PriorityID:     priorityID,
+			CategoryID:     categoryID,
+			AssignedToID:   assignedToID,
 			Description:    description,
 			StartDate:      startDate,
 			DueDate:        dueDate,
@@ -203,20 +198,7 @@ var issueUpdateCmd = &cobra.Command{
 			IsPrivate:      isPrivate,
 		}
 
-		if statusID > 0 {
-			issue.Status = redmine.Resource{ID: statusID}
-		}
-		if priorityID > 0 {
-			issue.Priority = redmine.Resource{ID: priorityID}
-		}
-		if categoryID > 0 {
-			issue.Category = redmine.Resource{ID: categoryID}
-		}
-		if assignedToID > 0 {
-			issue.AssignedTo = redmine.Resource{ID: assignedToID}
-		}
-
-		err = client.UpdateIssue(context.Background(), id, issue)
+		err = client.UpdateIssue(context.Background(), id, req)
 		if err != nil {
 			return fmt.Errorf("チケットの更新に失敗しました: %w", err)
 		}
