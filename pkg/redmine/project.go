@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// Project represents a project returned by GET endpoints
 type Project struct {
 	ID                     int           `json:"id,omitempty"`
 	Name                   string        `json:"name,omitempty"`
@@ -29,6 +30,39 @@ type Project struct {
 	UpdatedOn              string        `json:"updated_on,omitempty"`
 }
 
+// ProjectCreateRequest represents the request body for creating a new project
+type ProjectCreateRequest struct {
+	Name                string            `json:"name"`
+	Identifier          string            `json:"identifier"`
+	Description         string            `json:"description,omitempty"`
+	Homepage            string            `json:"homepage,omitempty"`
+	IsPublic            bool              `json:"is_public,omitempty"`
+	ParentID            int               `json:"parent_id,omitempty"`
+	InheritMembers      bool              `json:"inherit_members,omitempty"`
+	DefaultAssignedToID int               `json:"default_assigned_to_id,omitempty"`
+	DefaultVersionID    int               `json:"default_version_id,omitempty"`
+	TrackerIDs          []int             `json:"tracker_ids,omitempty"`
+	EnabledModuleNames  []string          `json:"enabled_module_names,omitempty"`
+	IssueCustomFieldIDs []int             `json:"issue_custom_field_ids,omitempty"`
+	CustomFieldValues   map[string]string `json:"custom_field_values,omitempty"`
+}
+
+// ProjectUpdateRequest represents the request body for updating an existing project
+type ProjectUpdateRequest struct {
+	Name                string            `json:"name,omitempty"`
+	Description         string            `json:"description,omitempty"`
+	Homepage            string            `json:"homepage,omitempty"`
+	IsPublic            bool              `json:"is_public,omitempty"`
+	ParentID            int               `json:"parent_id,omitempty"`
+	InheritMembers      bool              `json:"inherit_members,omitempty"`
+	DefaultAssignedToID int               `json:"default_assigned_to_id,omitempty"`
+	DefaultVersionID    int               `json:"default_version_id,omitempty"`
+	TrackerIDs          []int             `json:"tracker_ids,omitempty"`
+	EnabledModuleNames  []string          `json:"enabled_module_names,omitempty"`
+	IssueCustomFieldIDs []int             `json:"issue_custom_field_ids,omitempty"`
+	CustomFieldValues   map[string]string `json:"custom_field_values,omitempty"`
+}
+
 type ProjectsResponse struct {
 	Projects   []Project `json:"projects"`
 	TotalCount int       `json:"total_count,omitempty"`
@@ -40,8 +74,12 @@ type ProjectResponse struct {
 	Project Project `json:"project"`
 }
 
-type ProjectRequest struct {
-	Project Project `json:"project"`
+type ProjectCreateRequestWrapper struct {
+	Project ProjectCreateRequest `json:"project"`
+}
+
+type ProjectUpdateRequestWrapper struct {
+	Project ProjectUpdateRequest `json:"project"`
 }
 
 type ListProjectsOptions struct {
@@ -125,10 +163,10 @@ func (c *Client) ShowProject(ctx context.Context, idOrIdentifier string, opts *S
 }
 
 // CreateProject creates a new project
-func (c *Client) CreateProject(ctx context.Context, project Project) (*ProjectResponse, error) {
+func (c *Client) CreateProject(ctx context.Context, req ProjectCreateRequest) (*ProjectResponse, error) {
 	endpoint := c.baseURL + "/projects.json"
 
-	reqBody := ProjectRequest{Project: project}
+	reqBody := ProjectCreateRequestWrapper{Project: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
@@ -160,10 +198,10 @@ func (c *Client) CreateProject(ctx context.Context, project Project) (*ProjectRe
 }
 
 // UpdateProject updates an existing project
-func (c *Client) UpdateProject(ctx context.Context, idOrIdentifier string, project Project) error {
+func (c *Client) UpdateProject(ctx context.Context, idOrIdentifier string, req ProjectUpdateRequest) error {
 	endpoint := fmt.Sprintf("%s/projects/%s.json", c.baseURL, idOrIdentifier)
 
-	reqBody := ProjectRequest{Project: project}
+	reqBody := ProjectUpdateRequestWrapper{Project: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)

@@ -29,13 +29,13 @@ func (u *ProjectUseCase) ShowProject(ctx context.Context, idOrIdentifier string,
 }
 
 // CreateProject creates a new project.
-func (u *ProjectUseCase) CreateProject(ctx context.Context, project redmine.Project) (*redmine.ProjectResponse, error) {
-	return u.client.CreateProject(ctx, project)
+func (u *ProjectUseCase) CreateProject(ctx context.Context, req redmine.ProjectCreateRequest) (*redmine.ProjectResponse, error) {
+	return u.client.CreateProject(ctx, req)
 }
 
 // UpdateProject updates an existing project.
-func (u *ProjectUseCase) UpdateProject(ctx context.Context, idOrIdentifier string, project redmine.Project) error {
-	return u.client.UpdateProject(ctx, idOrIdentifier, project)
+func (u *ProjectUseCase) UpdateProject(ctx context.Context, idOrIdentifier string, req redmine.ProjectUpdateRequest) error {
+	return u.client.UpdateProject(ctx, idOrIdentifier, req)
 }
 
 // DeleteProject deletes a project.

@@ -101,6 +101,7 @@ var projectCreateCmd = &cobra.Command{
 		homepage, _ := cmd.Flags().GetString("homepage")
 		isPublic, _ := cmd.Flags().GetBool("public")
 		inheritMembers, _ := cmd.Flags().GetBool("inherit-members")
+		parentID, _ := cmd.Flags().GetInt("parent-id")
 
 		if name == "" {
 			return errors.New("--name フラグは必須です")
@@ -109,16 +110,17 @@ var projectCreateCmd = &cobra.Command{
 			return errors.New("--identifier フラグは必須です")
 		}
 
-		project := redmine.Project{
+		req := redmine.ProjectCreateRequest{
 			Name:           name,
 			Identifier:     identifier,
 			Description:    description,
 			Homepage:       homepage,
 			IsPublic:       isPublic,
 			InheritMembers: inheritMembers,
+			ParentID:       parentID,
 		}
 
-		result, err := client.CreateProject(context.Background(), project)
+		result, err := client.CreateProject(context.Background(), req)
 		if err != nil {
 			return fmt.Errorf("プロジェクトの作成に失敗しました: %w", err)
 		}
@@ -144,16 +146,18 @@ var projectUpdateCmd = &cobra.Command{
 		homepage, _ := cmd.Flags().GetString("homepage")
 		isPublic, _ := cmd.Flags().GetBool("public")
 		inheritMembers, _ := cmd.Flags().GetBool("inherit-members")
+		parentID, _ := cmd.Flags().GetInt("parent-id")
 
-		project := redmine.Project{
+		req := redmine.ProjectUpdateRequest{
 			Name:           name,
 			Description:    description,
 			Homepage:       homepage,
 			IsPublic:       isPublic,
 			InheritMembers: inheritMembers,
+			ParentID:       parentID,
 		}
 
-		err := client.UpdateProject(context.Background(), args[0], project)
+		err := client.UpdateProject(context.Background(), args[0], req)
 		if err != nil {
 			return fmt.Errorf("プロジェクトの更新に失敗しました: %w", err)
 		}
@@ -332,6 +336,7 @@ func init() {
 	projectCreateCmd.Flags().String("homepage", "", "ホームページURL")
 	projectCreateCmd.Flags().Bool("public", true, "公開プロジェクトにするかどうか")
 	projectCreateCmd.Flags().Bool("inherit-members", false, "親プロジェクトのメンバーを継承するかどうか")
+	projectCreateCmd.Flags().Int("parent-id", 0, "親プロジェクトID")
 
 	// Flags for update command
 	projectUpdateCmd.Flags().String("name", "", "プロジェクト名")
@@ -339,4 +344,5 @@ func init() {
 	projectUpdateCmd.Flags().String("homepage", "", "ホームページURL")
 	projectUpdateCmd.Flags().Bool("public", false, "公開プロジェクトにするかどうか")
 	projectUpdateCmd.Flags().Bool("inherit-members", false, "親プロジェクトのメンバーを継承するかどうか")
+	projectUpdateCmd.Flags().Int("parent-id", 0, "親プロジェクトID")
 }

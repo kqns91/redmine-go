@@ -134,6 +134,7 @@ type CreateProjectArgs struct {
 	Identifier  string `json:"identifier" jsonschema:"Project identifier (required, lowercase, no spaces)"`
 	Description string `json:"description,omitempty" jsonschema:"Project description (optional)"`
 	IsPublic    bool   `json:"is_public,omitempty" jsonschema:"Whether the project is public (default: true)"`
+	ParentID    int    `json:"parent_id,omitempty" jsonschema:"Parent project ID (optional)"`
 }
 
 // CreateProjectOutput defines output for creating a project
@@ -143,14 +144,15 @@ type CreateProjectOutput struct {
 
 func handleCreateProject(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args CreateProjectArgs) (*mcp.CallToolResult, CreateProjectOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args CreateProjectArgs) (*mcp.CallToolResult, CreateProjectOutput, error) {
-		project := redmine.Project{
+		req := redmine.ProjectCreateRequest{
 			Name:        args.Name,
 			Identifier:  args.Identifier,
 			Description: args.Description,
 			IsPublic:    args.IsPublic,
+			ParentID:    args.ParentID,
 		}
 
-		result, err := useCases.Project.CreateProject(ctx, project)
+		result, err := useCases.Project.CreateProject(ctx, req)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, CreateProjectOutput{}, fmt.Errorf("failed to create project: %w", err)
 		}
@@ -170,6 +172,7 @@ type UpdateProjectArgs struct {
 	Name        string `json:"name,omitempty" jsonschema:"New project name (optional)"`
 	Description string `json:"description,omitempty" jsonschema:"New project description (optional)"`
 	IsPublic    bool   `json:"is_public,omitempty" jsonschema:"Whether the project is public (optional)"`
+	ParentID    int    `json:"parent_id,omitempty" jsonschema:"New parent project ID (optional)"`
 }
 
 // UpdateProjectOutput defines output for updating a project
@@ -179,13 +182,14 @@ type UpdateProjectOutput struct {
 
 func handleUpdateProject(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args UpdateProjectArgs) (*mcp.CallToolResult, UpdateProjectOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args UpdateProjectArgs) (*mcp.CallToolResult, UpdateProjectOutput, error) {
-		project := redmine.Project{
+		req := redmine.ProjectUpdateRequest{
 			Name:        args.Name,
 			Description: args.Description,
 			IsPublic:    args.IsPublic,
+			ParentID:    args.ParentID,
 		}
 
-		err := useCases.Project.UpdateProject(ctx, args.ID, project)
+		err := useCases.Project.UpdateProject(ctx, args.ID, req)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UpdateProjectOutput{}, fmt.Errorf("failed to update project: %w", err)
 		}

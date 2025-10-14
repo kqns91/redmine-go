@@ -126,12 +126,15 @@ func TestCreateProject(t *testing.T) {
 		}
 
 		// リクエストボディの検証
-		var req ProjectRequest
+		var req ProjectCreateRequestWrapper
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request body: %v", err)
 		}
 		if req.Project.Name != "New Project" {
 			t.Errorf("Expected project name 'New Project', got '%s'", req.Project.Name)
+		}
+		if req.Project.Identifier != "new-project" {
+			t.Errorf("Expected identifier 'new-project', got '%s'", req.Project.Identifier)
 		}
 
 		// 201 Created レスポンス
@@ -149,11 +152,11 @@ func TestCreateProject(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	project := Project{
+	req := ProjectCreateRequest{
 		Name:       "New Project",
 		Identifier: "new-project",
 	}
-	result, err := client.CreateProject(context.Background(), project)
+	result, err := client.CreateProject(context.Background(), req)
 	if err != nil {
 		t.Fatalf("CreateProject failed: %v", err)
 	}
@@ -173,10 +176,11 @@ func TestCreateProjectError(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	project := Project{
+	req := ProjectCreateRequest{
 		Identifier: "test",
+		// Name is required but missing
 	}
-	_, err := client.CreateProject(context.Background(), project)
+	_, err := client.CreateProject(context.Background(), req)
 	if err == nil {
 		t.Fatal("Expected error, got nil")
 	}
