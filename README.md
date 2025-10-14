@@ -1,352 +1,359 @@
 # redmine-go
 
-Unofficial Redmine MCP (Model Context Protocol) server implementation in Go.
+Unofficial Redmine API implementation in Go.
+
+[![Go Version](https://img.shields.io/badge/Go-1.25.2%2B-00ADD8?logo=go)](https://go.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+English | [日本語](README.ja.md)
 
 ## Overview
 
-This project provides a comprehensive MCP server for Redmine, enabling AI assistants to interact with Redmine project management systems through the Model Context Protocol. The server exposes 76 tools covering all Redmine REST APIs.
+`redmine-go` is a Go implementation of the Redmine REST API. It provides three ways to interact with Redmine:
+
+- **SDK** - Go package for building applications that integrate with Redmine
+- **CLI** - Command-line tool for managing Redmine from the terminal
+- **MCP Server** - Server implementation for AI assistants using Model Context Protocol
+
+All three are built on the same SDK foundation, supporting 22 Redmine REST APIs with 76 methods.
 
 ## Features
 
-### Implemented Services (76 Tools)
-
-#### Projects (7 tools)
-- `list_projects` - List all projects with filtering options
-- `show_project` - Get detailed project information
-- `create_project` - Create new projects
-- `update_project` - Update existing projects
-- `delete_project` - Delete projects
-- `archive_project` - Archive projects
-- `unarchive_project` - Unarchive projects
-
-#### Issues (7 tools)
-- `list_issues` - List issues with advanced filtering, sorting, and pagination
-- `show_issue` - Get detailed issue information
-- `create_issue` - Create new issues with full field support
-- `update_issue` - Update existing issues
-- `delete_issue` - Delete issues
-- `add_watcher` - Add watchers to issues
-- `remove_watcher` - Remove watchers from issues
-
-#### Users (6 tools)
-- `list_users` - List users with filtering options
-- `show_user` - Get user details by ID
-- `current_user` - Get current authenticated user
-- `create_user` - Create new users (admin only)
-- `update_user` - Update existing users (admin only)
-- `delete_user` - Delete users (admin only)
-
-#### Issue Categories (5 tools)
-- `list_issue_categories` - List categories for a project
-- `show_issue_category` - Get category details
-- `create_issue_category` - Create new category
-- `update_issue_category` - Update existing category
-- `delete_issue_category` - Delete category with reassignment option
-
-#### Time Entries (5 tools)
-- `list_time_entries` - List time entries with filtering options
-- `show_time_entry` - Get time entry details
-- `create_time_entry` - Create new time entry
-- `update_time_entry` - Update existing time entry
-- `delete_time_entry` - Delete time entry
-
-#### Versions (5 tools)
-- `list_versions` - List project versions
-- `show_version` - Get version details
-- `create_version` - Create new version
-- `update_version` - Update existing version
-- `delete_version` - Delete version
-
-#### Memberships (5 tools)
-- `list_memberships` - List project memberships
-- `show_membership` - Get membership details
-- `create_membership` - Add user/group to project with roles
-- `update_membership` - Update membership roles
-- `delete_membership` - Remove user/group from project
-
-#### Issue Relations (4 tools)
-- `list_issue_relations` - List issue relations
-- `show_issue_relation` - Get issue relation details
-- `create_issue_relation` - Create issue relation (relates, duplicates, blocks, etc.)
-- `delete_issue_relation` - Delete issue relation
-
-#### Wiki Pages (4 tools)
-- `list_wiki_pages` - List wiki pages in a project
-- `show_wiki_page` - Get wiki page content
-- `create_or_update_wiki_page` - Create or update wiki page
-- `delete_wiki_page` - Delete wiki page
-
-#### Attachments (3 tools)
-- `show_attachment` - Get attachment details
-- `update_attachment` - Update attachment metadata
-- `delete_attachment` - Delete attachment
-
-#### Enumerations (3 tools)
-- `list_issue_priorities` - List issue priorities
-- `list_time_entry_activities` - List time entry activities
-- `list_document_categories` - List document categories
-
-#### Groups (7 tools)
-- `list_groups` - List all groups (admin only)
-- `show_group` - Get group details (admin only)
-- `create_group` - Create new group (admin only)
-- `update_group` - Update existing group (admin only)
-- `delete_group` - Delete group (admin only)
-- `add_group_user` - Add user to group (admin only)
-- `remove_group_user` - Remove user from group (admin only)
-
-#### News (2 tools)
-- `list_news` - List all news from all projects
-- `list_project_news` - List news for a specific project
-
-#### Files (2 tools)
-- `list_files` - List files in a project
-- `upload_file` - Upload file to a project
-
-#### Roles (2 tools)
-- `list_roles` - List all roles
-- `show_role` - Get role details
-
-#### Metadata (2 tools)
-- `list_trackers` - List all available trackers (Bug, Feature, Support, etc.)
-- `list_issue_statuses` - List all available issue statuses
-
-#### My Account (2 tools)
-- `show_my_account` - Get current user's account details
-- `update_my_account` - Update current user's account information
-
-#### Search (1 tool)
-- `search` - Universal search across issues, wiki pages, and attachments
-
-#### Queries (1 tool)
-- `list_queries` - List saved issue queries
-
-#### Custom Fields (1 tool)
-- `list_custom_fields` - List custom field definitions
-
-#### Journals (1 tool)
-- `show_journal` - Get journal entry details
-
-## Architecture
-
-The project follows a clean, layered architecture:
-
-```
-MCP Client (Claude) → cmd/mcp-server → internal/mcp → internal/usecase → pkg/redmine → Redmine API
-```
-
-### Directory Structure
-
-- `cmd/mcp-server/` - MCP server entry point
-- `internal/mcp/` - MCP-specific implementation
-  - `handlers/` - Tool handlers organized by service
-  - `server.go` - Server initialization and tool registration
-- `internal/usecase/` - Business logic layer (reusable across MCP/CLI)
-- `internal/config/` - Configuration management
-- `pkg/redmine/` - Redmine API client SDK (76 methods, 22 APIs)
+- Coverage of Redmine REST API (22 APIs, 76 methods)
+- Context-aware operations using Go's context package
+- Comprehensive error handling
+- Multiple output formats (CLI: JSON, table, simple text)
+- Flexible tool control (MCP: per-tool enable/disable)
 
 ## Installation
+
+### SDK
+
+```bash
+go get github.com/kqns91/redmine-go
+```
+
+### CLI
+
+```bash
+go install github.com/kqns91/redmine-go/cmd/cli@latest
+```
+
+### MCP Server
 
 ```bash
 go install github.com/kqns91/redmine-go/cmd/mcp-server@latest
 ```
 
-Or build from source:
+---
 
-```bash
-git clone https://github.com/kqns91/redmine-go.git
-cd redmine-go
-go build -o mcp-server ./cmd/mcp-server
+## SDK Usage
+
+The SDK provides a Go client for interacting with Redmine REST API.
+
+### Basic Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "github.com/kqns91/redmine-go/pkg/redmine"
+)
+
+func main() {
+    client := redmine.New("https://your-redmine.com", "your-api-key")
+    ctx := context.Background()
+
+    // List projects
+    projects, err := client.ListProjects(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    for _, project := range projects.Projects {
+        fmt.Printf("%s (ID: %d)\n", project.Name, project.ID)
+    }
+
+    // Create an issue
+    issue := redmine.Issue{
+        ProjectID:   1,
+        Subject:     "Sample issue",
+        Description: "Issue description",
+    }
+
+    created, err := client.CreateIssue(ctx, issue)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("Created issue #%d\n", created.Issue.ID)
+}
 ```
 
-## Configuration
+### Supported APIs
 
-### Required Environment Variables
+The SDK supports Redmine REST APIs:
 
-Set the following environment variables:
+**Core Resources**
+- Projects (CRUD, archive/unarchive)
+- Issues (CRUD, watchers)
+- Users (CRUD)
+- Time Entries (CRUD)
+
+**Project Management**
+- Versions (CRUD)
+- Issue Relations (CRUD)
+- Memberships (CRUD)
+- Issue Categories (CRUD)
+
+**Content**
+- Wiki Pages (CRUD)
+- News (read)
+- Files (read, upload)
+- Attachments (read, update, delete)
+
+**Administration**
+- Groups (CRUD, user management)
+- Roles (read)
+- Trackers (read)
+- Issue Statuses (read)
+- Enumerations (priorities, activities, categories)
+
+**Other**
+- Custom Fields (read)
+- Queries (read)
+- Journals (read)
+- My Account (read, update)
+- Search
+
+For detailed API documentation, see the [pkg/redmine](pkg/redmine) directory.
+
+---
+
+## CLI Usage
+
+Command-line tool for managing Redmine from the terminal.
+
+### Configuration
+
+Run the config command to set up interactively:
 
 ```bash
-export REDMINE_URL="https://your-redmine-instance.com"
-export REDMINE_API_KEY="your-api-key-here"
+redmine-cli config set url https://your-redmine.com
+redmine-cli config set api_key your-api-key
 ```
 
-To get your Redmine API key:
+View current configuration:
+
+```bash
+redmine-cli config list
+```
+
+The configuration is stored at `~/.redmine-cli/config.yaml`. You can also edit this file directly if needed.
+
+Alternatively, you can use environment variables or command-line flags:
+
+```bash
+# Environment variables
+export REDMINE_URL="https://your-redmine.com"
+export REDMINE_API_KEY="your-api-key"
+
+# Command-line flags
+redmine-cli --url https://your-redmine.com --api-key your-api-key <command>
+```
+
+### Getting Your API Key
+
 1. Log in to your Redmine instance
-2. Go to "My account" (top right)
-3. Click "Show" under "API access key" on the right sidebar
-4. Copy the displayed key
+2. Navigate to "My account" (top right)
+3. Find "API access key" in the right sidebar
+4. Click "Show" and copy the key
 
-### Optional: Tool Control
+### Basic Commands
 
-You can control which MCP tools are enabled using these optional environment variables:
+```bash
+# Projects
+redmine-cli projects list
+redmine-cli projects show <project-id>
 
-#### REDMINE_ENABLED_TOOLS
-Comma-separated list of tool groups to enable. If not set, all tools are enabled by default.
+# Issues
+redmine-cli issues list --project <project-id>
+redmine-cli issues show <issue-id>
+redmine-cli issues create --project <project-id> --subject "Title" --description "Description"
+redmine-cli issues update <issue-id> --status <status-id> --assigned-to <user-id>
+
+# Users
+redmine-cli users list
+redmine-cli users show <user-id>
+redmine-cli users current
+```
+
+### Output Formats
+
+The CLI supports three output formats:
+
+**Table format** (default)
+```bash
+redmine-cli projects list --format table
+```
+Structured table with columns, suitable for terminal viewing.
+
+**JSON format**
+```bash
+redmine-cli projects list --format json
+```
+Machine-readable JSON output, useful for scripting and integration.
+
+**Text format**
+```bash
+redmine-cli projects list --format text
+```
+Plain text output with minimal formatting.
+
+### Help
+
+All commands provide detailed help:
+
+```bash
+redmine-cli --help
+redmine-cli projects --help
+redmine-cli issues create --help
+```
+
+---
+
+## MCP Server Usage
+
+The MCP (Model Context Protocol) server enables AI assistants to interact with Redmine.
+
+### Configuration
+
+Add to your MCP client configuration file.
+
+For example, with Claude Desktop:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+Basic configuration (all tools enabled):
+
+```json
+{
+  "mcpServers": {
+    "redmine": {
+      "command": "/path/to/mcp-server",
+      "env": {
+        "REDMINE_URL": "https://your-redmine.com",
+        "REDMINE_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### Available Tools
+
+The server provides 76 tools across 21 categories:
+
+- Projects (7 tools)
+- Issues (7 tools)
+- Users (6 tools)
+- Issue Categories (5 tools)
+- Time Entries (5 tools)
+- Versions (5 tools)
+- Memberships (5 tools)
+- Issue Relations (4 tools)
+- Wiki Pages (4 tools)
+- Attachments (3 tools)
+- Enumerations (3 tools)
+- Groups (7 tools)
+- News (2 tools)
+- Files (2 tools)
+- Roles (2 tools)
+- Metadata (2 tools)
+- My Account (2 tools)
+- Search (1 tool)
+- Queries (1 tool)
+- Custom Fields (1 tool)
+- Journals (1 tool)
+
+### Tool Control
+
+You can control which tools are enabled using environment variables.
+
+#### Enable Specific Tool Groups
+
+Use `REDMINE_ENABLED_TOOLS` to specify which tool groups to enable:
+
+```json
+{
+  "mcpServers": {
+    "redmine": {
+      "command": "/path/to/mcp-server",
+      "env": {
+        "REDMINE_URL": "https://your-redmine.com",
+        "REDMINE_API_KEY": "your-api-key",
+        "REDMINE_ENABLED_TOOLS": "projects,issues,search"
+      }
+    }
+  }
+}
+```
 
 Available tool groups:
-- `projects` - Project management tools (7 tools)
-- `issues` - Issue management tools (7 tools)
-- `users` - User management tools (6 tools)
-- `categories` - Issue category tools (5 tools)
-- `time_entries` - Time tracking tools (5 tools)
-- `versions` - Version management tools (5 tools)
-- `memberships` - Project membership tools (5 tools)
-- `issue_relations` - Issue relation tools (4 tools)
-- `wiki` - Wiki page tools (4 tools)
-- `attachments` - Attachment tools (3 tools)
-- `enumerations` - Enumeration tools (3 tools)
-- `groups` - Group management tools (7 tools, admin only)
-- `news` - News tools (2 tools)
-- `files` - File tools (2 tools)
-- `roles` - Role tools (2 tools)
-- `metadata` - Tracker and status metadata (2 tools)
-- `my_account` - Current user account tools (2 tools)
-- `search` - Search functionality (1 tool)
-- `queries` - Saved query tools (1 tool)
-- `custom_fields` - Custom field tools (1 tool)
-- `journals` - Journal tools (1 tool)
-- `all` - Enable all tool groups (default behavior)
+`projects`, `issues`, `users`, `categories`, `time_entries`, `versions`, `memberships`, `issue_relations`, `wiki`, `attachments`, `enumerations`, `groups`, `news`, `files`, `roles`, `metadata`, `my_account`, `search`, `queries`, `custom_fields`, `journals`, `all`
 
-#### REDMINE_DISABLED_TOOLS
-Comma-separated list of individual tool names to disable. Takes precedence over `REDMINE_ENABLED_TOOLS`.
+#### Disable Specific Tools
 
-**Priority:** `REDMINE_DISABLED_TOOLS` > `REDMINE_ENABLED_TOOLS` > Default (all enabled)
+Use `REDMINE_DISABLED_TOOLS` to disable individual tools:
+
+```json
+{
+  "env": {
+    "REDMINE_DISABLED_TOOLS": "delete_project,delete_issue,delete_user"
+  }
+}
+```
+
+This setting takes precedence over `REDMINE_ENABLED_TOOLS`.
 
 #### Configuration Examples
 
-**Pattern 1: Default (all tools enabled)**
-```bash
-# No configuration needed - all 76 tools are enabled by default
-export REDMINE_URL="https://your-redmine-instance.com"
-export REDMINE_API_KEY="your-api-key-here"
-```
+**Read-only mode**
 
-**Pattern 2: Enable only specific tool groups**
-```bash
-export REDMINE_ENABLED_TOOLS="projects,issues,search"
-# Enables 15 tools: 7 project tools + 7 issue tools + 1 search tool
-```
+Disable all write operations:
 
-**Pattern 3: Enable all groups but disable specific tools**
-```bash
-export REDMINE_DISABLED_TOOLS="delete_project,delete_issue,delete_user,delete_group"
-# Enables 72 tools (all tools except the 4 delete operations)
-```
-
-**Pattern 4: Read-only mode (disable all write operations)**
-```bash
-export REDMINE_ENABLED_TOOLS="all"
-export REDMINE_DISABLED_TOOLS="create_project,update_project,delete_project,archive_project,unarchive_project,create_issue,update_issue,delete_issue,add_watcher,remove_watcher,create_user,update_user,delete_user,create_issue_category,update_issue_category,delete_issue_category,create_time_entry,update_time_entry,delete_time_entry,create_version,update_version,delete_version,create_membership,update_membership,delete_membership,create_issue_relation,delete_issue_relation,create_or_update_wiki_page,delete_wiki_page,update_attachment,delete_attachment,upload_file,create_group,update_group,delete_group,add_group_user,remove_group_user,update_my_account"
-# Enables only read operations (list, show, get)
-```
-
-**Pattern 5: Minimal setup (projects and issues only, no destructive operations)**
-```bash
-export REDMINE_ENABLED_TOOLS="projects,issues,search"
-export REDMINE_DISABLED_TOOLS="delete_project,delete_issue"
-# Enables 13 tools: project/issue management + search, excluding delete operations
-```
-
-## Usage
-
-### Running the MCP Server
-
-```bash
-./mcp-server
-```
-
-The server communicates via stdio using the Model Context Protocol.
-
-### MCP Client Configuration
-
-To use with Claude Desktop or other MCP clients, add to your MCP settings configuration:
-
-**Basic Configuration (all tools enabled):**
 ```json
 {
-  "mcpServers": {
-    "redmine": {
-      "command": "/path/to/mcp-server",
-      "env": {
-        "REDMINE_URL": "https://your-redmine-instance.com",
-        "REDMINE_API_KEY": "your-api-key-here"
-      }
-    }
+  "env": {
+    "REDMINE_ENABLED_TOOLS": "all",
+    "REDMINE_DISABLED_TOOLS": "create_project,update_project,delete_project,archive_project,unarchive_project,create_issue,update_issue,delete_issue,add_watcher,remove_watcher,create_user,update_user,delete_user,create_issue_category,update_issue_category,delete_issue_category,create_time_entry,update_time_entry,delete_time_entry,create_version,update_version,delete_version,create_membership,update_membership,delete_membership,create_issue_relation,delete_issue_relation,create_or_update_wiki_page,delete_wiki_page,update_attachment,delete_attachment,upload_file,create_group,update_group,delete_group,add_group_user,remove_group_user,update_my_account"
   }
 }
 ```
 
-**With Tool Control (selective tools):**
+**Project and issue management only**
+
 ```json
 {
-  "mcpServers": {
-    "redmine": {
-      "command": "/path/to/mcp-server",
-      "env": {
-        "REDMINE_URL": "https://your-redmine-instance.com",
-        "REDMINE_API_KEY": "your-api-key-here",
-        "REDMINE_ENABLED_TOOLS": "projects,issues,search",
-        "REDMINE_DISABLED_TOOLS": "delete_project,delete_issue"
-      }
-    }
+  "env": {
+    "REDMINE_ENABLED_TOOLS": "projects,issues,search",
+    "REDMINE_DISABLED_TOOLS": "delete_project,delete_issue"
   }
 }
 ```
 
-## Development
-
-### Requirements
-
-- Go 1.23 or later
-- golangci-lint for code quality checks
-
-### Running Tests
-
-```bash
-go test ./...
-```
-
-### Linting
-
-```bash
-golangci-lint run
-```
-
-### Project Guidelines
-
-- All code must pass `golangci-lint run` before committing
-- Maintain test coverage for the SDK layer (`pkg/redmine`)
-- Follow the layered architecture pattern
-- Keep MCP handlers thin - business logic belongs in `internal/usecase`
-- Use typed handlers with JSON schema annotations for better tool descriptions
-
-## Dependencies
-
-- [go-sdk v1.0.0](https://github.com/modelcontextprotocol/go-sdk) - MCP protocol implementation
-- Standard Go library for HTTP client and JSON handling
-
-## API Coverage
-
-The underlying Redmine API client SDK (`pkg/redmine`) provides comprehensive coverage:
-- 76 client methods
-- 22 Redmine REST APIs
-- 48.9% test coverage with 60 tests
-
-Supported APIs include: Projects, Issues, Users, Time Entries, News, Wiki Pages, Files, My Account, Journals, Queries, Custom Fields, Search, Attachments, Issue Relations, Versions, Project Memberships, Issue Categories, Trackers, Issue Statuses, Groups, Roles, and Enumerations.
+---
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## Contributing
-
-Contributions are welcome! Please ensure:
-1. All tests pass (`go test ./...`)
-2. Code passes linting (`golangci-lint run`)
-3. Follow the existing architecture patterns
-4. Add tests for new functionality
-
-## Related Projects
+## Related Resources
 
 - [Redmine REST API Documentation](https://www.redmine.org/projects/redmine/wiki/Rest_api)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
