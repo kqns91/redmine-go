@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -31,6 +32,7 @@ var timeEntryListCmd = &cobra.Command{
 		to, _ := cmd.Flags().GetString("to")
 		limit, _ := cmd.Flags().GetInt("limit")
 		offset, _ := cmd.Flags().GetInt("offset")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ListTimeEntriesOptions{
 			UserID:    userID,
@@ -47,13 +49,17 @@ var timeEntryListCmd = &cobra.Command{
 			return fmt.Errorf("作業時間の取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatTimeEntriesTable(result.TimeEntries)
+		case formatText:
+			return formatTimeEntriesText(result.TimeEntries)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -67,19 +73,22 @@ var timeEntryGetCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("無効なtime_entry_id: %w", err)
 		}
+		format, _ := cmd.Flags().GetString("format")
 
 		result, err := client.ShowTimeEntry(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("作業時間の取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatText:
+			return formatTimeEntryDetail(&result.TimeEntry)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -193,6 +202,103 @@ var timeEntryDeleteCmd = &cobra.Command{
 	},
 }
 
+// formatTimeEntryDetail formats a single time entry in detailed text format.
+func formatTimeEntryDetail(t *redmine.TimeEntry) error {
+	// Title
+	fmt.Println(formatter.FormatTitle(fmt.Sprintf("Time Entry #%d", t.ID)))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(t.ID)))
+	if t.User.Name != "" {
+		fmt.Println(formatter.FormatKeyValue("User", t.User.Name))
+	}
+	if t.Project.Name != "" {
+		fmt.Println(formatter.FormatKeyValue("Project", t.Project.Name))
+	}
+	if t.Issue.ID != 0 {
+		fmt.Println(formatter.FormatKeyValue("Issue", fmt.Sprintf("#%d", t.Issue.ID)))
+	}
+	if t.Activity.Name != "" {
+		fmt.Println(formatter.FormatKeyValue("Activity", t.Activity.Name))
+	}
+	fmt.Println(formatter.FormatKeyValue("Hours", fmt.Sprintf("%.2f", t.Hours)))
+	fmt.Println(formatter.FormatKeyValue("Spent On", t.SpentOn))
+
+	// Comments
+	if t.Comments != "" {
+		fmt.Println()
+		fmt.Println(formatter.FormatSection("コメント"))
+		fmt.Println(t.Comments)
+	}
+
+	// Timestamps
+	fmt.Println()
+	fmt.Println(formatter.FormatSection("タイムスタンプ"))
+	fmt.Println(formatter.FormatKeyValue("Created", t.CreatedOn))
+	fmt.Println(formatter.FormatKeyValue("Updated", t.UpdatedOn))
+
+	return nil
+}
+
+// formatTimeEntriesTable formats time entries in table format.
+func formatTimeEntriesTable(entries []redmine.TimeEntry) error {
+	if len(entries) == 0 {
+		fmt.Println("作業時間が見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "User", "Project", "Issue", "Activity", "Hours", "Spent On"}
+	rows := make([][]string, 0, len(entries))
+
+	for _, t := range entries {
+		issueStr := "-"
+		if t.Issue.ID != 0 {
+			issueStr = fmt.Sprintf("#%d", t.Issue.ID)
+		}
+
+		rows = append(rows, []string{
+			strconv.Itoa(t.ID),
+			formatter.TruncateString(t.User.Name, 15),
+			formatter.TruncateString(t.Project.Name, 20),
+			issueStr,
+			formatter.TruncateString(t.Activity.Name, 15),
+			fmt.Sprintf("%.2f", t.Hours),
+			t.SpentOn,
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatTimeEntriesText formats time entries in simple text format.
+func formatTimeEntriesText(entries []redmine.TimeEntry) error {
+	if len(entries) == 0 {
+		fmt.Println("作業時間が見つかりませんでした。")
+		return nil
+	}
+
+	for _, t := range entries {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(t.ID)))
+		fmt.Println(formatter.FormatKeyValue("User", t.User.Name))
+		fmt.Println(formatter.FormatKeyValue("Project", t.Project.Name))
+		if t.Issue.ID != 0 {
+			fmt.Println(formatter.FormatKeyValue("Issue", fmt.Sprintf("#%d", t.Issue.ID)))
+		}
+		fmt.Println(formatter.FormatKeyValue("Activity", t.Activity.Name))
+		fmt.Println(formatter.FormatKeyValue("Hours", fmt.Sprintf("%.2f", t.Hours)))
+		fmt.Println(formatter.FormatKeyValue("Spent On", t.SpentOn))
+		if t.Comments != "" {
+			fmt.Println(formatter.FormatKeyValue("Comments", formatter.TruncateString(t.Comments, 80)))
+		}
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(timeEntryCmd)
 
@@ -211,6 +317,10 @@ func init() {
 	timeEntryListCmd.Flags().String("to", "", "終了日 (YYYY-MM-DD)")
 	timeEntryListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	timeEntryListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
+	timeEntryListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
+
+	// Flags for get command
+	timeEntryGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for create command
 	timeEntryCreateCmd.Flags().Int("issue-id", 0, "チケットID")

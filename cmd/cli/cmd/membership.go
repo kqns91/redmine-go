@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -25,18 +26,24 @@ var membershipListCmd = &cobra.Command{
 	Long:  `指定したプロジェクトのメンバーシップをリスト表示します。`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		format, _ := cmd.Flags().GetString("format")
+
 		result, err := client.ListMemberships(context.Background(), args[0])
 		if err != nil {
 			return fmt.Errorf("メンバーシップの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatMembershipsTable(result.Memberships)
+		case formatText:
+			return formatMembershipsText(result.Memberships)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -171,6 +178,69 @@ var membershipDeleteCmd = &cobra.Command{
 	},
 }
 
+// formatMembershipsTable formats memberships in table format.
+func formatMembershipsTable(memberships []redmine.Membership) error {
+	if len(memberships) == 0 {
+		fmt.Println("メンバーシップが見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "User/Group", "Project", "Roles"}
+	rows := make([][]string, 0, len(memberships))
+
+	for _, m := range memberships {
+		userOrGroup := "-"
+		if m.User.Name != "" {
+			userOrGroup = m.User.Name
+		} else if m.Group.Name != "" {
+			userOrGroup = m.Group.Name + " (G)"
+		}
+
+		roleNames := make([]string, 0, len(m.Roles))
+		for _, r := range m.Roles {
+			roleNames = append(roleNames, r.Name)
+		}
+		roles := strings.Join(roleNames, ", ")
+
+		rows = append(rows, []string{
+			strconv.Itoa(m.ID),
+			formatter.TruncateString(userOrGroup, 25),
+			formatter.TruncateString(m.Project.Name, 25),
+			formatter.TruncateString(roles, 30),
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatMembershipsText formats memberships in simple text format.
+func formatMembershipsText(memberships []redmine.Membership) error {
+	if len(memberships) == 0 {
+		fmt.Println("メンバーシップが見つかりませんでした。")
+		return nil
+	}
+
+	for _, m := range memberships {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(m.ID)))
+		if m.User.Name != "" {
+			fmt.Println(formatter.FormatKeyValue("User", m.User.Name))
+		} else if m.Group.Name != "" {
+			fmt.Println(formatter.FormatKeyValue("Group", m.Group.Name))
+		}
+		fmt.Println(formatter.FormatKeyValue("Project", m.Project.Name))
+
+		roleNames := make([]string, 0, len(m.Roles))
+		for _, r := range m.Roles {
+			roleNames = append(roleNames, r.Name)
+		}
+		fmt.Println(formatter.FormatKeyValue("Roles", strings.Join(roleNames, ", ")))
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(membershipCmd)
 
@@ -180,6 +250,9 @@ func init() {
 	membershipCmd.AddCommand(membershipCreateCmd)
 	membershipCmd.AddCommand(membershipUpdateCmd)
 	membershipCmd.AddCommand(membershipDeleteCmd)
+
+	// Flags for list command
+	membershipListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
 	// Flags for create command
 	membershipCreateCmd.Flags().Int("user-id", 0, "ユーザーID (必須)")

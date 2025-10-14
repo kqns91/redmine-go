@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -24,18 +25,24 @@ var versionListCmd = &cobra.Command{
 	Long:  `指定したプロジェクトのバージョンをリスト表示します。`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		format, _ := cmd.Flags().GetString("format")
+
 		result, err := client.ListVersions(context.Background(), args[0])
 		if err != nil {
 			return fmt.Errorf("バージョンの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatVersionsTable(result.Versions)
+		case formatText:
+			return formatVersionsText(result.Versions)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -164,6 +171,66 @@ var versionDeleteCmd = &cobra.Command{
 	},
 }
 
+// formatVersionsTable formats versions in table format.
+func formatVersionsTable(versions []redmine.Version) error {
+	if len(versions) == 0 {
+		fmt.Println("バージョンが見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "Name", "Status", "Due Date", "Created"}
+	rows := make([][]string, 0, len(versions))
+
+	for _, v := range versions {
+		dueDate := "-"
+		if v.DueDate != "" {
+			dueDate = v.DueDate
+		}
+		status := v.Status
+		if status == "" {
+			status = "open"
+		}
+
+		rows = append(rows, []string{
+			strconv.Itoa(v.ID),
+			formatter.TruncateString(v.Name, 30),
+			status,
+			dueDate,
+			v.CreatedOn,
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatVersionsText formats versions in simple text format.
+func formatVersionsText(versions []redmine.Version) error {
+	if len(versions) == 0 {
+		fmt.Println("バージョンが見つかりませんでした。")
+		return nil
+	}
+
+	for _, v := range versions {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(v.ID)))
+		fmt.Println(formatter.FormatKeyValue("Name", v.Name))
+		status := v.Status
+		if status == "" {
+			status = "open"
+		}
+		fmt.Println(formatter.FormatKeyValue("Status", status))
+		if v.Description != "" {
+			fmt.Println(formatter.FormatKeyValue("Description", formatter.TruncateString(v.Description, 80)))
+		}
+		if v.DueDate != "" {
+			fmt.Println(formatter.FormatKeyValue("Due Date", v.DueDate))
+		}
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(versionCmd)
 
@@ -173,6 +240,9 @@ func init() {
 	versionCmd.AddCommand(versionCreateCmd)
 	versionCmd.AddCommand(versionUpdateCmd)
 	versionCmd.AddCommand(versionDeleteCmd)
+
+	// Flags for list command
+	versionListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
 	// Flags for create command
 	versionCreateCmd.Flags().String("name", "", "バージョン名 (必須)")

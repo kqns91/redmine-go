@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -23,18 +24,24 @@ var wikiListCmd = &cobra.Command{
 	Long:  `指定したプロジェクトのWikiページ一覧を取得します。`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		format, _ := cmd.Flags().GetString("format")
+
 		result, err := client.ListWikiPages(context.Background(), args[0])
 		if err != nil {
 			return fmt.Errorf("wikiページ一覧の取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatWikiPagesTable(result.WikiPages)
+		case formatText:
+			return formatWikiPagesText(result.WikiPages)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -46,6 +53,7 @@ var wikiGetCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		include, _ := cmd.Flags().GetString("include")
 		version, _ := cmd.Flags().GetInt("version")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.GetWikiPageOptions{
 			Include: include,
@@ -57,13 +65,15 @@ var wikiGetCmd = &cobra.Command{
 			return fmt.Errorf("wikiページの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatText:
+			return formatWikiPageDetail(&result.WikiPage)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -113,6 +123,95 @@ var wikiDeleteCmd = &cobra.Command{
 	},
 }
 
+// formatWikiPageDetail formats a single wiki page in detailed text format.
+func formatWikiPageDetail(w *redmine.WikiPage) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("Wiki Page: " + w.Title))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("Title", w.Title))
+	if w.Version > 0 {
+		fmt.Println(formatter.FormatKeyValue("Version", strconv.Itoa(w.Version)))
+	}
+	if w.Author.Name != "" {
+		fmt.Println(formatter.FormatKeyValue("Author", w.Author.Name))
+	}
+	if w.Comments != "" {
+		fmt.Println(formatter.FormatKeyValue("Comments", w.Comments))
+	}
+
+	// Content
+	if w.Text != "" {
+		fmt.Println()
+		fmt.Println(formatter.FormatSection("内容"))
+		fmt.Println(formatter.TruncateString(w.Text, 200))
+	}
+
+	// Timestamps
+	fmt.Println()
+	fmt.Println(formatter.FormatSection("タイムスタンプ"))
+	if w.CreatedOn != "" {
+		fmt.Println(formatter.FormatKeyValue("Created", w.CreatedOn))
+	}
+	if w.UpdatedOn != "" {
+		fmt.Println(formatter.FormatKeyValue("Updated", w.UpdatedOn))
+	}
+
+	return nil
+}
+
+// formatWikiPagesTable formats wiki pages in table format.
+func formatWikiPagesTable(pages []redmine.WikiPageIndex) error {
+	if len(pages) == 0 {
+		fmt.Println("Wikiページが見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"Title", "Version", "Parent", "Created", "Updated"}
+	rows := make([][]string, 0, len(pages))
+
+	for _, p := range pages {
+		parent := "-"
+		if p.Parent.Name != "" {
+			parent = p.Parent.Name
+		}
+
+		rows = append(rows, []string{
+			formatter.TruncateString(p.Title, 30),
+			strconv.Itoa(p.Version),
+			formatter.TruncateString(parent, 20),
+			p.CreatedOn,
+			p.UpdatedOn,
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatWikiPagesText formats wiki pages in simple text format.
+func formatWikiPagesText(pages []redmine.WikiPageIndex) error {
+	if len(pages) == 0 {
+		fmt.Println("Wikiページが見つかりませんでした。")
+		return nil
+	}
+
+	for _, p := range pages {
+		fmt.Println(formatter.FormatKeyValue("Title", p.Title))
+		fmt.Println(formatter.FormatKeyValue("Version", strconv.Itoa(p.Version)))
+		if p.Parent.Name != "" {
+			fmt.Println(formatter.FormatKeyValue("Parent", p.Parent.Name))
+		}
+		fmt.Println(formatter.FormatKeyValue("Created", p.CreatedOn))
+		fmt.Println(formatter.FormatKeyValue("Updated", p.UpdatedOn))
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(wikiCmd)
 
@@ -122,9 +221,13 @@ func init() {
 	wikiCmd.AddCommand(wikiCreateOrUpdateCmd)
 	wikiCmd.AddCommand(wikiDeleteCmd)
 
+	// Flags for list command
+	wikiListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
+
 	// Flags for get command
 	wikiGetCmd.Flags().String("include", "", "追加で取得する情報 (例: attachments)")
 	wikiGetCmd.Flags().Int("version", 0, "取得するバージョン番号")
+	wikiGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for create-or-update command
 	wikiCreateOrUpdateCmd.Flags().String("text", "", "Wikiページの本文 (必須)")

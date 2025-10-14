@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -29,6 +30,7 @@ var userListCmd = &cobra.Command{
 		include, _ := cmd.Flags().GetString("include")
 		limit, _ := cmd.Flags().GetInt("limit")
 		offset, _ := cmd.Flags().GetInt("offset")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ListUsersOptions{
 			Status:  status,
@@ -44,13 +46,17 @@ var userListCmd = &cobra.Command{
 			return fmt.Errorf("ユーザーの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatUsersTable(result.Users)
+		case formatText:
+			return formatUsersText(result.Users)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -66,6 +72,7 @@ var userGetCmd = &cobra.Command{
 		}
 
 		include, _ := cmd.Flags().GetString("include")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ShowUserOptions{
 			Include: include,
@@ -76,13 +83,15 @@ var userGetCmd = &cobra.Command{
 			return fmt.Errorf("ユーザーの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatText:
+			return formatUserDetail(&result.User)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -217,6 +226,107 @@ var userDeleteCmd = &cobra.Command{
 	},
 }
 
+// getUserStatus returns a human-readable status string.
+func getUserStatus(status int) string {
+	switch status {
+	case 1:
+		return "Active"
+	case 2:
+		return "Registered"
+	case 3:
+		return "Locked"
+	default:
+		return "Unknown"
+	}
+}
+
+// formatUserDetail formats a single user in detailed text format.
+func formatUserDetail(u *redmine.User) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("User: " + u.Login))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(u.ID)))
+	fmt.Println(formatter.FormatKeyValue("Login", u.Login))
+	fmt.Println(formatter.FormatKeyValue("Firstname", u.Firstname))
+	fmt.Println(formatter.FormatKeyValue("Lastname", u.Lastname))
+	fmt.Println(formatter.FormatKeyValue("Mail", u.Mail))
+	if u.Status > 0 {
+		fmt.Println(formatter.FormatKeyValue("Status", getUserStatus(u.Status)))
+	}
+	fmt.Println(formatter.FormatKeyValue("Admin", strconv.FormatBool(u.Admin)))
+
+	// Timestamps
+	fmt.Println()
+	fmt.Println(formatter.FormatSection("タイムスタンプ"))
+	if u.CreatedOn != "" {
+		fmt.Println(formatter.FormatKeyValue("Created", u.CreatedOn))
+	}
+	if u.UpdatedOn != "" {
+		fmt.Println(formatter.FormatKeyValue("Updated", u.UpdatedOn))
+	}
+	if u.LastLoginOn != "" {
+		fmt.Println(formatter.FormatKeyValue("Last Login", u.LastLoginOn))
+	}
+
+	return nil
+}
+
+// formatUsersTable formats users in table format.
+func formatUsersTable(users []redmine.User) error {
+	if len(users) == 0 {
+		fmt.Println("ユーザーが見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "Login", "Name", "Mail", "Status", "Admin"}
+	rows := make([][]string, 0, len(users))
+
+	for _, u := range users {
+		name := u.Firstname + " " + u.Lastname
+		statusStr := "-"
+		if u.Status > 0 {
+			statusStr = getUserStatus(u.Status)
+		}
+
+		rows = append(rows, []string{
+			strconv.Itoa(u.ID),
+			formatter.TruncateString(u.Login, 15),
+			formatter.TruncateString(name, 25),
+			formatter.TruncateString(u.Mail, 30),
+			statusStr,
+			strconv.FormatBool(u.Admin),
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatUsersText formats users in simple text format.
+func formatUsersText(users []redmine.User) error {
+	if len(users) == 0 {
+		fmt.Println("ユーザーが見つかりませんでした。")
+		return nil
+	}
+
+	for _, u := range users {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(u.ID)))
+		fmt.Println(formatter.FormatKeyValue("Login", u.Login))
+		fmt.Println(formatter.FormatKeyValue("Name", u.Firstname+" "+u.Lastname))
+		fmt.Println(formatter.FormatKeyValue("Mail", u.Mail))
+		if u.Status > 0 {
+			fmt.Println(formatter.FormatKeyValue("Status", getUserStatus(u.Status)))
+		}
+		fmt.Println(formatter.FormatKeyValue("Admin", strconv.FormatBool(u.Admin)))
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(userCmd)
 
@@ -235,9 +345,11 @@ func init() {
 	userListCmd.Flags().String("include", "", "追加で取得する情報")
 	userListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	userListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
+	userListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
 	// Flags for get command
 	userGetCmd.Flags().String("include", "", "追加で取得する情報")
+	userGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for current command
 	userCurrentCmd.Flags().String("include", "", "追加で取得する情報")
