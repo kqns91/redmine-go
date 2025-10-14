@@ -82,10 +82,10 @@ var projectGetCmd = &cobra.Command{
 		switch format {
 		case formatJSON:
 			return formatter.OutputJSON(result)
-		case formatTable, formatText:
+		case formatText:
 			return formatProjectDetail(&result.Project)
 		default:
-			return fmt.Errorf("不明な出力フォーマット: %s", format)
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
 	},
 }
@@ -323,7 +323,7 @@ func init() {
 
 	// Flags for get command
 	projectGetCmd.Flags().String("include", "", "追加で取得する情報 (例: trackers,issue_categories)")
-	projectGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, table, text)")
+	projectGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for create command
 	projectCreateCmd.Flags().String("name", "", "プロジェクト名 (必須)")
