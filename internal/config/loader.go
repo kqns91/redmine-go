@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strings"
 )
 
 var (
@@ -26,8 +27,33 @@ func Load() (*Config, error) {
 		return nil, ErrMissingAPIKey
 	}
 
+	// Parse optional tool control environment variables
+	enabledToolGroups := parseCommaSeparated(os.Getenv("REDMINE_ENABLED_TOOLS"))
+	disabledTools := parseCommaSeparated(os.Getenv("REDMINE_DISABLED_TOOLS"))
+
 	return &Config{
-		RedmineURL: redmineURL,
-		APIKey:     apiKey,
+		RedmineURL:        redmineURL,
+		APIKey:            apiKey,
+		EnabledToolGroups: enabledToolGroups,
+		DisabledTools:     disabledTools,
 	}, nil
+}
+
+// parseCommaSeparated splits a comma-separated string into a slice of trimmed strings.
+// Returns an empty slice if the input is empty or contains only whitespace.
+func parseCommaSeparated(s string) []string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return []string{}
+	}
+
+	parts := strings.Split(s, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }

@@ -7,16 +7,21 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
 // RegisterSearchTools registers all search-related MCP tools.
-func RegisterSearchTools(server *mcp.Server, useCases *usecase.UseCases) {
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_search",
-		Description: "Search across Redmine for issues, projects, news, documents, changesets, wiki pages, messages, and users.",
-	}, handleSearch(useCases))
+func RegisterSearchTools(server *mcp.Server, useCases *usecase.UseCases, cfg *config.Config) {
+	const toolGroup = "search"
+
+	if cfg.IsToolEnabled(toolGroup, "redmine_search") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_search",
+			Description: "Search across Redmine for issues, projects, news, documents, changesets, wiki pages, messages, and users.",
+		}, handleSearch(useCases))
+	}
 }
 
 type SearchArgs struct {

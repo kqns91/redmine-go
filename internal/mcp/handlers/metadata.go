@@ -7,20 +7,27 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/usecase"
 )
 
 // RegisterMetadataTools registers all metadata-related MCP tools.
-func RegisterMetadataTools(server *mcp.Server, useCases *usecase.UseCases) {
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_list_trackers",
-		Description: "List all available trackers in Redmine (e.g., Bug, Feature, Support).",
-	}, handleListTrackers(useCases))
+func RegisterMetadataTools(server *mcp.Server, useCases *usecase.UseCases, cfg *config.Config) {
+	const toolGroup = "metadata"
 
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_list_issue_statuses",
-		Description: "List all available issue statuses in Redmine (e.g., New, In Progress, Closed).",
-	}, handleListIssueStatuses(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_list_trackers") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_list_trackers",
+			Description: "List all available trackers in Redmine (e.g., Bug, Feature, Support).",
+		}, handleListTrackers(useCases))
+	}
+
+	if cfg.IsToolEnabled(toolGroup, "redmine_list_issue_statuses") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_list_issue_statuses",
+			Description: "List all available issue statuses in Redmine (e.g., New, In Progress, Closed).",
+		}, handleListIssueStatuses(useCases))
+	}
 }
 
 type ListTrackersArgs struct{}

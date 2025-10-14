@@ -7,53 +7,70 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
 // RegisterIssueTools registers all issue-related MCP tools.
-func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases) {
+func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *config.Config) {
+	const toolGroup = "issues"
+
 	// List Issues tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_list_issues",
-		Description: "List issues in Redmine. Supports filtering, pagination, and sorting.",
-	}, handleListIssues(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_list_issues") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_list_issues",
+			Description: "List issues in Redmine. Supports filtering, pagination, and sorting.",
+		}, handleListIssues(useCases))
+	}
 
 	// Show Issue tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_show_issue",
-		Description: "Get details of a specific issue by ID.",
-	}, handleShowIssue(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_show_issue") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_show_issue",
+			Description: "Get details of a specific issue by ID.",
+		}, handleShowIssue(useCases))
+	}
 
 	// Create Issue tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_create_issue",
-		Description: "Create a new issue in Redmine.",
-	}, handleCreateIssue(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_create_issue") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_create_issue",
+			Description: "Create a new issue in Redmine.",
+		}, handleCreateIssue(useCases))
+	}
 
 	// Update Issue tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_update_issue",
-		Description: "Update an existing issue in Redmine.",
-	}, handleUpdateIssue(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_update_issue") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_update_issue",
+			Description: "Update an existing issue in Redmine.",
+		}, handleUpdateIssue(useCases))
+	}
 
 	// Delete Issue tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_delete_issue",
-		Description: "Delete an issue from Redmine. This action cannot be undone.",
-	}, handleDeleteIssue(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_delete_issue") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_delete_issue",
+			Description: "Delete an issue from Redmine. This action cannot be undone.",
+		}, handleDeleteIssue(useCases))
+	}
 
 	// Add Watcher tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_add_watcher",
-		Description: "Add a watcher to an issue.",
-	}, handleAddWatcher(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_add_watcher") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_add_watcher",
+			Description: "Add a watcher to an issue.",
+		}, handleAddWatcher(useCases))
+	}
 
 	// Remove Watcher tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_remove_watcher",
-		Description: "Remove a watcher from an issue.",
-	}, handleRemoveWatcher(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_remove_watcher") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_remove_watcher",
+			Description: "Remove a watcher from an issue.",
+		}, handleRemoveWatcher(useCases))
+	}
 }
 
 // ListIssuesArgs defines arguments for listing issues

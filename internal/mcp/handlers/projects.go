@@ -8,53 +8,71 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
 // RegisterProjectTools registers all project-related MCP tools.
-func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases) {
+// Tools are conditionally registered based on the configuration.
+func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *config.Config) {
+	const toolGroup = "projects"
+
 	// List Projects tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_list_projects",
-		Description: "List all projects in Redmine. Supports pagination and optional includes.",
-	}, handleListProjects(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_list_projects") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_list_projects",
+			Description: "List all projects in Redmine. Supports pagination and optional includes.",
+		}, handleListProjects(useCases))
+	}
 
 	// Show Project tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_show_project",
-		Description: "Get details of a specific project by ID or identifier.",
-	}, handleShowProject(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_show_project") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_show_project",
+			Description: "Get details of a specific project by ID or identifier.",
+		}, handleShowProject(useCases))
+	}
 
 	// Create Project tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_create_project",
-		Description: "Create a new project in Redmine.",
-	}, handleCreateProject(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_create_project") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_create_project",
+			Description: "Create a new project in Redmine.",
+		}, handleCreateProject(useCases))
+	}
 
 	// Update Project tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_update_project",
-		Description: "Update an existing project in Redmine.",
-	}, handleUpdateProject(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_update_project") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_update_project",
+			Description: "Update an existing project in Redmine.",
+		}, handleUpdateProject(useCases))
+	}
 
 	// Delete Project tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_delete_project",
-		Description: "Delete a project from Redmine. This action cannot be undone.",
-	}, handleDeleteProject(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_delete_project") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_delete_project",
+			Description: "Delete a project from Redmine. This action cannot be undone.",
+		}, handleDeleteProject(useCases))
+	}
 
 	// Archive Project tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_archive_project",
-		Description: "Archive a project in Redmine (Redmine 5.0+).",
-	}, handleArchiveProject(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_archive_project") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_archive_project",
+			Description: "Archive a project in Redmine (Redmine 5.0+).",
+		}, handleArchiveProject(useCases))
+	}
 
 	// Unarchive Project tool
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_unarchive_project",
-		Description: "Unarchive a project in Redmine (Redmine 5.0+).",
-	}, handleUnarchiveProject(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_unarchive_project") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_unarchive_project",
+			Description: "Unarchive a project in Redmine (Redmine 5.0+).",
+		}, handleUnarchiveProject(useCases))
+	}
 }
 
 // ListProjectsArgs defines arguments for listing projects

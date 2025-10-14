@@ -7,36 +7,49 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
 // RegisterCategoryTools registers all issue category-related MCP tools.
-func RegisterCategoryTools(server *mcp.Server, useCases *usecase.UseCases) {
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_list_issue_categories",
-		Description: "List issue categories for a specific project.",
-	}, handleListIssueCategories(useCases))
+func RegisterCategoryTools(server *mcp.Server, useCases *usecase.UseCases, cfg *config.Config) {
+	const toolGroup = "categories"
 
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_show_issue_category",
-		Description: "Get details of a specific issue category by ID.",
-	}, handleShowIssueCategory(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_list_issue_categories") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_list_issue_categories",
+			Description: "List issue categories for a specific project.",
+		}, handleListIssueCategories(useCases))
+	}
 
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_create_issue_category",
-		Description: "Create a new issue category for a project.",
-	}, handleCreateIssueCategory(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_show_issue_category") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_show_issue_category",
+			Description: "Get details of a specific issue category by ID.",
+		}, handleShowIssueCategory(useCases))
+	}
 
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_update_issue_category",
-		Description: "Update an existing issue category.",
-	}, handleUpdateIssueCategory(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_create_issue_category") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_create_issue_category",
+			Description: "Create a new issue category for a project.",
+		}, handleCreateIssueCategory(useCases))
+	}
 
-	mcp.AddTool(server, &mcp.Tool{
-		Name:        "redmine_delete_issue_category",
-		Description: "Delete an issue category.",
-	}, handleDeleteIssueCategory(useCases))
+	if cfg.IsToolEnabled(toolGroup, "redmine_update_issue_category") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_update_issue_category",
+			Description: "Update an existing issue category.",
+		}, handleUpdateIssueCategory(useCases))
+	}
+
+	if cfg.IsToolEnabled(toolGroup, "redmine_delete_issue_category") {
+		mcp.AddTool(server, &mcp.Tool{
+			Name:        "redmine_delete_issue_category",
+			Description: "Delete an issue category.",
+		}, handleDeleteIssueCategory(useCases))
+	}
 }
 
 type ListIssueCategoriesArgs struct {

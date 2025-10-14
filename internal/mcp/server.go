@@ -30,13 +30,13 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 		Version: "1.0.0",
 	}, nil)
 
-	// Register all tools
-	handlers.RegisterProjectTools(server, useCases)
-	handlers.RegisterIssueTools(server, useCases)
-	handlers.RegisterUserTools(server, useCases)
-	handlers.RegisterCategoryTools(server, useCases)
-	handlers.RegisterSearchTools(server, useCases)
-	handlers.RegisterMetadataTools(server, useCases)
+	// Register tools conditionally based on configuration
+	handlers.RegisterProjectTools(server, useCases, cfg)
+	handlers.RegisterIssueTools(server, useCases, cfg)
+	handlers.RegisterUserTools(server, useCases, cfg)
+	handlers.RegisterCategoryTools(server, useCases, cfg)
+	handlers.RegisterSearchTools(server, useCases, cfg)
+	handlers.RegisterMetadataTools(server, useCases, cfg)
 
 	return server, nil
 }

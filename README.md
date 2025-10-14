@@ -84,6 +84,8 @@ go build -o mcp-server ./cmd/mcp-server
 
 ## Configuration
 
+### Required Environment Variables
+
 Set the following environment variables:
 
 ```bash
@@ -96,6 +98,62 @@ To get your Redmine API key:
 2. Go to "My account" (top right)
 3. Click "Show" under "API access key" on the right sidebar
 4. Copy the displayed key
+
+### Optional: Tool Control
+
+You can control which MCP tools are enabled using these optional environment variables:
+
+#### REDMINE_ENABLED_TOOLS
+Comma-separated list of tool groups to enable. If not set, all tools are enabled by default.
+
+Available tool groups:
+- `projects` - Project management tools (7 tools)
+- `issues` - Issue management tools (7 tools)
+- `users` - User management tools (6 tools)
+- `categories` - Issue category tools (5 tools)
+- `search` - Search functionality (1 tool)
+- `metadata` - Tracker and status metadata (2 tools)
+- `all` - Enable all tool groups (default behavior)
+
+#### REDMINE_DISABLED_TOOLS
+Comma-separated list of individual tool names to disable. Takes precedence over `REDMINE_ENABLED_TOOLS`.
+
+**Priority:** `REDMINE_DISABLED_TOOLS` > `REDMINE_ENABLED_TOOLS` > Default (all enabled)
+
+#### Configuration Examples
+
+**Pattern 1: Default (all tools enabled)**
+```bash
+# No configuration needed - all 28 tools are enabled by default
+export REDMINE_URL="https://your-redmine-instance.com"
+export REDMINE_API_KEY="your-api-key-here"
+```
+
+**Pattern 2: Enable only specific tool groups**
+```bash
+export REDMINE_ENABLED_TOOLS="projects,issues,search"
+# Enables 15 tools: 7 project tools + 7 issue tools + 1 search tool
+```
+
+**Pattern 3: Enable all groups but disable specific tools**
+```bash
+export REDMINE_DISABLED_TOOLS="redmine_delete_project,redmine_delete_issue,redmine_delete_user"
+# Enables 25 tools (all tools except the 3 delete operations)
+```
+
+**Pattern 4: Read-only mode (disable all write operations)**
+```bash
+export REDMINE_ENABLED_TOOLS="all"
+export REDMINE_DISABLED_TOOLS="redmine_create_project,redmine_update_project,redmine_delete_project,redmine_archive_project,redmine_unarchive_project,redmine_create_issue,redmine_update_issue,redmine_delete_issue,redmine_add_watcher,redmine_remove_watcher,redmine_create_user,redmine_update_user,redmine_delete_user,redmine_create_issue_category,redmine_update_issue_category,redmine_delete_issue_category"
+# Enables only read operations (list, show, get)
+```
+
+**Pattern 5: Minimal setup (projects and issues only, no destructive operations)**
+```bash
+export REDMINE_ENABLED_TOOLS="projects,issues,search"
+export REDMINE_DISABLED_TOOLS="redmine_delete_project,redmine_delete_issue"
+# Enables 13 tools: project/issue management + search, excluding delete operations
+```
 
 ## Usage
 
@@ -111,6 +169,7 @@ The server communicates via stdio using the Model Context Protocol.
 
 To use with Claude Desktop or other MCP clients, add to your MCP settings configuration:
 
+**Basic Configuration (all tools enabled):**
 ```json
 {
   "mcpServers": {
@@ -119,6 +178,23 @@ To use with Claude Desktop or other MCP clients, add to your MCP settings config
       "env": {
         "REDMINE_URL": "https://your-redmine-instance.com",
         "REDMINE_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+**With Tool Control (selective tools):**
+```json
+{
+  "mcpServers": {
+    "redmine": {
+      "command": "/path/to/mcp-server",
+      "env": {
+        "REDMINE_URL": "https://your-redmine-instance.com",
+        "REDMINE_API_KEY": "your-api-key-here",
+        "REDMINE_ENABLED_TOOLS": "projects,issues,search",
+        "REDMINE_DISABLED_TOOLS": "redmine_delete_project,redmine_delete_issue"
       }
     }
   }
