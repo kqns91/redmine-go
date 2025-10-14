@@ -10,6 +10,7 @@
 
 # Build artifacts
 /mcp-server
+bin/
 
 # Test binary, built with `go test -c`
 *.test
@@ -33,3 +34,6 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Task files
+task.md

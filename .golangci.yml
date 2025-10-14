@@ -51,6 +51,10 @@ linters:
       - path: '(.+)_test\.go'
         linters:
           - bodyclose
+      - path: 'cmd/cli/.*'
+        linters:
+          - forbidigo
+          - gosmopolitan
 
 issues:
   max-issues-per-linter: 0

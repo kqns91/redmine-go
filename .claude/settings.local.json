@@ -3,7 +3,8 @@
     "allow": [
       "Bash(golangci-lint run:*)",
       "Bash(go build:*)",
-      "Bash(go test:*)"
+      "Bash(go test:*)",
+      "Bash(go mod:*)"
     ],
     "deny": [],
     "ask": []
