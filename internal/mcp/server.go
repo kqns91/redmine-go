@@ -26,6 +26,8 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 		Version:       usecase.NewVersionUseCase(client),
 		IssueRelation: usecase.NewIssueRelationUseCase(client),
 		Attachment:    usecase.NewAttachmentUseCase(client),
+		Membership:    usecase.NewMembershipUseCase(client),
+		Group:         usecase.NewGroupUseCase(client),
 	}
 
 	// Create MCP server
@@ -45,6 +47,8 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 	handlers.RegisterVersionTools(server, useCases, cfg)
 	handlers.RegisterIssueRelationTools(server, useCases, cfg)
 	handlers.RegisterAttachmentTools(server, useCases, cfg)
+	handlers.RegisterMembershipTools(server, useCases, cfg)
+	handlers.RegisterGroupTools(server, useCases, cfg)
 
 	return server, nil
 }

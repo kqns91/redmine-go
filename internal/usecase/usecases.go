@@ -12,4 +12,6 @@ type UseCases struct {
 	Version       *VersionUseCase
 	IssueRelation *IssueRelationUseCase
 	Attachment    *AttachmentUseCase
+	Membership    *MembershipUseCase
+	Group         *GroupUseCase
 }
