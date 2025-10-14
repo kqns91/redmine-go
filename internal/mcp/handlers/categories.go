@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // RegisterCategoryTools registers all issue category-related MCP tools.
@@ -48,7 +49,7 @@ type ListIssueCategoriesOutput struct {
 
 func handleListIssueCategories(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args ListIssueCategoriesArgs) (*mcp.CallToolResult, ListIssueCategoriesOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args ListIssueCategoriesArgs) (*mcp.CallToolResult, ListIssueCategoriesOutput, error) {
-		result, err := useCases.Category.ListIssueCategories(args.ProjectID)
+		result, err := useCases.Category.ListIssueCategories(ctx, args.ProjectID)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ListIssueCategoriesOutput{}, fmt.Errorf("failed to list issue categories: %w", err)
 		}
@@ -72,7 +73,7 @@ type ShowIssueCategoryOutput struct {
 
 func handleShowIssueCategory(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args ShowIssueCategoryArgs) (*mcp.CallToolResult, ShowIssueCategoryOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args ShowIssueCategoryArgs) (*mcp.CallToolResult, ShowIssueCategoryOutput, error) {
-		result, err := useCases.Category.ShowIssueCategory(args.ID)
+		result, err := useCases.Category.ShowIssueCategory(ctx, args.ID)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ShowIssueCategoryOutput{}, fmt.Errorf("failed to show issue category: %w", err)
 		}
@@ -105,7 +106,7 @@ func handleCreateIssueCategory(useCases *usecase.UseCases) func(ctx context.Cont
 			category.AssignedTo = redmine.Resource{ID: args.AssignedToID}
 		}
 
-		result, err := useCases.Category.CreateIssueCategory(args.ProjectID, category)
+		result, err := useCases.Category.CreateIssueCategory(ctx, args.ProjectID, category)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, CreateIssueCategoryOutput{}, fmt.Errorf("failed to create issue category: %w", err)
 		}
@@ -138,7 +139,7 @@ func handleUpdateIssueCategory(useCases *usecase.UseCases) func(ctx context.Cont
 			category.AssignedTo = redmine.Resource{ID: args.AssignedToID}
 		}
 
-		err := useCases.Category.UpdateIssueCategory(args.ID, category)
+		err := useCases.Category.UpdateIssueCategory(ctx, args.ID, category)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UpdateIssueCategoryOutput{}, fmt.Errorf("failed to update issue category: %w", err)
 		}
@@ -148,8 +149,8 @@ func handleUpdateIssueCategory(useCases *usecase.UseCases) func(ctx context.Cont
 }
 
 type DeleteIssueCategoryArgs struct {
-	ID            int `json:"id" jsonschema:"Issue category ID"`
-	ReassignToID  int `json:"reassign_to_id,omitempty" jsonschema:"Reassign issues to this category ID (optional)"`
+	ID           int `json:"id" jsonschema:"Issue category ID"`
+	ReassignToID int `json:"reassign_to_id,omitempty" jsonschema:"Reassign issues to this category ID (optional)"`
 }
 
 type DeleteIssueCategoryOutput struct {
@@ -165,7 +166,7 @@ func handleDeleteIssueCategory(useCases *usecase.UseCases) func(ctx context.Cont
 			}
 		}
 
-		err := useCases.Category.DeleteIssueCategory(args.ID, opts)
+		err := useCases.Category.DeleteIssueCategory(ctx, args.ID, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, DeleteIssueCategoryOutput{}, fmt.Errorf("failed to delete issue category: %w", err)
 		}

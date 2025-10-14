@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -17,11 +19,11 @@ func NewMetadataUseCase(client *redmine.Client) *MetadataUseCase {
 }
 
 // ListTrackers retrieves a list of trackers.
-func (u *MetadataUseCase) ListTrackers() (*redmine.TrackersResponse, error) {
-	return u.client.ListTrackers()
+func (u *MetadataUseCase) ListTrackers(ctx context.Context) (*redmine.TrackersResponse, error) {
+	return u.client.ListTrackers(ctx)
 }
 
 // ListIssueStatuses retrieves a list of issue statuses.
-func (u *MetadataUseCase) ListIssueStatuses() (*redmine.IssueStatusesResponse, error) {
-	return u.client.ListIssueStatuses()
+func (u *MetadataUseCase) ListIssueStatuses(ctx context.Context) (*redmine.IssueStatusesResponse, error) {
+	return u.client.ListIssueStatuses(ctx)
 }

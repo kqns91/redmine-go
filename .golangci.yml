@@ -1,0 +1,78 @@
+version: "2"
+
+linters:
+  # Default set of linters.
+  # The value can be:
+  # - `standard`: https://golangci-lint.run/docs/linters/#enabled-by-default
+  # - `all`: enables all linters by default.
+  # - `none`: disables all linters by default.
+  # - `fast`: enables only linters considered as "fast" (`golangci-lint help linters --json | jq '[ .[] | select(.fast==true) ] | map(.name)'`).
+  # Default: standard
+  default: all
+  # Enable specific linter.
+  enable: []
+  # Disable specific linters.
+  disable:
+    - exhaustruct
+    - gochecknoglobals
+    - varnamelen
+    - wrapcheck
+    - nlreturn
+    - wsl
+    - wsl_v5
+    - gochecknoinits
+    - ireturn
+    - depguard
+    - tagalign
+    - mnd
+    - godot
+    - lll
+    - dupl
+    - err113
+    - paralleltest
+    - testpackage
+    - tagliatelle  # Redmine API uses snake_case
+    - noinlineerr  # Inline error handling is idiomatic in Go
+  settings:
+    cyclop:
+      max-complexity: 15  # Allow slightly more complex functions for handlers
+    revive:
+      rules:
+        - name: package-comments
+          disabled: true
+        - name: exported
+          disabled: true
+        - name: unused-parameter
+          disabled: true
+    nestif:
+      min-complexity: 15
+  exclusions:
+    rules:
+      - path: '(.+)_test\.go'
+        linters:
+          - bodyclose
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  # Enable specific formatter.
+  # Default: [] (uses standard Go formatting)
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - blank
+        - default
+        - localmodule
+      custom-order: true
+
+run:
+  timeout: 5m
+  go: "1.25"

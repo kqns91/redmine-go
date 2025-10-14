@@ -1,7 +1,9 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,14 +34,14 @@ func (e *EnumerationsResponse) UnmarshalJSON(data []byte) error {
 		}
 	}
 
-	return fmt.Errorf("no recognized enumeration field found")
+	return errors.New("no recognized enumeration field found")
 }
 
 // ListIssuePriorities retrieves the list of issue priorities
-func (c *Client) ListIssuePriorities() (*EnumerationsResponse, error) {
-	endpoint := fmt.Sprintf("%s/enumerations/issue_priorities.json", c.baseURL)
+func (c *Client) ListIssuePriorities(ctx context.Context) (*EnumerationsResponse, error) {
+	endpoint := c.baseURL + "/enumerations/issue_priorities.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +62,10 @@ func (c *Client) ListIssuePriorities() (*EnumerationsResponse, error) {
 }
 
 // ListTimeEntryActivities retrieves the list of time entry activities
-func (c *Client) ListTimeEntryActivities() (*EnumerationsResponse, error) {
-	endpoint := fmt.Sprintf("%s/enumerations/time_entry_activities.json", c.baseURL)
+func (c *Client) ListTimeEntryActivities(ctx context.Context) (*EnumerationsResponse, error) {
+	endpoint := c.baseURL + "/enumerations/time_entry_activities.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +86,10 @@ func (c *Client) ListTimeEntryActivities() (*EnumerationsResponse, error) {
 }
 
 // ListDocumentCategories retrieves the list of document categories
-func (c *Client) ListDocumentCategories() (*EnumerationsResponse, error) {
-	endpoint := fmt.Sprintf("%s/enumerations/document_categories.json", c.baseURL)
+func (c *Client) ListDocumentCategories(ctx context.Context) (*EnumerationsResponse, error) {
+	endpoint := c.baseURL + "/enumerations/document_categories.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

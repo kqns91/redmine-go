@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // RegisterUserTools registers all user-related MCP tools.
@@ -68,7 +69,7 @@ func handleListUsers(useCases *usecase.UseCases) func(ctx context.Context, reque
 			}
 		}
 
-		result, err := useCases.User.ListUsers(opts)
+		result, err := useCases.User.ListUsers(ctx, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ListUsersOutput{}, fmt.Errorf("failed to list users: %w", err)
 		}
@@ -98,7 +99,7 @@ func handleShowUser(useCases *usecase.UseCases) func(ctx context.Context, reques
 			opts = &redmine.ShowUserOptions{Include: args.Include}
 		}
 
-		result, err := useCases.User.ShowUser(args.ID, opts)
+		result, err := useCases.User.ShowUser(ctx, args.ID, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ShowUserOutput{}, fmt.Errorf("failed to show user: %w", err)
 		}
@@ -127,7 +128,7 @@ func handleGetCurrentUser(useCases *usecase.UseCases) func(ctx context.Context, 
 			opts = &redmine.ShowUserOptions{Include: args.Include}
 		}
 
-		result, err := useCases.User.GetCurrentUser(opts)
+		result, err := useCases.User.GetCurrentUser(ctx, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, GetCurrentUserOutput{}, fmt.Errorf("failed to get current user: %w", err)
 		}
@@ -161,7 +162,7 @@ func handleCreateUser(useCases *usecase.UseCases) func(ctx context.Context, requ
 			Mail:      args.Mail,
 		}
 
-		result, err := useCases.User.CreateUser(user)
+		result, err := useCases.User.CreateUser(ctx, user)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, CreateUserOutput{}, fmt.Errorf("failed to create user: %w", err)
 		}
@@ -196,7 +197,7 @@ func handleUpdateUser(useCases *usecase.UseCases) func(ctx context.Context, requ
 			Mail:      args.Mail,
 		}
 
-		err := useCases.User.UpdateUser(args.ID, user)
+		err := useCases.User.UpdateUser(ctx, args.ID, user)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UpdateUserOutput{}, fmt.Errorf("failed to update user: %w", err)
 		}
@@ -215,7 +216,7 @@ type DeleteUserOutput struct {
 
 func handleDeleteUser(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args DeleteUserArgs) (*mcp.CallToolResult, DeleteUserOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args DeleteUserArgs) (*mcp.CallToolResult, DeleteUserOutput, error) {
-		err := useCases.User.DeleteUser(args.ID)
+		err := useCases.User.DeleteUser(ctx, args.ID)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, DeleteUserOutput{}, fmt.Errorf("failed to delete user: %w", err)
 		}

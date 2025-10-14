@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,10 +9,10 @@ import (
 )
 
 type Journal struct {
-	ID        int            `json:"id,omitempty"`
-	User      Resource       `json:"user,omitempty"`
-	Notes     string         `json:"notes,omitempty"`
-	CreatedOn string         `json:"created_on,omitempty"`
+	ID        int             `json:"id,omitempty"`
+	User      Resource        `json:"user,omitempty"`
+	Notes     string          `json:"notes,omitempty"`
+	CreatedOn string          `json:"created_on,omitempty"`
 	Details   []JournalDetail `json:"details,omitempty"`
 }
 
@@ -28,10 +29,10 @@ type JournalResponse struct {
 
 // ShowJournal retrieves a specific journal entry
 // Note: Journals are typically accessed through issues with include=journals parameter
-func (c *Client) ShowJournal(id int) (*JournalResponse, error) {
+func (c *Client) ShowJournal(ctx context.Context, id int) (*JournalResponse, error) {
 	endpoint := fmt.Sprintf("%s/journals/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

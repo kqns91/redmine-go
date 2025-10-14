@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +18,7 @@ func TestListProjects(t *testing.T) {
 		if r.URL.Path != "/projects.json" {
 			t.Errorf("Expected path /projects.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -38,7 +39,7 @@ func TestListProjects(t *testing.T) {
 	client := New(server.URL, "test-api-key")
 
 	// テスト実行
-	result, err := client.ListProjects(nil)
+	result, err := client.ListProjects(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("ListProjects failed: %v", err)
 	}
@@ -81,7 +82,7 @@ func TestListProjectsWithOptions(t *testing.T) {
 		Offset:  20,
 		Include: "trackers",
 	}
-	_, err := client.ListProjects(opts)
+	_, err := client.ListProjects(context.Background(), opts)
 	if err != nil {
 		t.Fatalf("ListProjects with options failed: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestShowProject(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.ShowProject("test-project", nil)
+	result, err := client.ShowProject(context.Background(), "test-project", nil)
 	if err != nil {
 		t.Fatalf("ShowProject failed: %v", err)
 	}
@@ -152,7 +153,7 @@ func TestCreateProject(t *testing.T) {
 		Name:       "New Project",
 		Identifier: "new-project",
 	}
-	result, err := client.CreateProject(project)
+	result, err := client.CreateProject(context.Background(), project)
 	if err != nil {
 		t.Fatalf("CreateProject failed: %v", err)
 	}
@@ -175,7 +176,7 @@ func TestCreateProjectError(t *testing.T) {
 	project := Project{
 		Identifier: "test",
 	}
-	_, err := client.CreateProject(project)
+	_, err := client.CreateProject(context.Background(), project)
 	if err == nil {
 		t.Fatal("Expected error, got nil")
 	}
@@ -196,7 +197,7 @@ func TestDeleteProject(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	err := client.DeleteProject("1")
+	err := client.DeleteProject(context.Background(), "1")
 	if err != nil {
 		t.Fatalf("DeleteProject failed: %v", err)
 	}

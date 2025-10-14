@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,25 +12,25 @@ import (
 )
 
 type Issue struct {
-	ID          int           `json:"id,omitempty"`
-	Project     Resource      `json:"project,omitempty"`
-	Tracker     Resource      `json:"tracker,omitempty"`
-	Status      Resource      `json:"status,omitempty"`
-	Priority    Resource      `json:"priority,omitempty"`
-	Author      Resource      `json:"author,omitempty"`
-	AssignedTo  Resource      `json:"assigned_to,omitempty"`
-	Category    Resource      `json:"category,omitempty"`
-	Subject     string        `json:"subject,omitempty"`
-	Description string        `json:"description,omitempty"`
-	StartDate   string        `json:"start_date,omitempty"`
-	DueDate     string        `json:"due_date,omitempty"`
-	DoneRatio   int           `json:"done_ratio,omitempty"`
-	IsPrivate   bool          `json:"is_private,omitempty"`
-	EstimatedHours float64    `json:"estimated_hours,omitempty"`
-	CustomFields []CustomField `json:"custom_fields,omitempty"`
-	CreatedOn   string        `json:"created_on,omitempty"`
-	UpdatedOn   string        `json:"updated_on,omitempty"`
-	ClosedOn    string        `json:"closed_on,omitempty"`
+	ID             int           `json:"id,omitempty"`
+	Project        Resource      `json:"project,omitempty"`
+	Tracker        Resource      `json:"tracker,omitempty"`
+	Status         Resource      `json:"status,omitempty"`
+	Priority       Resource      `json:"priority,omitempty"`
+	Author         Resource      `json:"author,omitempty"`
+	AssignedTo     Resource      `json:"assigned_to,omitempty"`
+	Category       Resource      `json:"category,omitempty"`
+	Subject        string        `json:"subject,omitempty"`
+	Description    string        `json:"description,omitempty"`
+	StartDate      string        `json:"start_date,omitempty"`
+	DueDate        string        `json:"due_date,omitempty"`
+	DoneRatio      int           `json:"done_ratio,omitempty"`
+	IsPrivate      bool          `json:"is_private,omitempty"`
+	EstimatedHours float64       `json:"estimated_hours,omitempty"`
+	CustomFields   []CustomField `json:"custom_fields,omitempty"`
+	CreatedOn      string        `json:"created_on,omitempty"`
+	UpdatedOn      string        `json:"updated_on,omitempty"`
+	ClosedOn       string        `json:"closed_on,omitempty"`
 }
 
 type IssuesResponse struct {
@@ -60,8 +61,8 @@ type ListIssuesOptions struct {
 }
 
 // ListIssues retrieves a list of issues
-func (c *Client) ListIssues(opts *ListIssuesOptions) (*IssuesResponse, error) {
-	endpoint := fmt.Sprintf("%s/issues.json", c.baseURL)
+func (c *Client) ListIssues(ctx context.Context, opts *ListIssuesOptions) (*IssuesResponse, error) {
+	endpoint := c.baseURL + "/issues.json"
 
 	if opts != nil {
 		params := url.Values{}
@@ -97,7 +98,7 @@ func (c *Client) ListIssues(opts *ListIssuesOptions) (*IssuesResponse, error) {
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +123,7 @@ type ShowIssueOptions struct {
 }
 
 // ShowIssue retrieves a single issue by ID
-func (c *Client) ShowIssue(id int, opts *ShowIssueOptions) (*IssueResponse, error) {
+func (c *Client) ShowIssue(ctx context.Context, id int, opts *ShowIssueOptions) (*IssueResponse, error) {
 	endpoint := fmt.Sprintf("%s/issues/%d.json", c.baseURL, id)
 
 	if opts != nil && opts.Include != "" {
@@ -131,7 +132,7 @@ func (c *Client) ShowIssue(id int, opts *ShowIssueOptions) (*IssueResponse, erro
 		endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -152,8 +153,8 @@ func (c *Client) ShowIssue(id int, opts *ShowIssueOptions) (*IssueResponse, erro
 }
 
 // CreateIssue creates a new issue
-func (c *Client) CreateIssue(issue Issue) (*IssueResponse, error) {
-	endpoint := fmt.Sprintf("%s/issues.json", c.baseURL)
+func (c *Client) CreateIssue(ctx context.Context, issue Issue) (*IssueResponse, error) {
+	endpoint := c.baseURL + "/issues.json"
 
 	reqBody := IssueRequest{Issue: issue}
 	jsonData, err := json.Marshal(reqBody)
@@ -161,7 +162,7 @@ func (c *Client) CreateIssue(issue Issue) (*IssueResponse, error) {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +188,7 @@ func (c *Client) CreateIssue(issue Issue) (*IssueResponse, error) {
 }
 
 // UpdateIssue updates an existing issue
-func (c *Client) UpdateIssue(id int, issue Issue) error {
+func (c *Client) UpdateIssue(ctx context.Context, id int, issue Issue) error {
 	endpoint := fmt.Sprintf("%s/issues/%d.json", c.baseURL, id)
 
 	reqBody := IssueRequest{Issue: issue}
@@ -196,7 +197,7 @@ func (c *Client) UpdateIssue(id int, issue Issue) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -212,10 +213,10 @@ func (c *Client) UpdateIssue(id int, issue Issue) error {
 }
 
 // DeleteIssue deletes an issue
-func (c *Client) DeleteIssue(id int) error {
+func (c *Client) DeleteIssue(ctx context.Context, id int) error {
 	endpoint := fmt.Sprintf("%s/issues/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -235,7 +236,7 @@ type WatcherRequest struct {
 }
 
 // AddWatcher adds a watcher to an issue
-func (c *Client) AddWatcher(issueID int, userID int) error {
+func (c *Client) AddWatcher(ctx context.Context, issueID int, userID int) error {
 	endpoint := fmt.Sprintf("%s/issues/%d/watchers.json", c.baseURL, issueID)
 
 	reqBody := WatcherRequest{UserID: userID}
@@ -244,7 +245,7 @@ func (c *Client) AddWatcher(issueID int, userID int) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -260,10 +261,10 @@ func (c *Client) AddWatcher(issueID int, userID int) error {
 }
 
 // RemoveWatcher removes a watcher from an issue
-func (c *Client) RemoveWatcher(issueID int, userID int) error {
+func (c *Client) RemoveWatcher(ctx context.Context, issueID int, userID int) error {
 	endpoint := fmt.Sprintf("%s/issues/%d/watchers/%d.json", c.baseURL, issueID, userID)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

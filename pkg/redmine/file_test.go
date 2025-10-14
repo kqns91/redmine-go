@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListFiles(t *testing.T) {
 		if r.URL.Path != "/projects/test-project/files.json" {
 			t.Errorf("Expected path /projects/test-project/files.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -31,7 +32,7 @@ func TestListFiles(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListFiles("test-project")
+	result, err := client.ListFiles(context.Background(), "test-project")
 	if err != nil {
 		t.Fatalf("ListFiles failed: %v", err)
 	}
@@ -70,7 +71,7 @@ func TestUploadFile(t *testing.T) {
 		Token:    "test-token",
 		Filename: "newfile.txt",
 	}
-	err := client.UploadFile("test-project", file)
+	err := client.UploadFile(context.Background(), "test-project", file)
 	if err != nil {
 		t.Fatalf("UploadFile failed: %v", err)
 	}

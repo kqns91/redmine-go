@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListRoles(t *testing.T) {
 		if r.URL.Path != "/roles.json" {
 			t.Errorf("Expected path /roles.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -31,7 +32,7 @@ func TestListRoles(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListRoles()
+	result, err := client.ListRoles(context.Background())
 	if err != nil {
 		t.Fatalf("ListRoles failed: %v", err)
 	}
@@ -65,7 +66,7 @@ func TestShowRole(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ShowRole(1)
+	result, err := client.ShowRole(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("ShowRole failed: %v", err)
 	}

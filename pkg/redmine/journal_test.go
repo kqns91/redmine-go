@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestShowJournal(t *testing.T) {
 		if r.URL.Path != "/journals/123.json" {
 			t.Errorf("Expected path /journals/123.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -32,7 +33,7 @@ func TestShowJournal(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ShowJournal(123)
+	result, err := client.ShowJournal(context.Background(), 123)
 	if err != nil {
 		t.Fatalf("ShowJournal failed: %v", err)
 	}

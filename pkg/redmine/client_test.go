@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,7 +31,7 @@ func TestNewTrimsTrailingSlash(t *testing.T) {
 
 func TestClientDoSetsHeaders(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		apiKey := r.Header.Get("X-Redmine-API-Key")
+		apiKey := r.Header.Get("X-Redmine-Api-Key")
 		if apiKey != "test-api-key" {
 			t.Errorf("Expected X-Redmine-API-Key: test-api-key, got %s", apiKey)
 		}
@@ -45,7 +46,7 @@ func TestClientDoSetsHeaders(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	_, err := client.do(http.MethodGet, server.URL+"/test", nil)
+	_, err := client.do(context.Background(), http.MethodGet, server.URL+"/test", nil)
 	if err != nil {
 		t.Fatalf("do() failed: %v", err)
 	}
@@ -59,7 +60,7 @@ func TestClientDoHandles4xxError(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	_, err := client.do(http.MethodGet, server.URL+"/test", nil)
+	_, err := client.do(context.Background(), http.MethodGet, server.URL+"/test", nil)
 	if err == nil {
 		t.Error("Expected error for 404 response, got nil")
 	}
@@ -73,7 +74,7 @@ func TestClientDoHandles5xxError(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	_, err := client.do(http.MethodGet, server.URL+"/test", nil)
+	_, err := client.do(context.Background(), http.MethodGet, server.URL+"/test", nil)
 	if err == nil {
 		t.Error("Expected error for 500 response, got nil")
 	}
@@ -82,7 +83,7 @@ func TestClientDoHandles5xxError(t *testing.T) {
 func TestClientDoHandlesNetworkError(t *testing.T) {
 	// 存在しないサーバーに接続
 	client := New("http://localhost:1", "test-api-key")
-	_, err := client.do(http.MethodGet, "http://localhost:1/test", nil)
+	_, err := client.do(context.Background(), http.MethodGet, "http://localhost:1/test", nil)
 	if err == nil {
 		t.Error("Expected network error, got nil")
 	}
@@ -96,7 +97,7 @@ func TestClientDoSuccess(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	resp, err := client.do(http.MethodGet, server.URL+"/test", nil)
+	resp, err := client.do(context.Background(), http.MethodGet, server.URL+"/test", nil)
 	if err != nil {
 		t.Fatalf("do() failed: %v", err)
 	}

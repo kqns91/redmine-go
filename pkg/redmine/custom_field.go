@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,10 +30,10 @@ type CustomFieldsResponse struct {
 }
 
 // ListCustomFields retrieves all custom fields definitions (requires admin privileges)
-func (c *Client) ListCustomFields() (*CustomFieldsResponse, error) {
-	endpoint := fmt.Sprintf("%s/custom_fields.json", c.baseURL)
+func (c *Client) ListCustomFields(ctx context.Context) (*CustomFieldsResponse, error) {
+	endpoint := c.baseURL + "/custom_fields.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

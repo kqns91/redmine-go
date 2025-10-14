@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,8 +38,8 @@ type SearchOptions struct {
 }
 
 // Search performs a search with specified conditions
-func (c *Client) Search(opts *SearchOptions) (*SearchResponse, error) {
-	endpoint := fmt.Sprintf("%s/search.json", c.baseURL)
+func (c *Client) Search(ctx context.Context, opts *SearchOptions) (*SearchResponse, error) {
+	endpoint := c.baseURL + "/search.json"
 
 	if opts != nil {
 		params := url.Values{}
@@ -70,7 +71,7 @@ func (c *Client) Search(opts *SearchOptions) (*SearchResponse, error) {
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -91,8 +92,8 @@ func (c *Client) Search(opts *SearchOptions) (*SearchResponse, error) {
 }
 
 // SearchSimple performs a simple search with a query string
-func (c *Client) SearchSimple(query string) (*SearchResponse, error) {
-	return c.Search(&SearchOptions{
+func (c *Client) SearchSimple(ctx context.Context, query string) (*SearchResponse, error) {
+	return c.Search(ctx, &SearchOptions{
 		Query: strings.Split(query, " "),
 	})
 }

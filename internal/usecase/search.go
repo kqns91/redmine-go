@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -17,6 +19,6 @@ func NewSearchUseCase(client *redmine.Client) *SearchUseCase {
 }
 
 // Search performs a search across Redmine.
-func (u *SearchUseCase) Search(opts *redmine.SearchOptions) (*redmine.SearchResponse, error) {
-	return u.client.Search(opts)
+func (u *SearchUseCase) Search(ctx context.Context, opts *redmine.SearchOptions) (*redmine.SearchResponse, error) {
+	return u.client.Search(ctx, opts)
 }

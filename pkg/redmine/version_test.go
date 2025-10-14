@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,7 @@ func TestListVersions(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.ListVersions("test-project")
+	result, err := client.ListVersions(context.Background(), "test-project")
 	if err != nil {
 		t.Fatalf("ListVersions failed: %v", err)
 	}
@@ -64,7 +65,7 @@ func TestCreateVersion(t *testing.T) {
 	client := New(server.URL, "test-api-key")
 
 	version := Version{Name: "v3.0"}
-	result, err := client.CreateVersion("test-project", version)
+	result, err := client.CreateVersion(context.Background(), "test-project", version)
 	if err != nil {
 		t.Fatalf("CreateVersion failed: %v", err)
 	}
@@ -86,7 +87,7 @@ func TestDeleteVersion(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	err := client.DeleteVersion(123)
+	err := client.DeleteVersion(context.Background(), 123)
 	if err != nil {
 		t.Fatalf("DeleteVersion failed: %v", err)
 	}

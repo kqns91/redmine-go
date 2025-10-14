@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,16 +12,16 @@ import (
 )
 
 type TimeEntry struct {
-	ID         int      `json:"id,omitempty"`
-	Project    Resource `json:"project,omitempty"`
-	Issue      Resource `json:"issue,omitempty"`
-	User       Resource `json:"user,omitempty"`
-	Activity   Resource `json:"activity,omitempty"`
-	Hours      float64  `json:"hours,omitempty"`
-	Comments   string   `json:"comments,omitempty"`
-	SpentOn    string   `json:"spent_on,omitempty"`
-	CreatedOn  string   `json:"created_on,omitempty"`
-	UpdatedOn  string   `json:"updated_on,omitempty"`
+	ID        int      `json:"id,omitempty"`
+	Project   Resource `json:"project,omitempty"`
+	Issue     Resource `json:"issue,omitempty"`
+	User      Resource `json:"user,omitempty"`
+	Activity  Resource `json:"activity,omitempty"`
+	Hours     float64  `json:"hours,omitempty"`
+	Comments  string   `json:"comments,omitempty"`
+	SpentOn   string   `json:"spent_on,omitempty"`
+	CreatedOn string   `json:"created_on,omitempty"`
+	UpdatedOn string   `json:"updated_on,omitempty"`
 }
 
 type TimeEntriesResponse struct {
@@ -49,8 +50,8 @@ type ListTimeEntriesOptions struct {
 }
 
 // ListTimeEntries retrieves a list of time entries
-func (c *Client) ListTimeEntries(opts *ListTimeEntriesOptions) (*TimeEntriesResponse, error) {
-	endpoint := fmt.Sprintf("%s/time_entries.json", c.baseURL)
+func (c *Client) ListTimeEntries(ctx context.Context, opts *ListTimeEntriesOptions) (*TimeEntriesResponse, error) {
+	endpoint := c.baseURL + "/time_entries.json"
 
 	if opts != nil {
 		params := url.Values{}
@@ -80,7 +81,7 @@ func (c *Client) ListTimeEntries(opts *ListTimeEntriesOptions) (*TimeEntriesResp
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -101,10 +102,10 @@ func (c *Client) ListTimeEntries(opts *ListTimeEntriesOptions) (*TimeEntriesResp
 }
 
 // ShowTimeEntry retrieves a single time entry by ID
-func (c *Client) ShowTimeEntry(id int) (*TimeEntryResponse, error) {
+func (c *Client) ShowTimeEntry(ctx context.Context, id int) (*TimeEntryResponse, error) {
 	endpoint := fmt.Sprintf("%s/time_entries/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +126,8 @@ func (c *Client) ShowTimeEntry(id int) (*TimeEntryResponse, error) {
 }
 
 // CreateTimeEntry creates a new time entry
-func (c *Client) CreateTimeEntry(timeEntry TimeEntry) (*TimeEntryResponse, error) {
-	endpoint := fmt.Sprintf("%s/time_entries.json", c.baseURL)
+func (c *Client) CreateTimeEntry(ctx context.Context, timeEntry TimeEntry) (*TimeEntryResponse, error) {
+	endpoint := c.baseURL + "/time_entries.json"
 
 	reqBody := TimeEntryRequest{TimeEntry: timeEntry}
 	jsonData, err := json.Marshal(reqBody)
@@ -134,7 +135,7 @@ func (c *Client) CreateTimeEntry(timeEntry TimeEntry) (*TimeEntryResponse, error
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +161,7 @@ func (c *Client) CreateTimeEntry(timeEntry TimeEntry) (*TimeEntryResponse, error
 }
 
 // UpdateTimeEntry updates an existing time entry
-func (c *Client) UpdateTimeEntry(id int, timeEntry TimeEntry) error {
+func (c *Client) UpdateTimeEntry(ctx context.Context, id int, timeEntry TimeEntry) error {
 	endpoint := fmt.Sprintf("%s/time_entries/%d.json", c.baseURL, id)
 
 	reqBody := TimeEntryRequest{TimeEntry: timeEntry}
@@ -169,7 +170,7 @@ func (c *Client) UpdateTimeEntry(id int, timeEntry TimeEntry) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -185,10 +186,10 @@ func (c *Client) UpdateTimeEntry(id int, timeEntry TimeEntry) error {
 }
 
 // DeleteTimeEntry deletes a time entry
-func (c *Client) DeleteTimeEntry(id int) error {
+func (c *Client) DeleteTimeEntry(ctx context.Context, id int) error {
 	endpoint := fmt.Sprintf("%s/time_entries/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,10 +18,10 @@ type MyAccountRequest struct {
 }
 
 // GetMyAccount retrieves current user's account details
-func (c *Client) GetMyAccount() (*MyAccountResponse, error) {
-	endpoint := fmt.Sprintf("%s/my/account.json", c.baseURL)
+func (c *Client) GetMyAccount(ctx context.Context) (*MyAccountResponse, error) {
+	endpoint := c.baseURL + "/my/account.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +42,8 @@ func (c *Client) GetMyAccount() (*MyAccountResponse, error) {
 }
 
 // UpdateMyAccount updates current user's account details
-func (c *Client) UpdateMyAccount(user User) error {
-	endpoint := fmt.Sprintf("%s/my/account.json", c.baseURL)
+func (c *Client) UpdateMyAccount(ctx context.Context, user User) error {
+	endpoint := c.baseURL + "/my/account.json"
 
 	reqBody := MyAccountRequest{User: user}
 	jsonData, err := json.Marshal(reqBody)
@@ -50,7 +51,7 @@ func (c *Client) UpdateMyAccount(user User) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}

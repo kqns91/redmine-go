@@ -1,11 +1,12 @@
 package mcp
 
 import (
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	"github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/mcp/handlers"
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // NewServer creates and initializes a new MCP server with all tools registered.

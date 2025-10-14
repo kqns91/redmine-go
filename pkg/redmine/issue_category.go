@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,10 +11,10 @@ import (
 )
 
 type IssueCategory struct {
-	ID           int      `json:"id,omitempty"`
-	Project      Resource `json:"project,omitempty"`
-	Name         string   `json:"name,omitempty"`
-	AssignedTo   Resource `json:"assigned_to,omitempty"`
+	ID         int      `json:"id,omitempty"`
+	Project    Resource `json:"project,omitempty"`
+	Name       string   `json:"name,omitempty"`
+	AssignedTo Resource `json:"assigned_to,omitempty"`
 }
 
 type IssueCategoriesResponse struct {
@@ -29,10 +30,10 @@ type IssueCategoryRequest struct {
 }
 
 // ListIssueCategories retrieves all issue categories for a specific project
-func (c *Client) ListIssueCategories(projectIDOrIdentifier string) (*IssueCategoriesResponse, error) {
+func (c *Client) ListIssueCategories(ctx context.Context, projectIDOrIdentifier string) (*IssueCategoriesResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/issue_categories.json", c.baseURL, projectIDOrIdentifier)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,10 +54,10 @@ func (c *Client) ListIssueCategories(projectIDOrIdentifier string) (*IssueCatego
 }
 
 // ShowIssueCategory retrieves a specific issue category by ID
-func (c *Client) ShowIssueCategory(id int) (*IssueCategoryResponse, error) {
+func (c *Client) ShowIssueCategory(ctx context.Context, id int) (*IssueCategoryResponse, error) {
 	endpoint := fmt.Sprintf("%s/issue_categories/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func (c *Client) ShowIssueCategory(id int) (*IssueCategoryResponse, error) {
 }
 
 // CreateIssueCategory creates a new issue category for a project
-func (c *Client) CreateIssueCategory(projectIDOrIdentifier string, category IssueCategory) (*IssueCategoryResponse, error) {
+func (c *Client) CreateIssueCategory(ctx context.Context, projectIDOrIdentifier string, category IssueCategory) (*IssueCategoryResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/issue_categories.json", c.baseURL, projectIDOrIdentifier)
 
 	reqBody := IssueCategoryRequest{IssueCategory: category}
@@ -86,7 +87,7 @@ func (c *Client) CreateIssueCategory(projectIDOrIdentifier string, category Issu
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +113,7 @@ func (c *Client) CreateIssueCategory(projectIDOrIdentifier string, category Issu
 }
 
 // UpdateIssueCategory updates an existing issue category
-func (c *Client) UpdateIssueCategory(id int, category IssueCategory) error {
+func (c *Client) UpdateIssueCategory(ctx context.Context, id int, category IssueCategory) error {
 	endpoint := fmt.Sprintf("%s/issue_categories/%d.json", c.baseURL, id)
 
 	reqBody := IssueCategoryRequest{IssueCategory: category}
@@ -121,7 +122,7 @@ func (c *Client) UpdateIssueCategory(id int, category IssueCategory) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -141,14 +142,14 @@ type DeleteIssueCategoryOptions struct {
 }
 
 // DeleteIssueCategory deletes an issue category
-func (c *Client) DeleteIssueCategory(id int, opts *DeleteIssueCategoryOptions) error {
+func (c *Client) DeleteIssueCategory(ctx context.Context, id int, opts *DeleteIssueCategoryOptions) error {
 	endpoint := fmt.Sprintf("%s/issue_categories/%d.json", c.baseURL, id)
 
 	if opts != nil && opts.ReassignToID > 0 {
 		endpoint = fmt.Sprintf("%s?reassign_to_id=%s", endpoint, strconv.Itoa(opts.ReassignToID))
 	}
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

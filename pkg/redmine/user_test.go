@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -21,7 +22,7 @@ func TestListUsers(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.ListUsers(nil)
+	result, err := client.ListUsers(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("ListUsers failed: %v", err)
 	}
@@ -50,7 +51,7 @@ func TestGetCurrentUser(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.GetCurrentUser(nil)
+	result, err := client.GetCurrentUser(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("GetCurrentUser failed: %v", err)
 	}

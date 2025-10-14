@@ -2,11 +2,13 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 type Project struct {
@@ -49,8 +51,8 @@ type ListProjectsOptions struct {
 }
 
 // ListProjects retrieves a list of projects
-func (c *Client) ListProjects(opts *ListProjectsOptions) (*ProjectsResponse, error) {
-	endpoint := fmt.Sprintf("%s/projects.json", c.baseURL)
+func (c *Client) ListProjects(ctx context.Context, opts *ListProjectsOptions) (*ProjectsResponse, error) {
+	endpoint := c.baseURL + "/projects.json"
 
 	if opts != nil {
 		params := url.Values{}
@@ -58,17 +60,17 @@ func (c *Client) ListProjects(opts *ListProjectsOptions) (*ProjectsResponse, err
 			params.Add("include", opts.Include)
 		}
 		if opts.Limit > 0 {
-			params.Add("limit", fmt.Sprintf("%d", opts.Limit))
+			params.Add("limit", strconv.Itoa(opts.Limit))
 		}
 		if opts.Offset > 0 {
-			params.Add("offset", fmt.Sprintf("%d", opts.Offset))
+			params.Add("offset", strconv.Itoa(opts.Offset))
 		}
 		if len(params) > 0 {
 			endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +95,7 @@ type ShowProjectOptions struct {
 }
 
 // ShowProject retrieves a single project by ID or identifier
-func (c *Client) ShowProject(idOrIdentifier string, opts *ShowProjectOptions) (*ProjectResponse, error) {
+func (c *Client) ShowProject(ctx context.Context, idOrIdentifier string, opts *ShowProjectOptions) (*ProjectResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s.json", c.baseURL, idOrIdentifier)
 
 	if opts != nil && opts.Include != "" {
@@ -102,7 +104,7 @@ func (c *Client) ShowProject(idOrIdentifier string, opts *ShowProjectOptions) (*
 		endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +125,8 @@ func (c *Client) ShowProject(idOrIdentifier string, opts *ShowProjectOptions) (*
 }
 
 // CreateProject creates a new project
-func (c *Client) CreateProject(project Project) (*ProjectResponse, error) {
-	endpoint := fmt.Sprintf("%s/projects.json", c.baseURL)
+func (c *Client) CreateProject(ctx context.Context, project Project) (*ProjectResponse, error) {
+	endpoint := c.baseURL + "/projects.json"
 
 	reqBody := ProjectRequest{Project: project}
 	jsonData, err := json.Marshal(reqBody)
@@ -132,7 +134,7 @@ func (c *Client) CreateProject(project Project) (*ProjectResponse, error) {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +160,7 @@ func (c *Client) CreateProject(project Project) (*ProjectResponse, error) {
 }
 
 // UpdateProject updates an existing project
-func (c *Client) UpdateProject(idOrIdentifier string, project Project) error {
+func (c *Client) UpdateProject(ctx context.Context, idOrIdentifier string, project Project) error {
 	endpoint := fmt.Sprintf("%s/projects/%s.json", c.baseURL, idOrIdentifier)
 
 	reqBody := ProjectRequest{Project: project}
@@ -167,7 +169,7 @@ func (c *Client) UpdateProject(idOrIdentifier string, project Project) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -183,10 +185,10 @@ func (c *Client) UpdateProject(idOrIdentifier string, project Project) error {
 }
 
 // DeleteProject deletes a project
-func (c *Client) DeleteProject(idOrIdentifier string) error {
+func (c *Client) DeleteProject(ctx context.Context, idOrIdentifier string) error {
 	endpoint := fmt.Sprintf("%s/projects/%s.json", c.baseURL, idOrIdentifier)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -202,10 +204,10 @@ func (c *Client) DeleteProject(idOrIdentifier string) error {
 }
 
 // ArchiveProject archives a project (available since Redmine 5.0)
-func (c *Client) ArchiveProject(idOrIdentifier string) error {
+func (c *Client) ArchiveProject(ctx context.Context, idOrIdentifier string) error {
 	endpoint := fmt.Sprintf("%s/projects/%s/archive.json", c.baseURL, idOrIdentifier)
 
-	resp, err := c.do(http.MethodPut, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodPut, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -221,10 +223,10 @@ func (c *Client) ArchiveProject(idOrIdentifier string) error {
 }
 
 // UnarchiveProject unarchives a project (available since Redmine 5.0)
-func (c *Client) UnarchiveProject(idOrIdentifier string) error {
+func (c *Client) UnarchiveProject(ctx context.Context, idOrIdentifier string) error {
 	endpoint := fmt.Sprintf("%s/projects/%s/unarchive.json", c.baseURL, idOrIdentifier)
 
-	resp, err := c.do(http.MethodPut, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodPut, endpoint, nil)
 	if err != nil {
 		return err
 	}

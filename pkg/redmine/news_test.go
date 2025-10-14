@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListNews(t *testing.T) {
 		if r.URL.Path != "/news.json" {
 			t.Errorf("Expected path /news.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -32,7 +33,7 @@ func TestListNews(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListNews(nil)
+	result, err := client.ListNews(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("ListNews failed: %v", err)
 	}
@@ -66,7 +67,7 @@ func TestListProjectNews(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListProjectNews("test-project", nil)
+	result, err := client.ListProjectNews(context.Background(), "test-project", nil)
 	if err != nil {
 		t.Fatalf("ListProjectNews failed: %v", err)
 	}

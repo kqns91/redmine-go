@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListIssueRelations(t *testing.T) {
 		if r.URL.Path != "/issues/123/relations.json" {
 			t.Errorf("Expected path /issues/123/relations.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -31,7 +32,7 @@ func TestListIssueRelations(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListIssueRelations(123)
+	result, err := client.ListIssueRelations(context.Background(), 123)
 	if err != nil {
 		t.Fatalf("ListIssueRelations failed: %v", err)
 	}
@@ -82,7 +83,7 @@ func TestCreateIssueRelation(t *testing.T) {
 		IssueToID:    456,
 		RelationType: "relates",
 	}
-	result, err := client.CreateIssueRelation(123, relation)
+	result, err := client.CreateIssueRelation(context.Background(), 123, relation)
 	if err != nil {
 		t.Fatalf("CreateIssueRelation failed: %v", err)
 	}
@@ -106,7 +107,7 @@ func TestDeleteIssueRelation(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	err := client.DeleteIssueRelation(1)
+	err := client.DeleteIssueRelation(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("DeleteIssueRelation failed: %v", err)
 	}

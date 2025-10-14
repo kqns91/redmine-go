@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,12 +23,12 @@ func New(endpoint string, apiKey string) *Client {
 	}
 }
 
-func (c *Client) do(method string, url string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, body)
+func (c *Client) do(ctx context.Context, method string, url string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("X-Redmine-API-Key", c.apiKey)
+	req.Header.Set("X-Redmine-Api-Key", c.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)

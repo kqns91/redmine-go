@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -17,36 +19,36 @@ func NewIssueUseCase(client *redmine.Client) *IssueUseCase {
 }
 
 // ListIssues retrieves a list of issues.
-func (u *IssueUseCase) ListIssues(opts *redmine.ListIssuesOptions) (*redmine.IssuesResponse, error) {
-	return u.client.ListIssues(opts)
+func (u *IssueUseCase) ListIssues(ctx context.Context, opts *redmine.ListIssuesOptions) (*redmine.IssuesResponse, error) {
+	return u.client.ListIssues(ctx, opts)
 }
 
 // ShowIssue retrieves a single issue by ID.
-func (u *IssueUseCase) ShowIssue(id int, opts *redmine.ShowIssueOptions) (*redmine.IssueResponse, error) {
-	return u.client.ShowIssue(id, opts)
+func (u *IssueUseCase) ShowIssue(ctx context.Context, id int, opts *redmine.ShowIssueOptions) (*redmine.IssueResponse, error) {
+	return u.client.ShowIssue(ctx, id, opts)
 }
 
 // CreateIssue creates a new issue.
-func (u *IssueUseCase) CreateIssue(issue redmine.Issue) (*redmine.IssueResponse, error) {
-	return u.client.CreateIssue(issue)
+func (u *IssueUseCase) CreateIssue(ctx context.Context, issue redmine.Issue) (*redmine.IssueResponse, error) {
+	return u.client.CreateIssue(ctx, issue)
 }
 
 // UpdateIssue updates an existing issue.
-func (u *IssueUseCase) UpdateIssue(id int, issue redmine.Issue) error {
-	return u.client.UpdateIssue(id, issue)
+func (u *IssueUseCase) UpdateIssue(ctx context.Context, id int, issue redmine.Issue) error {
+	return u.client.UpdateIssue(ctx, id, issue)
 }
 
 // DeleteIssue deletes an issue.
-func (u *IssueUseCase) DeleteIssue(id int) error {
-	return u.client.DeleteIssue(id)
+func (u *IssueUseCase) DeleteIssue(ctx context.Context, id int) error {
+	return u.client.DeleteIssue(ctx, id)
 }
 
 // AddWatcher adds a watcher to an issue.
-func (u *IssueUseCase) AddWatcher(issueID int, userID int) error {
-	return u.client.AddWatcher(issueID, userID)
+func (u *IssueUseCase) AddWatcher(ctx context.Context, issueID int, userID int) error {
+	return u.client.AddWatcher(ctx, issueID, userID)
 }
 
 // RemoveWatcher removes a watcher from an issue.
-func (u *IssueUseCase) RemoveWatcher(issueID int, userID int) error {
-	return u.client.RemoveWatcher(issueID, userID)
+func (u *IssueUseCase) RemoveWatcher(ctx context.Context, issueID int, userID int) error {
+	return u.client.RemoveWatcher(ctx, issueID, userID)
 }

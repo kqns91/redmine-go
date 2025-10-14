@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,8 +34,8 @@ type ListGroupsOptions struct {
 }
 
 // ListGroups retrieves the list of all groups (admin only)
-func (c *Client) ListGroups(opts *ListGroupsOptions) (*GroupsResponse, error) {
-	endpoint := fmt.Sprintf("%s/groups.json", c.baseURL)
+func (c *Client) ListGroups(ctx context.Context, opts *ListGroupsOptions) (*GroupsResponse, error) {
+	endpoint := c.baseURL + "/groups.json"
 
 	if opts != nil && opts.Include != "" {
 		params := url.Values{}
@@ -42,7 +43,7 @@ func (c *Client) ListGroups(opts *ListGroupsOptions) (*GroupsResponse, error) {
 		endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ type ShowGroupOptions struct {
 }
 
 // ShowGroup retrieves group details (admin only)
-func (c *Client) ShowGroup(id int, opts *ShowGroupOptions) (*GroupResponse, error) {
+func (c *Client) ShowGroup(ctx context.Context, id int, opts *ShowGroupOptions) (*GroupResponse, error) {
 	endpoint := fmt.Sprintf("%s/groups/%d.json", c.baseURL, id)
 
 	if opts != nil && opts.Include != "" {
@@ -76,7 +77,7 @@ func (c *Client) ShowGroup(id int, opts *ShowGroupOptions) (*GroupResponse, erro
 		endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +98,8 @@ func (c *Client) ShowGroup(id int, opts *ShowGroupOptions) (*GroupResponse, erro
 }
 
 // CreateGroup creates a new group (admin only)
-func (c *Client) CreateGroup(group Group) (*GroupResponse, error) {
-	endpoint := fmt.Sprintf("%s/groups.json", c.baseURL)
+func (c *Client) CreateGroup(ctx context.Context, group Group) (*GroupResponse, error) {
+	endpoint := c.baseURL + "/groups.json"
 
 	reqBody := GroupRequest{Group: group}
 	jsonData, err := json.Marshal(reqBody)
@@ -106,7 +107,7 @@ func (c *Client) CreateGroup(group Group) (*GroupResponse, error) {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +133,7 @@ func (c *Client) CreateGroup(group Group) (*GroupResponse, error) {
 }
 
 // UpdateGroup updates an existing group (admin only)
-func (c *Client) UpdateGroup(id int, group Group) error {
+func (c *Client) UpdateGroup(ctx context.Context, id int, group Group) error {
 	endpoint := fmt.Sprintf("%s/groups/%d.json", c.baseURL, id)
 
 	reqBody := GroupRequest{Group: group}
@@ -141,7 +142,7 @@ func (c *Client) UpdateGroup(id int, group Group) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -157,10 +158,10 @@ func (c *Client) UpdateGroup(id int, group Group) error {
 }
 
 // DeleteGroup deletes a group (admin only)
-func (c *Client) DeleteGroup(id int) error {
+func (c *Client) DeleteGroup(ctx context.Context, id int) error {
 	endpoint := fmt.Sprintf("%s/groups/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -180,7 +181,7 @@ type AddUserToGroupRequest struct {
 }
 
 // AddUserToGroup adds a user to a group (admin only)
-func (c *Client) AddUserToGroup(groupID int, userID int) error {
+func (c *Client) AddUserToGroup(ctx context.Context, groupID int, userID int) error {
 	endpoint := fmt.Sprintf("%s/groups/%d/users.json", c.baseURL, groupID)
 
 	reqBody := AddUserToGroupRequest{UserID: userID}
@@ -189,7 +190,7 @@ func (c *Client) AddUserToGroup(groupID int, userID int) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -205,10 +206,10 @@ func (c *Client) AddUserToGroup(groupID int, userID int) error {
 }
 
 // RemoveUserFromGroup removes a user from a group (admin only)
-func (c *Client) RemoveUserFromGroup(groupID int, userID int) error {
+func (c *Client) RemoveUserFromGroup(ctx context.Context, groupID int, userID int) error {
 	endpoint := fmt.Sprintf("%s/groups/%d/users/%d.json", c.baseURL, groupID, userID)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

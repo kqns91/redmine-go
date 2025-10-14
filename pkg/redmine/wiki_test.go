@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListWikiPages(t *testing.T) {
 		if r.URL.Path != "/projects/test-project/wiki/index.json" {
 			t.Errorf("Expected path /projects/test-project/wiki/index.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -31,7 +32,7 @@ func TestListWikiPages(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListWikiPages("test-project")
+	result, err := client.ListWikiPages(context.Background(), "test-project")
 	if err != nil {
 		t.Fatalf("ListWikiPages failed: %v", err)
 	}
@@ -66,7 +67,7 @@ func TestShowWikiPage(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.GetWikiPage("test-project", "TestPage", nil)
+	result, err := client.GetWikiPage(context.Background(), "test-project", "TestPage", nil)
 	if err != nil {
 		t.Fatalf("ShowWikiPage failed: %v", err)
 	}
@@ -104,7 +105,7 @@ func TestCreateWikiPage(t *testing.T) {
 	wikiPage := WikiPageUpdate{
 		Text: "New page content",
 	}
-	err := client.CreateOrUpdateWikiPage("test-project", "NewPage", wikiPage)
+	err := client.CreateOrUpdateWikiPage(context.Background(), "test-project", "NewPage", wikiPage)
 	if err != nil {
 		t.Fatalf("CreateOrUpdateWikiPage failed: %v", err)
 	}
@@ -124,7 +125,7 @@ func TestDeleteWikiPage(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	err := client.DeleteWikiPage("test-project", "OldPage")
+	err := client.DeleteWikiPage(context.Background(), "test-project", "OldPage")
 	if err != nil {
 		t.Fatalf("DeleteWikiPage failed: %v", err)
 	}

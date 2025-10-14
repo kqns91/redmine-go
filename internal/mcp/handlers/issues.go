@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // RegisterIssueTools registers all issue-related MCP tools.
@@ -92,7 +93,7 @@ func handleListIssues(useCases *usecase.UseCases) func(ctx context.Context, requ
 			}
 		}
 
-		result, err := useCases.Issue.ListIssues(opts)
+		result, err := useCases.Issue.ListIssues(ctx, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ListIssuesOutput{}, fmt.Errorf("failed to list issues: %w", err)
 		}
@@ -126,7 +127,7 @@ func handleShowIssue(useCases *usecase.UseCases) func(ctx context.Context, reque
 			}
 		}
 
-		result, err := useCases.Issue.ShowIssue(args.ID, opts)
+		result, err := useCases.Issue.ShowIssue(ctx, args.ID, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ShowIssueOutput{}, fmt.Errorf("failed to show issue: %w", err)
 		}
@@ -191,7 +192,7 @@ func handleCreateIssue(useCases *usecase.UseCases) func(ctx context.Context, req
 			issue.Category = redmine.Resource{ID: args.CategoryID}
 		}
 
-		result, err := useCases.Issue.CreateIssue(issue)
+		result, err := useCases.Issue.CreateIssue(ctx, issue)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, CreateIssueOutput{}, fmt.Errorf("failed to create issue: %w", err)
 		}
@@ -259,7 +260,7 @@ func handleUpdateIssue(useCases *usecase.UseCases) func(ctx context.Context, req
 			issue.Category = redmine.Resource{ID: args.CategoryID}
 		}
 
-		err := useCases.Issue.UpdateIssue(args.ID, issue)
+		err := useCases.Issue.UpdateIssue(ctx, args.ID, issue)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UpdateIssueOutput{}, fmt.Errorf("failed to update issue: %w", err)
 		}
@@ -280,7 +281,7 @@ type DeleteIssueOutput struct {
 
 func handleDeleteIssue(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args DeleteIssueArgs) (*mcp.CallToolResult, DeleteIssueOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args DeleteIssueArgs) (*mcp.CallToolResult, DeleteIssueOutput, error) {
-		err := useCases.Issue.DeleteIssue(args.ID)
+		err := useCases.Issue.DeleteIssue(ctx, args.ID)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, DeleteIssueOutput{}, fmt.Errorf("failed to delete issue: %w", err)
 		}
@@ -302,7 +303,7 @@ type AddWatcherOutput struct {
 
 func handleAddWatcher(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args AddWatcherArgs) (*mcp.CallToolResult, AddWatcherOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args AddWatcherArgs) (*mcp.CallToolResult, AddWatcherOutput, error) {
-		err := useCases.Issue.AddWatcher(args.IssueID, args.UserID)
+		err := useCases.Issue.AddWatcher(ctx, args.IssueID, args.UserID)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, AddWatcherOutput{}, fmt.Errorf("failed to add watcher: %w", err)
 		}
@@ -324,7 +325,7 @@ type RemoveWatcherOutput struct {
 
 func handleRemoveWatcher(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args RemoveWatcherArgs) (*mcp.CallToolResult, RemoveWatcherOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args RemoveWatcherArgs) (*mcp.CallToolResult, RemoveWatcherOutput, error) {
-		err := useCases.Issue.RemoveWatcher(args.IssueID, args.UserID)
+		err := useCases.Issue.RemoveWatcher(ctx, args.IssueID, args.UserID)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, RemoveWatcherOutput{}, fmt.Errorf("failed to remove watcher: %w", err)
 		}

@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,10 +38,10 @@ type MembershipCreateUpdate struct {
 }
 
 // ListMemberships retrieves paginated list of project memberships
-func (c *Client) ListMemberships(projectIDOrIdentifier string) (*MembershipsResponse, error) {
+func (c *Client) ListMemberships(ctx context.Context, projectIDOrIdentifier string) (*MembershipsResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/memberships.json", c.baseURL, projectIDOrIdentifier)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -61,10 +62,10 @@ func (c *Client) ListMemberships(projectIDOrIdentifier string) (*MembershipsResp
 }
 
 // ShowMembership retrieves specific membership details
-func (c *Client) ShowMembership(id int) (*MembershipResponse, error) {
+func (c *Client) ShowMembership(ctx context.Context, id int) (*MembershipResponse, error) {
 	endpoint := fmt.Sprintf("%s/memberships/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (c *Client) ShowMembership(id int) (*MembershipResponse, error) {
 }
 
 // CreateMembership adds a new project member
-func (c *Client) CreateMembership(projectIDOrIdentifier string, membership MembershipCreateUpdate) (*MembershipResponse, error) {
+func (c *Client) CreateMembership(ctx context.Context, projectIDOrIdentifier string, membership MembershipCreateUpdate) (*MembershipResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/memberships.json", c.baseURL, projectIDOrIdentifier)
 
 	reqBody := MembershipRequest{Membership: membership}
@@ -94,7 +95,7 @@ func (c *Client) CreateMembership(projectIDOrIdentifier string, membership Membe
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +121,7 @@ func (c *Client) CreateMembership(projectIDOrIdentifier string, membership Membe
 }
 
 // UpdateMembership updates membership roles
-func (c *Client) UpdateMembership(id int, roleIDs []int) error {
+func (c *Client) UpdateMembership(ctx context.Context, id int, roleIDs []int) error {
 	endpoint := fmt.Sprintf("%s/memberships/%d.json", c.baseURL, id)
 
 	reqBody := MembershipRequest{
@@ -133,7 +134,7 @@ func (c *Client) UpdateMembership(id int, roleIDs []int) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -149,10 +150,10 @@ func (c *Client) UpdateMembership(id int, roleIDs []int) error {
 }
 
 // DeleteMembership deletes a membership
-func (c *Client) DeleteMembership(id int) error {
+func (c *Client) DeleteMembership(ctx context.Context, id int) error {
 	endpoint := fmt.Sprintf("%s/memberships/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

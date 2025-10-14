@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +28,7 @@ func TestListIssues(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.ListIssues(nil)
+	result, err := client.ListIssues(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("ListIssues failed: %v", err)
 	}
@@ -58,7 +59,7 @@ func TestListIssuesWithFilters(t *testing.T) {
 		ProjectID: 1,
 		StatusID:  "open",
 	}
-	_, err := client.ListIssues(opts)
+	_, err := client.ListIssues(context.Background(), opts)
 	if err != nil {
 		t.Fatalf("ListIssues with filters failed: %v", err)
 	}
@@ -95,7 +96,7 @@ func TestCreateIssue(t *testing.T) {
 	issue := Issue{
 		Subject: "New Issue",
 	}
-	result, err := client.CreateIssue(issue)
+	result, err := client.CreateIssue(context.Background(), issue)
 	if err != nil {
 		t.Fatalf("CreateIssue failed: %v", err)
 	}
@@ -129,7 +130,7 @@ func TestAddWatcher(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	err := client.AddWatcher(1, 5)
+	err := client.AddWatcher(context.Background(), 1, 5)
 	if err != nil {
 		t.Fatalf("AddWatcher failed: %v", err)
 	}

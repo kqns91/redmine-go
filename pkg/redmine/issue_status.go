@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,10 +19,10 @@ type IssueStatusesResponse struct {
 }
 
 // ListIssueStatuses retrieves the list of all issue statuses
-func (c *Client) ListIssueStatuses() (*IssueStatusesResponse, error) {
-	endpoint := fmt.Sprintf("%s/issue_statuses.json", c.baseURL)
+func (c *Client) ListIssueStatuses(ctx context.Context) (*IssueStatusesResponse, error) {
+	endpoint := c.baseURL + "/issue_statuses.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

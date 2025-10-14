@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -47,10 +48,10 @@ type WikiPageUpdate struct {
 }
 
 // ListWikiPages retrieves wiki pages index for a project
-func (c *Client) ListWikiPages(projectIDOrIdentifier string) (*WikiPagesResponse, error) {
+func (c *Client) ListWikiPages(ctx context.Context, projectIDOrIdentifier string) (*WikiPagesResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/index.json", c.baseURL, projectIDOrIdentifier)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ type GetWikiPageOptions struct {
 }
 
 // GetWikiPage retrieves a specific wiki page
-func (c *Client) GetWikiPage(projectIDOrIdentifier string, pageName string, opts *GetWikiPageOptions) (*WikiPageResponse, error) {
+func (c *Client) GetWikiPage(ctx context.Context, projectIDOrIdentifier string, pageName string, opts *GetWikiPageOptions) (*WikiPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/%s.json", c.baseURL, projectIDOrIdentifier, pageName)
 
 	if opts != nil {
@@ -91,7 +92,7 @@ func (c *Client) GetWikiPage(projectIDOrIdentifier string, pageName string, opts
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +113,7 @@ func (c *Client) GetWikiPage(projectIDOrIdentifier string, pageName string, opts
 }
 
 // CreateOrUpdateWikiPage creates or updates a wiki page
-func (c *Client) CreateOrUpdateWikiPage(projectIDOrIdentifier string, pageName string, page WikiPageUpdate) error {
+func (c *Client) CreateOrUpdateWikiPage(ctx context.Context, projectIDOrIdentifier string, pageName string, page WikiPageUpdate) error {
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/%s.json", c.baseURL, projectIDOrIdentifier, pageName)
 
 	reqBody := WikiPageRequest{WikiPage: page}
@@ -121,7 +122,7 @@ func (c *Client) CreateOrUpdateWikiPage(projectIDOrIdentifier string, pageName s
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -137,10 +138,10 @@ func (c *Client) CreateOrUpdateWikiPage(projectIDOrIdentifier string, pageName s
 }
 
 // DeleteWikiPage deletes a wiki page
-func (c *Client) DeleteWikiPage(projectIDOrIdentifier string, pageName string) error {
+func (c *Client) DeleteWikiPage(ctx context.Context, projectIDOrIdentifier string, pageName string) error {
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/%s.json", c.baseURL, projectIDOrIdentifier, pageName)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

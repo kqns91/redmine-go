@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListIssuePriorities(t *testing.T) {
 		if r.URL.Path != "/enumerations/issue_priorities.json" {
 			t.Errorf("Expected path /enumerations/issue_priorities.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -32,7 +33,7 @@ func TestListIssuePriorities(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListIssuePriorities()
+	result, err := client.ListIssuePriorities(context.Background())
 	if err != nil {
 		t.Fatalf("ListIssuePriorities failed: %v", err)
 	}

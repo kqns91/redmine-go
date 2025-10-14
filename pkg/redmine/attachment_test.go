@@ -1,12 +1,14 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
+//nolint:goconst
 func TestShowAttachment(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -15,7 +17,7 @@ func TestShowAttachment(t *testing.T) {
 		if r.URL.Path != "/attachments/123.json" {
 			t.Errorf("Expected path /attachments/123.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -32,7 +34,7 @@ func TestShowAttachment(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ShowAttachment(123)
+	result, err := client.ShowAttachment(context.Background(), 123)
 	if err != nil {
 		t.Fatalf("ShowAttachment failed: %v", err)
 	}

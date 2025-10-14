@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListCustomFields(t *testing.T) {
 		if r.URL.Path != "/custom_fields.json" {
 			t.Errorf("Expected path /custom_fields.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -31,7 +32,7 @@ func TestListCustomFields(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListCustomFields()
+	result, err := client.ListCustomFields(context.Background())
 	if err != nil {
 		t.Fatalf("ListCustomFields failed: %v", err)
 	}

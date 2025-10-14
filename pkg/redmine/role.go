@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,10 +24,10 @@ type RoleResponse struct {
 }
 
 // ListRoles retrieves the list of all roles
-func (c *Client) ListRoles() (*RolesResponse, error) {
-	endpoint := fmt.Sprintf("%s/roles.json", c.baseURL)
+func (c *Client) ListRoles(ctx context.Context) (*RolesResponse, error) {
+	endpoint := c.baseURL + "/roles.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +48,10 @@ func (c *Client) ListRoles() (*RolesResponse, error) {
 }
 
 // ShowRole retrieves permissions for a specific role
-func (c *Client) ShowRole(id int) (*RoleResponse, error) {
+func (c *Client) ShowRole(ctx context.Context, id int) (*RoleResponse, error) {
 	endpoint := fmt.Sprintf("%s/roles/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

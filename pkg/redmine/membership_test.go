@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,7 @@ func TestListMemberships(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.ListMemberships("test-project")
+	result, err := client.ListMemberships(context.Background(), "test-project")
 	if err != nil {
 		t.Fatalf("ListMemberships failed: %v", err)
 	}
@@ -64,7 +65,7 @@ func TestCreateMembership(t *testing.T) {
 		UserID:  5,
 		RoleIDs: []int{1, 2},
 	}
-	result, err := client.CreateMembership("test-project", membership)
+	result, err := client.CreateMembership(context.Background(), "test-project", membership)
 	if err != nil {
 		t.Fatalf("CreateMembership failed: %v", err)
 	}
@@ -86,7 +87,7 @@ func TestUpdateMembership(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	err := client.UpdateMembership(123, []int{3, 4})
+	err := client.UpdateMembership(context.Background(), 123, []int{3, 4})
 	if err != nil {
 		t.Fatalf("UpdateMembership failed: %v", err)
 	}

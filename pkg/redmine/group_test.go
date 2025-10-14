@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListGroups(t *testing.T) {
 		if r.URL.Path != "/groups.json" {
 			t.Errorf("Expected path /groups.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -32,7 +33,7 @@ func TestListGroups(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListGroups(nil)
+	result, err := client.ListGroups(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("ListGroups failed: %v", err)
 	}
@@ -66,7 +67,7 @@ func TestShowGroup(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ShowGroup(1, nil)
+	result, err := client.ShowGroup(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("ShowGroup failed: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestCreateGroup(t *testing.T) {
 	group := Group{
 		Name: "New Group",
 	}
-	result, err := client.CreateGroup(group)
+	result, err := client.CreateGroup(context.Background(), group)
 	if err != nil {
 		t.Fatalf("CreateGroup failed: %v", err)
 	}
@@ -132,7 +133,7 @@ func TestDeleteGroup(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	err := client.DeleteGroup(1)
+	err := client.DeleteGroup(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("DeleteGroup failed: %v", err)
 	}

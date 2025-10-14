@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,10 +20,10 @@ type TrackersResponse struct {
 }
 
 // ListTrackers retrieves the list of all trackers
-func (c *Client) ListTrackers() (*TrackersResponse, error) {
-	endpoint := fmt.Sprintf("%s/trackers.json", c.baseURL)
+func (c *Client) ListTrackers(ctx context.Context) (*TrackersResponse, error) {
+	endpoint := c.baseURL + "/trackers.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

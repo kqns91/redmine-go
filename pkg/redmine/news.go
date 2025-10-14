@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,8 +33,8 @@ type ListNewsOptions struct {
 }
 
 // ListNews retrieves all news across all projects with pagination
-func (c *Client) ListNews(opts *ListNewsOptions) (*NewsResponse, error) {
-	endpoint := fmt.Sprintf("%s/news.json", c.baseURL)
+func (c *Client) ListNews(ctx context.Context, opts *ListNewsOptions) (*NewsResponse, error) {
+	endpoint := c.baseURL + "/news.json"
 
 	if opts != nil {
 		params := url.Values{}
@@ -48,7 +49,7 @@ func (c *Client) ListNews(opts *ListNewsOptions) (*NewsResponse, error) {
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +70,7 @@ func (c *Client) ListNews(opts *ListNewsOptions) (*NewsResponse, error) {
 }
 
 // ListProjectNews retrieves all news from a specific project with pagination
-func (c *Client) ListProjectNews(projectIDOrIdentifier string, opts *ListNewsOptions) (*NewsResponse, error) {
+func (c *Client) ListProjectNews(ctx context.Context, projectIDOrIdentifier string, opts *ListNewsOptions) (*NewsResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/news.json", c.baseURL, projectIDOrIdentifier)
 
 	if opts != nil {
@@ -85,7 +86,7 @@ func (c *Client) ListProjectNews(projectIDOrIdentifier string, opts *ListNewsOpt
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

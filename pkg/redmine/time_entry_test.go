@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +30,7 @@ func TestListTimeEntries(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.ListTimeEntries(nil)
+	result, err := client.ListTimeEntries(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("ListTimeEntries failed: %v", err)
 	}
@@ -71,12 +72,13 @@ func TestListTimeEntriesWithFilters(t *testing.T) {
 		From:      "2024-01-01",
 		To:        "2024-12-31",
 	}
-	_, err := client.ListTimeEntries(opts)
+	_, err := client.ListTimeEntries(context.Background(), opts)
 	if err != nil {
 		t.Fatalf("ListTimeEntries with filters failed: %v", err)
 	}
 }
 
+//nolint:goconst
 func TestShowTimeEntry(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/time_entries/123.json" {
@@ -96,7 +98,7 @@ func TestShowTimeEntry(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	result, err := client.ShowTimeEntry(123)
+	result, err := client.ShowTimeEntry(context.Background(), 123)
 	if err != nil {
 		t.Fatalf("ShowTimeEntry failed: %v", err)
 	}
@@ -141,7 +143,7 @@ func TestCreateTimeEntry(t *testing.T) {
 		Hours:    4.5,
 		Comments: "Bug fixing",
 	}
-	result, err := client.CreateTimeEntry(timeEntry)
+	result, err := client.CreateTimeEntry(context.Background(), timeEntry)
 	if err != nil {
 		t.Fatalf("CreateTimeEntry failed: %v", err)
 	}
@@ -175,7 +177,7 @@ func TestUpdateTimeEntry(t *testing.T) {
 		Hours:    6.0,
 		Comments: "Updated hours",
 	}
-	err := client.UpdateTimeEntry(123, timeEntry)
+	err := client.UpdateTimeEntry(context.Background(), 123, timeEntry)
 	if err != nil {
 		t.Fatalf("UpdateTimeEntry failed: %v", err)
 	}
@@ -196,7 +198,7 @@ func TestDeleteTimeEntry(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	err := client.DeleteTimeEntry(123)
+	err := client.DeleteTimeEntry(context.Background(), 123)
 	if err != nil {
 		t.Fatalf("DeleteTimeEntry failed: %v", err)
 	}

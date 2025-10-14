@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,16 +10,16 @@ import (
 )
 
 type Version struct {
-	ID              int      `json:"id,omitempty"`
-	Project         Resource `json:"project,omitempty"`
-	Name            string   `json:"name,omitempty"`
-	Description     string   `json:"description,omitempty"`
-	Status          string   `json:"status,omitempty"`
-	DueDate         string   `json:"due_date,omitempty"`
-	Sharing         string   `json:"sharing,omitempty"`
-	WikiPageTitle   string   `json:"wiki_page_title,omitempty"`
-	CreatedOn       string   `json:"created_on,omitempty"`
-	UpdatedOn       string   `json:"updated_on,omitempty"`
+	ID            int      `json:"id,omitempty"`
+	Project       Resource `json:"project,omitempty"`
+	Name          string   `json:"name,omitempty"`
+	Description   string   `json:"description,omitempty"`
+	Status        string   `json:"status,omitempty"`
+	DueDate       string   `json:"due_date,omitempty"`
+	Sharing       string   `json:"sharing,omitempty"`
+	WikiPageTitle string   `json:"wiki_page_title,omitempty"`
+	CreatedOn     string   `json:"created_on,omitempty"`
+	UpdatedOn     string   `json:"updated_on,omitempty"`
 }
 
 type VersionsResponse struct {
@@ -35,10 +36,10 @@ type VersionRequest struct {
 }
 
 // ListVersions retrieves versions for a specific project
-func (c *Client) ListVersions(projectIDOrIdentifier string) (*VersionsResponse, error) {
+func (c *Client) ListVersions(ctx context.Context, projectIDOrIdentifier string) (*VersionsResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/versions.json", c.baseURL, projectIDOrIdentifier)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +60,10 @@ func (c *Client) ListVersions(projectIDOrIdentifier string) (*VersionsResponse, 
 }
 
 // ShowVersion retrieves a specific version by ID
-func (c *Client) ShowVersion(id int) (*VersionResponse, error) {
+func (c *Client) ShowVersion(ctx context.Context, id int) (*VersionResponse, error) {
 	endpoint := fmt.Sprintf("%s/versions/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +84,7 @@ func (c *Client) ShowVersion(id int) (*VersionResponse, error) {
 }
 
 // CreateVersion creates a new version for a project
-func (c *Client) CreateVersion(projectIDOrIdentifier string, version Version) (*VersionResponse, error) {
+func (c *Client) CreateVersion(ctx context.Context, projectIDOrIdentifier string, version Version) (*VersionResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/versions.json", c.baseURL, projectIDOrIdentifier)
 
 	reqBody := VersionRequest{Version: version}
@@ -92,7 +93,7 @@ func (c *Client) CreateVersion(projectIDOrIdentifier string, version Version) (*
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (c *Client) CreateVersion(projectIDOrIdentifier string, version Version) (*
 }
 
 // UpdateVersion updates an existing version
-func (c *Client) UpdateVersion(id int, version Version) error {
+func (c *Client) UpdateVersion(ctx context.Context, id int, version Version) error {
 	endpoint := fmt.Sprintf("%s/versions/%d.json", c.baseURL, id)
 
 	reqBody := VersionRequest{Version: version}
@@ -127,7 +128,7 @@ func (c *Client) UpdateVersion(id int, version Version) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -143,10 +144,10 @@ func (c *Client) UpdateVersion(id int, version Version) error {
 }
 
 // DeleteVersion deletes a version
-func (c *Client) DeleteVersion(id int) error {
+func (c *Client) DeleteVersion(ctx context.Context, id int) error {
 	endpoint := fmt.Sprintf("%s/versions/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestListIssueCategories(t *testing.T) {
 		if r.URL.Path != "/projects/test-project/issue_categories.json" {
 			t.Errorf("Expected path /projects/test-project/issue_categories.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -31,7 +32,7 @@ func TestListIssueCategories(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	result, err := client.ListIssueCategories("test-project")
+	result, err := client.ListIssueCategories(context.Background(), "test-project")
 	if err != nil {
 		t.Fatalf("ListIssueCategories failed: %v", err)
 	}
@@ -76,7 +77,7 @@ func TestCreateIssueCategory(t *testing.T) {
 	category := IssueCategory{
 		Name: "New Category",
 	}
-	result, err := client.CreateIssueCategory("test-project", category)
+	result, err := client.CreateIssueCategory(context.Background(), "test-project", category)
 	if err != nil {
 		t.Fatalf("CreateIssueCategory failed: %v", err)
 	}
@@ -100,7 +101,7 @@ func TestDeleteIssueCategory(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	err := client.DeleteIssueCategory(1, nil)
+	err := client.DeleteIssueCategory(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("DeleteIssueCategory failed: %v", err)
 	}

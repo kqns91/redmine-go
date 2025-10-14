@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,20 +12,20 @@ import (
 )
 
 type User struct {
-	ID             int           `json:"id,omitempty"`
-	Login          string        `json:"login,omitempty"`
-	Admin          bool          `json:"admin,omitempty"`
-	Firstname      string        `json:"firstname,omitempty"`
-	Lastname       string        `json:"lastname,omitempty"`
-	Mail           string        `json:"mail,omitempty"`
-	CreatedOn      string        `json:"created_on,omitempty"`
-	UpdatedOn      string        `json:"updated_on,omitempty"`
-	LastLoginOn    string        `json:"last_login_on,omitempty"`
-	PasswdChangedOn string       `json:"passwd_changed_on,omitempty"`
-	TwofaScheme    string        `json:"twofa_scheme,omitempty"`
-	APIKey         string        `json:"api_key,omitempty"`
-	Status         int           `json:"status,omitempty"`
-	CustomFields   []CustomField `json:"custom_fields,omitempty"`
+	ID              int           `json:"id,omitempty"`
+	Login           string        `json:"login,omitempty"`
+	Admin           bool          `json:"admin,omitempty"`
+	Firstname       string        `json:"firstname,omitempty"`
+	Lastname        string        `json:"lastname,omitempty"`
+	Mail            string        `json:"mail,omitempty"`
+	CreatedOn       string        `json:"created_on,omitempty"`
+	UpdatedOn       string        `json:"updated_on,omitempty"`
+	LastLoginOn     string        `json:"last_login_on,omitempty"`
+	PasswdChangedOn string        `json:"passwd_changed_on,omitempty"`
+	TwofaScheme     string        `json:"twofa_scheme,omitempty"`
+	APIKey          string        `json:"api_key,omitempty"`
+	Status          int           `json:"status,omitempty"`
+	CustomFields    []CustomField `json:"custom_fields,omitempty"`
 }
 
 type UsersResponse struct {
@@ -52,8 +53,8 @@ type ListUsersOptions struct {
 }
 
 // ListUsers retrieves a list of users (requires admin privileges)
-func (c *Client) ListUsers(opts *ListUsersOptions) (*UsersResponse, error) {
-	endpoint := fmt.Sprintf("%s/users.json", c.baseURL)
+func (c *Client) ListUsers(ctx context.Context, opts *ListUsersOptions) (*UsersResponse, error) {
+	endpoint := c.baseURL + "/users.json"
 
 	if opts != nil {
 		params := url.Values{}
@@ -80,7 +81,7 @@ func (c *Client) ListUsers(opts *ListUsersOptions) (*UsersResponse, error) {
 		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ type ShowUserOptions struct {
 }
 
 // ShowUser retrieves a single user by ID
-func (c *Client) ShowUser(id int, opts *ShowUserOptions) (*UserResponse, error) {
+func (c *Client) ShowUser(ctx context.Context, id int, opts *ShowUserOptions) (*UserResponse, error) {
 	endpoint := fmt.Sprintf("%s/users/%d.json", c.baseURL, id)
 
 	if opts != nil && opts.Include != "" {
@@ -114,7 +115,7 @@ func (c *Client) ShowUser(id int, opts *ShowUserOptions) (*UserResponse, error) 
 		endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +136,8 @@ func (c *Client) ShowUser(id int, opts *ShowUserOptions) (*UserResponse, error) 
 }
 
 // GetCurrentUser retrieves the currently authenticated user
-func (c *Client) GetCurrentUser(opts *ShowUserOptions) (*UserResponse, error) {
-	endpoint := fmt.Sprintf("%s/users/current.json", c.baseURL)
+func (c *Client) GetCurrentUser(ctx context.Context, opts *ShowUserOptions) (*UserResponse, error) {
+	endpoint := c.baseURL + "/users/current.json"
 
 	if opts != nil && opts.Include != "" {
 		params := url.Values{}
@@ -144,7 +145,7 @@ func (c *Client) GetCurrentUser(opts *ShowUserOptions) (*UserResponse, error) {
 		endpoint = fmt.Sprintf("%s?%s", endpoint, params.Encode())
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +166,8 @@ func (c *Client) GetCurrentUser(opts *ShowUserOptions) (*UserResponse, error) {
 }
 
 // CreateUser creates a new user (requires admin privileges)
-func (c *Client) CreateUser(user User) (*UserResponse, error) {
-	endpoint := fmt.Sprintf("%s/users.json", c.baseURL)
+func (c *Client) CreateUser(ctx context.Context, user User) (*UserResponse, error) {
+	endpoint := c.baseURL + "/users.json"
 
 	reqBody := UserRequest{User: user}
 	jsonData, err := json.Marshal(reqBody)
@@ -174,7 +175,7 @@ func (c *Client) CreateUser(user User) (*UserResponse, error) {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +201,7 @@ func (c *Client) CreateUser(user User) (*UserResponse, error) {
 }
 
 // UpdateUser updates an existing user (requires admin privileges)
-func (c *Client) UpdateUser(id int, user User) error {
+func (c *Client) UpdateUser(ctx context.Context, id int, user User) error {
 	endpoint := fmt.Sprintf("%s/users/%d.json", c.baseURL, id)
 
 	reqBody := UserRequest{User: user}
@@ -209,7 +210,7 @@ func (c *Client) UpdateUser(id int, user User) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -225,10 +226,10 @@ func (c *Client) UpdateUser(id int, user User) error {
 }
 
 // DeleteUser deletes a user (requires admin privileges)
-func (c *Client) DeleteUser(id int) error {
+func (c *Client) DeleteUser(ctx context.Context, id int) error {
 	endpoint := fmt.Sprintf("%s/users/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

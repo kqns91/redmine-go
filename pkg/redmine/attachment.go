@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,10 +29,10 @@ type AttachmentRequest struct {
 }
 
 // ShowAttachment retrieves details of a specific attachment
-func (c *Client) ShowAttachment(id int) (*AttachmentResponse, error) {
+func (c *Client) ShowAttachment(ctx context.Context, id int) (*AttachmentResponse, error) {
 	endpoint := fmt.Sprintf("%s/attachments/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func (c *Client) ShowAttachment(id int) (*AttachmentResponse, error) {
 }
 
 // UpdateAttachment updates an existing attachment
-func (c *Client) UpdateAttachment(id int, attachment Attachment) error {
+func (c *Client) UpdateAttachment(ctx context.Context, id int, attachment Attachment) error {
 	endpoint := fmt.Sprintf("%s/attachments/%d.json", c.baseURL, id)
 
 	reqBody := AttachmentRequest{Attachment: attachment}
@@ -61,7 +62,7 @@ func (c *Client) UpdateAttachment(id int, attachment Attachment) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPatch, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPatch, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -77,10 +78,10 @@ func (c *Client) UpdateAttachment(id int, attachment Attachment) error {
 }
 
 // DeleteAttachment deletes a specific attachment
-func (c *Client) DeleteAttachment(id int) error {
+func (c *Client) DeleteAttachment(ctx context.Context, id int) error {
 	endpoint := fmt.Sprintf("%s/attachments/%d.json", c.baseURL, id)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

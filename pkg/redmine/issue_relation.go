@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,10 +30,10 @@ type IssueRelationRequest struct {
 }
 
 // ListIssueRelations retrieves all relations for a specific issue
-func (c *Client) ListIssueRelations(issueID int) (*IssueRelationsResponse, error) {
+func (c *Client) ListIssueRelations(ctx context.Context, issueID int) (*IssueRelationsResponse, error) {
 	endpoint := fmt.Sprintf("%s/issues/%d/relations.json", c.baseURL, issueID)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,10 +54,10 @@ func (c *Client) ListIssueRelations(issueID int) (*IssueRelationsResponse, error
 }
 
 // ShowIssueRelation retrieves details of a specific relation
-func (c *Client) ShowIssueRelation(relationID int) (*IssueRelationResponse, error) {
+func (c *Client) ShowIssueRelation(ctx context.Context, relationID int) (*IssueRelationResponse, error) {
 	endpoint := fmt.Sprintf("%s/relations/%d.json", c.baseURL, relationID)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func (c *Client) ShowIssueRelation(relationID int) (*IssueRelationResponse, erro
 }
 
 // CreateIssueRelation creates a new issue relation
-func (c *Client) CreateIssueRelation(issueID int, relation IssueRelation) (*IssueRelationResponse, error) {
+func (c *Client) CreateIssueRelation(ctx context.Context, issueID int, relation IssueRelation) (*IssueRelationResponse, error) {
 	endpoint := fmt.Sprintf("%s/issues/%d/relations.json", c.baseURL, issueID)
 
 	reqBody := IssueRelationRequest{Relation: relation}
@@ -86,7 +87,7 @@ func (c *Client) CreateIssueRelation(issueID int, relation IssueRelation) (*Issu
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	resp, err := c.do(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -112,10 +113,10 @@ func (c *Client) CreateIssueRelation(issueID int, relation IssueRelation) (*Issu
 }
 
 // DeleteIssueRelation deletes a specific issue relation
-func (c *Client) DeleteIssueRelation(relationID int) error {
+func (c *Client) DeleteIssueRelation(ctx context.Context, relationID int) error {
 	endpoint := fmt.Sprintf("%s/relations/%d.json", c.baseURL, relationID)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

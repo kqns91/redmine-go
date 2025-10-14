@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // RegisterProjectTools registers all project-related MCP tools.
@@ -79,7 +80,7 @@ func handleListProjects(useCases *usecase.UseCases) func(ctx context.Context, re
 			}
 		}
 
-		result, err := useCases.Project.ListProjects(opts)
+		result, err := useCases.Project.ListProjects(ctx, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ListProjectsOutput{}, fmt.Errorf("failed to list projects: %w", err)
 		}
@@ -113,7 +114,7 @@ func handleShowProject(useCases *usecase.UseCases) func(ctx context.Context, req
 			}
 		}
 
-		result, err := useCases.Project.ShowProject(args.ID, opts)
+		result, err := useCases.Project.ShowProject(ctx, args.ID, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ShowProjectOutput{}, fmt.Errorf("failed to show project: %w", err)
 		}
@@ -149,7 +150,7 @@ func handleCreateProject(useCases *usecase.UseCases) func(ctx context.Context, r
 			IsPublic:    args.IsPublic,
 		}
 
-		result, err := useCases.Project.CreateProject(project)
+		result, err := useCases.Project.CreateProject(ctx, project)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, CreateProjectOutput{}, fmt.Errorf("failed to create project: %w", err)
 		}
@@ -184,7 +185,7 @@ func handleUpdateProject(useCases *usecase.UseCases) func(ctx context.Context, r
 			IsPublic:    args.IsPublic,
 		}
 
-		err := useCases.Project.UpdateProject(args.ID, project)
+		err := useCases.Project.UpdateProject(ctx, args.ID, project)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UpdateProjectOutput{}, fmt.Errorf("failed to update project: %w", err)
 		}
@@ -205,7 +206,7 @@ type DeleteProjectOutput struct {
 
 func handleDeleteProject(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args DeleteProjectArgs) (*mcp.CallToolResult, DeleteProjectOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args DeleteProjectArgs) (*mcp.CallToolResult, DeleteProjectOutput, error) {
-		err := useCases.Project.DeleteProject(args.ID)
+		err := useCases.Project.DeleteProject(ctx, args.ID)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, DeleteProjectOutput{}, fmt.Errorf("failed to delete project: %w", err)
 		}
@@ -232,7 +233,7 @@ func handleArchiveProject(useCases *usecase.UseCases) func(ctx context.Context, 
 			id = strconv.Itoa(0) // Will be caught as error below
 		}
 
-		err := useCases.Project.ArchiveProject(id)
+		err := useCases.Project.ArchiveProject(ctx, id)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, ArchiveProjectOutput{}, fmt.Errorf("failed to archive project: %w", err)
 		}
@@ -259,7 +260,7 @@ func handleUnarchiveProject(useCases *usecase.UseCases) func(ctx context.Context
 			id = strconv.Itoa(0) // Will be caught as error below
 		}
 
-		err := useCases.Project.UnarchiveProject(id)
+		err := useCases.Project.UnarchiveProject(ctx, id)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UnarchiveProjectOutput{}, fmt.Errorf("failed to unarchive project: %w", err)
 		}

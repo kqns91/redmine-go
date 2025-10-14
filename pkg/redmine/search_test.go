@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ func TestSearch(t *testing.T) {
 		if r.URL.Path != "/search.json" {
 			t.Errorf("Expected path /search.json, got %s", r.URL.Path)
 		}
-		if r.Header.Get("X-Redmine-API-Key") != "test-api-key" {
+		if r.Header.Get("X-Redmine-Api-Key") != "test-api-key" {
 			t.Errorf("Expected API key header")
 		}
 
@@ -40,7 +41,7 @@ func TestSearch(t *testing.T) {
 	opts := &SearchOptions{
 		Query: []string{"test query"},
 	}
-	result, err := client.Search(opts)
+	result, err := client.Search(context.Background(), opts)
 	if err != nil {
 		t.Fatalf("Search failed: %v", err)
 	}

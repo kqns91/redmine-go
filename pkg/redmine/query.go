@@ -1,6 +1,7 @@
 package redmine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,10 +23,10 @@ type QueriesResponse struct {
 }
 
 // ListQueries retrieves all custom queries visible by the user
-func (c *Client) ListQueries() (*QueriesResponse, error) {
-	endpoint := fmt.Sprintf("%s/queries.json", c.baseURL)
+func (c *Client) ListQueries(ctx context.Context) (*QueriesResponse, error) {
+	endpoint := c.baseURL + "/queries.json"
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

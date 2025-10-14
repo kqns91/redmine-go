@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	"github.com/kqns91/redmine-go/internal/usecase"
 	"github.com/kqns91/redmine-go/pkg/redmine"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // RegisterSearchTools registers all search-related MCP tools.
@@ -44,7 +45,7 @@ func handleSearch(useCases *usecase.UseCases) func(ctx context.Context, request 
 			Offset:      args.Offset,
 		}
 
-		result, err := useCases.Search.Search(opts)
+		result, err := useCases.Search.Search(ctx, opts)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, SearchOutput{}, fmt.Errorf("failed to search: %w", err)
 		}
