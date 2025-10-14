@@ -110,11 +110,15 @@ var issueCreateCmd = &cobra.Command{
 		trackerID, _ := cmd.Flags().GetInt("tracker-id")
 		statusID, _ := cmd.Flags().GetInt("status-id")
 		priorityID, _ := cmd.Flags().GetInt("priority-id")
+		categoryID, _ := cmd.Flags().GetInt("category-id")
 		subject, _ := cmd.Flags().GetString("subject")
 		description, _ := cmd.Flags().GetString("description")
 		assignedToID, _ := cmd.Flags().GetInt("assigned-to-id")
 		startDate, _ := cmd.Flags().GetString("start-date")
 		dueDate, _ := cmd.Flags().GetString("due-date")
+		doneRatio, _ := cmd.Flags().GetInt("done-ratio")
+		estimatedHours, _ := cmd.Flags().GetFloat64("estimated-hours")
+		isPrivate, _ := cmd.Flags().GetBool("is-private")
 
 		if projectID == 0 {
 			return errors.New("--project-id フラグは必須です")
@@ -127,12 +131,15 @@ var issueCreateCmd = &cobra.Command{
 		}
 
 		issue := redmine.Issue{
-			Project:     redmine.Resource{ID: projectID},
-			Tracker:     redmine.Resource{ID: trackerID},
-			Subject:     subject,
-			Description: description,
-			StartDate:   startDate,
-			DueDate:     dueDate,
+			Project:        redmine.Resource{ID: projectID},
+			Tracker:        redmine.Resource{ID: trackerID},
+			Subject:        subject,
+			Description:    description,
+			StartDate:      startDate,
+			DueDate:        dueDate,
+			DoneRatio:      doneRatio,
+			EstimatedHours: estimatedHours,
+			IsPrivate:      isPrivate,
 		}
 
 		if statusID > 0 {
@@ -140,6 +147,9 @@ var issueCreateCmd = &cobra.Command{
 		}
 		if priorityID > 0 {
 			issue.Priority = redmine.Resource{ID: priorityID}
+		}
+		if categoryID > 0 {
+			issue.Category = redmine.Resource{ID: categoryID}
 		}
 		if assignedToID > 0 {
 			issue.AssignedTo = redmine.Resource{ID: assignedToID}
@@ -175,15 +185,22 @@ var issueUpdateCmd = &cobra.Command{
 		description, _ := cmd.Flags().GetString("description")
 		statusID, _ := cmd.Flags().GetInt("status-id")
 		priorityID, _ := cmd.Flags().GetInt("priority-id")
+		categoryID, _ := cmd.Flags().GetInt("category-id")
 		assignedToID, _ := cmd.Flags().GetInt("assigned-to-id")
 		startDate, _ := cmd.Flags().GetString("start-date")
 		dueDate, _ := cmd.Flags().GetString("due-date")
+		doneRatio, _ := cmd.Flags().GetInt("done-ratio")
+		estimatedHours, _ := cmd.Flags().GetFloat64("estimated-hours")
+		isPrivate, _ := cmd.Flags().GetBool("is-private")
 
 		issue := redmine.Issue{
-			Subject:     subject,
-			Description: description,
-			StartDate:   startDate,
-			DueDate:     dueDate,
+			Subject:        subject,
+			Description:    description,
+			StartDate:      startDate,
+			DueDate:        dueDate,
+			DoneRatio:      doneRatio,
+			EstimatedHours: estimatedHours,
+			IsPrivate:      isPrivate,
 		}
 
 		if statusID > 0 {
@@ -191,6 +208,9 @@ var issueUpdateCmd = &cobra.Command{
 		}
 		if priorityID > 0 {
 			issue.Priority = redmine.Resource{ID: priorityID}
+		}
+		if categoryID > 0 {
+			issue.Category = redmine.Resource{ID: categoryID}
 		}
 		if assignedToID > 0 {
 			issue.AssignedTo = redmine.Resource{ID: assignedToID}
@@ -395,6 +415,7 @@ func formatIssueDetail(issue *redmine.Issue) error {
 	return nil
 }
 
+//nolint:funlen // Flag definitions are necessarily verbose
 func init() {
 	rootCmd.AddCommand(issueCmd)
 
@@ -428,18 +449,26 @@ func init() {
 	issueCreateCmd.Flags().Int("tracker-id", 0, "トラッカーID (必須)")
 	issueCreateCmd.Flags().Int("status-id", 0, "ステータスID")
 	issueCreateCmd.Flags().Int("priority-id", 0, "優先度ID")
+	issueCreateCmd.Flags().Int("category-id", 0, "カテゴリID")
 	issueCreateCmd.Flags().String("subject", "", "件名 (必須)")
 	issueCreateCmd.Flags().String("description", "", "説明")
 	issueCreateCmd.Flags().Int("assigned-to-id", 0, "担当者ID")
 	issueCreateCmd.Flags().String("start-date", "", "開始日 (YYYY-MM-DD)")
 	issueCreateCmd.Flags().String("due-date", "", "期日 (YYYY-MM-DD)")
+	issueCreateCmd.Flags().Int("done-ratio", 0, "進捗率 (0-100)")
+	issueCreateCmd.Flags().Float64("estimated-hours", 0, "予定工数")
+	issueCreateCmd.Flags().Bool("is-private", false, "プライベート設定")
 
 	// Flags for update command
 	issueUpdateCmd.Flags().String("subject", "", "件名")
 	issueUpdateCmd.Flags().String("description", "", "説明")
 	issueUpdateCmd.Flags().Int("status-id", 0, "ステータスID")
 	issueUpdateCmd.Flags().Int("priority-id", 0, "優先度ID")
+	issueUpdateCmd.Flags().Int("category-id", 0, "カテゴリID")
 	issueUpdateCmd.Flags().Int("assigned-to-id", 0, "担当者ID")
 	issueUpdateCmd.Flags().String("start-date", "", "開始日 (YYYY-MM-DD)")
 	issueUpdateCmd.Flags().String("due-date", "", "期日 (YYYY-MM-DD)")
+	issueUpdateCmd.Flags().Int("done-ratio", 0, "進捗率 (0-100)")
+	issueUpdateCmd.Flags().Float64("estimated-hours", 0, "予定工数")
+	issueUpdateCmd.Flags().Bool("is-private", false, "プライベート設定")
 }
