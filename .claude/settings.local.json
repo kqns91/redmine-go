@@ -4,7 +4,9 @@
       "Bash(golangci-lint run:*)",
       "Bash(go build:*)",
       "Bash(go test:*)",
-      "Bash(go mod:*)"
+      "Bash(go mod:*)",
+      "Bash(go get:*)",
+      "mcp__context7__get-library-docs"
     ],
     "deny": [],
     "ask": []

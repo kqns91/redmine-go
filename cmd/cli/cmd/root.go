@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	apiURL string
-	apiKey string
-	client *redmine.Client
+	apiURL       string
+	apiKey       string
+	outputFormat string
+	client       *redmine.Client
 )
 
 // rootCmd はCLIのルートコマンドを表します
@@ -78,4 +79,10 @@ func init() {
 	// グローバルフラグの定義
 	rootCmd.PersistentFlags().StringVar(&apiURL, "url", "", "Redmine API URL (優先順位: フラグ > 環境変数 > 設定ファイル)")
 	rootCmd.PersistentFlags().StringVar(&apiKey, "key", "", "Redmine API Key (優先順位: フラグ > 環境変数 > 設定ファイル)")
+	rootCmd.PersistentFlags().StringVarP(&outputFormat, "format", "f", "table", "出力フォーマット (json, table, text)")
+}
+
+// GetOutputFormat returns the current output format.
+func GetOutputFormat() string {
+	return outputFormat
 }

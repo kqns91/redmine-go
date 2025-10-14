@@ -5,10 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
+)
+
+const (
+	statusActive   = "Active"
+	statusClosed   = "Closed"
+	statusArchived = "Archived"
 )
 
 var projectCmd = &cobra.Command{
@@ -37,13 +45,18 @@ var projectListCmd = &cobra.Command{
 			return fmt.Errorf("プロジェクトの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		format := GetOutputFormat()
+		switch format {
+		case "json":
+			return formatter.OutputJSON(result)
+		case "table":
+			return formatProjectsTable(result.Projects)
+		case "text":
+			return formatProjectsText(result.Projects)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -64,13 +77,16 @@ var projectGetCmd = &cobra.Command{
 			return fmt.Errorf("プロジェクトの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		format := GetOutputFormat()
+		switch format {
+		case "json":
+			return formatter.OutputJSON(result)
+		case "table", "text":
+			return formatProjectDetail(&result.Project)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -193,6 +209,98 @@ var projectUnarchiveCmd = &cobra.Command{
 		fmt.Println("プロジェクトのアーカイブを解除しました")
 		return nil
 	},
+}
+
+// getProjectStatus returns a human-readable status string.
+func getProjectStatus(status int) string {
+	switch status {
+	case 5:
+		return statusClosed
+	case 9:
+		return statusArchived
+	default:
+		return statusActive
+	}
+}
+
+// formatProjectDetail formats a single project in detailed text format.
+func formatProjectDetail(p *redmine.Project) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("Project: " + p.Name))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(p.ID)))
+	fmt.Println(formatter.FormatKeyValue("Identifier", p.Identifier))
+	fmt.Println(formatter.FormatKeyValue("Name", p.Name))
+
+	status := getProjectStatus(p.Status)
+	fmt.Println(formatter.FormatKeyValue("Status", status))
+
+	if p.Description != "" {
+		fmt.Println(formatter.FormatKeyValue("Description", p.Description))
+	}
+	if p.Homepage != "" {
+		fmt.Println(formatter.FormatKeyValue("Homepage", p.Homepage))
+	}
+	fmt.Println(formatter.FormatKeyValue("Public", strconv.FormatBool(p.IsPublic)))
+	fmt.Println(formatter.FormatKeyValue("Created", p.CreatedOn))
+	fmt.Println(formatter.FormatKeyValue("Updated", p.UpdatedOn))
+
+	// Parent Project
+	if p.Parent.ID != 0 {
+		fmt.Println()
+		fmt.Println(formatter.FormatSection("親プロジェクト"))
+		fmt.Println(formatter.FormatKeyValue("Name", p.Parent.Name))
+	}
+
+	return nil
+}
+
+// formatProjectsTable formats projects in table format.
+func formatProjectsTable(projects []redmine.Project) error {
+	if len(projects) == 0 {
+		fmt.Println("プロジェクトが見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "Identifier", "Name", "Status", "Created"}
+	rows := make([][]string, 0, len(projects))
+
+	for _, p := range projects {
+		rows = append(rows, []string{
+			strconv.Itoa(p.ID),
+			p.Identifier,
+			formatter.TruncateString(p.Name, 40),
+			getProjectStatus(p.Status),
+			p.CreatedOn,
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatProjectsText formats projects in simple text format.
+func formatProjectsText(projects []redmine.Project) error {
+	if len(projects) == 0 {
+		fmt.Println("プロジェクトが見つかりませんでした。")
+		return nil
+	}
+
+	for _, p := range projects {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(p.ID)))
+		fmt.Println(formatter.FormatKeyValue("Identifier", p.Identifier))
+		fmt.Println(formatter.FormatKeyValue("Name", p.Name))
+		fmt.Println(formatter.FormatKeyValue("Status", getProjectStatus(p.Status)))
+		if p.Description != "" {
+			fmt.Println(formatter.FormatKeyValue("Description", formatter.TruncateString(p.Description, 80)))
+		}
+		fmt.Println()
+	}
+
+	return nil
 }
 
 func init() {
