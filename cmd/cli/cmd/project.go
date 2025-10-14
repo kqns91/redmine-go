@@ -48,11 +48,11 @@ var projectListCmd = &cobra.Command{
 		// Format output based on --format flag
 		format := GetOutputFormat()
 		switch format {
-		case "json":
+		case formatJSON:
 			return formatter.OutputJSON(result)
-		case "table":
+		case formatTable:
 			return formatProjectsTable(result.Projects)
-		case "text":
+		case formatText:
 			return formatProjectsText(result.Projects)
 		default:
 			return fmt.Errorf("不明な出力フォーマット: %s", format)
@@ -80,9 +80,9 @@ var projectGetCmd = &cobra.Command{
 		// Format output based on --format flag
 		format := GetOutputFormat()
 		switch format {
-		case "json":
+		case formatJSON:
 			return formatter.OutputJSON(result)
-		case "table", "text":
+		case formatTable, formatText:
 			return formatProjectDetail(&result.Project)
 		default:
 			return fmt.Errorf("不明な出力フォーマット: %s", format)

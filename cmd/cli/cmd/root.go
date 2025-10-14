@@ -11,6 +11,12 @@ import (
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
+const (
+	formatJSON  = "json"
+	formatTable = "table"
+	formatText  = "text"
+)
+
 var (
 	apiURL       string
 	apiKey       string

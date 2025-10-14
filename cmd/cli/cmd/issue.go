@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -50,13 +51,18 @@ var issueListCmd = &cobra.Command{
 			return fmt.Errorf("チケットの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		format := GetOutputFormat()
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatIssuesTable(result.Issues)
+		case formatText:
+			return formatIssuesText(result.Issues)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -82,13 +88,16 @@ var issueGetCmd = &cobra.Command{
 			return fmt.Errorf("チケットの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		format := GetOutputFormat()
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable, formatText:
+			return formatIssueDetail(&result.Issue)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -268,6 +277,122 @@ var issueRemoveWatcherCmd = &cobra.Command{
 		fmt.Println("ウォッチャーを削除しました")
 		return nil
 	},
+}
+
+// formatIssuesTable formats issues in table format.
+func formatIssuesTable(issues []redmine.Issue) error {
+	if len(issues) == 0 {
+		fmt.Println("チケットが見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "Project", "Tracker", "Status", "Priority", "Subject", "Assigned", "Updated"}
+	rows := make([][]string, 0, len(issues))
+
+	for _, issue := range issues {
+		assignedTo := "-"
+		if issue.AssignedTo.Name != "" {
+			assignedTo = issue.AssignedTo.Name
+		}
+
+		rows = append(rows, []string{
+			strconv.Itoa(issue.ID),
+			issue.Project.Name,
+			issue.Tracker.Name,
+			issue.Status.Name,
+			issue.Priority.Name,
+			formatter.TruncateString(issue.Subject, 40),
+			formatter.TruncateString(assignedTo, 15),
+			issue.UpdatedOn,
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatIssuesText formats issues in simple text format.
+func formatIssuesText(issues []redmine.Issue) error {
+	if len(issues) == 0 {
+		fmt.Println("チケットが見つかりませんでした。")
+		return nil
+	}
+
+	for _, issue := range issues {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(issue.ID)))
+		fmt.Println(formatter.FormatKeyValue("Project", issue.Project.Name))
+		fmt.Println(formatter.FormatKeyValue("Tracker", issue.Tracker.Name))
+		fmt.Println(formatter.FormatKeyValue("Status", issue.Status.Name))
+		fmt.Println(formatter.FormatKeyValue("Priority", issue.Priority.Name))
+		fmt.Println(formatter.FormatKeyValue("Subject", issue.Subject))
+		if issue.AssignedTo.Name != "" {
+			fmt.Println(formatter.FormatKeyValue("Assigned To", issue.AssignedTo.Name))
+		}
+		if issue.Description != "" {
+			fmt.Println(formatter.FormatKeyValue("Description", formatter.TruncateString(issue.Description, 100)))
+		}
+		fmt.Println(formatter.FormatKeyValue("Updated", issue.UpdatedOn))
+		fmt.Println()
+	}
+
+	return nil
+}
+
+// formatIssueDetail formats a single issue in detailed text format.
+func formatIssueDetail(issue *redmine.Issue) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("Issue #" + strconv.Itoa(issue.ID) + ": " + issue.Subject))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(issue.ID)))
+	fmt.Println(formatter.FormatKeyValue("Project", issue.Project.Name))
+	fmt.Println(formatter.FormatKeyValue("Tracker", issue.Tracker.Name))
+	fmt.Println(formatter.FormatKeyValue("Status", issue.Status.Name))
+	fmt.Println(formatter.FormatKeyValue("Priority", issue.Priority.Name))
+	fmt.Println(formatter.FormatKeyValue("Subject", issue.Subject))
+
+	if issue.Description != "" {
+		fmt.Println()
+		fmt.Println(formatter.FormatSection("説明"))
+		fmt.Println(issue.Description)
+	}
+
+	// Assignment & Dates
+	fmt.Println()
+	fmt.Println(formatter.FormatSection("担当・期日"))
+	if issue.AssignedTo.Name != "" {
+		fmt.Println(formatter.FormatKeyValue("Assigned To", issue.AssignedTo.Name))
+	} else {
+		fmt.Println(formatter.FormatKeyValue("Assigned To", "-"))
+	}
+	if issue.Author.Name != "" {
+		fmt.Println(formatter.FormatKeyValue("Author", issue.Author.Name))
+	}
+	if issue.StartDate != "" {
+		fmt.Println(formatter.FormatKeyValue("Start Date", issue.StartDate))
+	}
+	if issue.DueDate != "" {
+		fmt.Println(formatter.FormatKeyValue("Due Date", issue.DueDate))
+	}
+	if issue.DoneRatio > 0 {
+		fmt.Println(formatter.FormatKeyValue("Done Ratio", strconv.Itoa(issue.DoneRatio)+"%"))
+	}
+	if issue.EstimatedHours > 0 {
+		fmt.Println(formatter.FormatKeyValue("Estimated Hours", fmt.Sprintf("%.2f", issue.EstimatedHours)))
+	}
+
+	// Timestamps
+	fmt.Println()
+	fmt.Println(formatter.FormatSection("作成・更新"))
+	fmt.Println(formatter.FormatKeyValue("Created", issue.CreatedOn))
+	fmt.Println(formatter.FormatKeyValue("Updated", issue.UpdatedOn))
+	if issue.ClosedOn != "" {
+		fmt.Println(formatter.FormatKeyValue("Closed", issue.ClosedOn))
+	}
+
+	return nil
 }
 
 func init() {
