@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -25,6 +26,7 @@ var groupListCmd = &cobra.Command{
 	Long:  `すべてのユーザーグループをリスト表示します。`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		include, _ := cmd.Flags().GetString("include")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ListGroupsOptions{
 			Include: include,
@@ -35,13 +37,17 @@ var groupListCmd = &cobra.Command{
 			return fmt.Errorf("グループの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatGroupsTable(result.Groups)
+		case formatText:
+			return formatGroupsText(result.Groups)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -57,6 +63,7 @@ var groupGetCmd = &cobra.Command{
 		}
 
 		include, _ := cmd.Flags().GetString("include")
+		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ShowGroupOptions{
 			Include: include,
@@ -67,13 +74,15 @@ var groupGetCmd = &cobra.Command{
 			return fmt.Errorf("グループの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatText:
+			return formatGroupDetail(&result.Group)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -237,6 +246,57 @@ var groupRemoveUserCmd = &cobra.Command{
 	},
 }
 
+// formatGroupDetail formats a single group in detailed text format.
+func formatGroupDetail(g *redmine.Group) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("Group: " + g.Name))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(g.ID)))
+	fmt.Println(formatter.FormatKeyValue("Name", g.Name))
+
+	return nil
+}
+
+// formatGroupsTable formats groups in table format.
+func formatGroupsTable(groups []redmine.Group) error {
+	if len(groups) == 0 {
+		fmt.Println("グループが見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "Name"}
+	rows := make([][]string, 0, len(groups))
+
+	for _, g := range groups {
+		rows = append(rows, []string{
+			strconv.Itoa(g.ID),
+			formatter.TruncateString(g.Name, 60),
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatGroupsText formats groups in simple text format.
+func formatGroupsText(groups []redmine.Group) error {
+	if len(groups) == 0 {
+		fmt.Println("グループが見つかりませんでした。")
+		return nil
+	}
+
+	for _, g := range groups {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(g.ID)))
+		fmt.Println(formatter.FormatKeyValue("Name", g.Name))
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(groupCmd)
 
@@ -251,9 +311,11 @@ func init() {
 
 	// Flags for list command
 	groupListCmd.Flags().String("include", "", "追加で取得する情報 (例: users, memberships)")
+	groupListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
 	// Flags for get command
 	groupGetCmd.Flags().String("include", "", "追加で取得する情報 (例: users, memberships)")
+	groupGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for create command
 	groupCreateCmd.Flags().String("name", "", "グループ名 (必須)")

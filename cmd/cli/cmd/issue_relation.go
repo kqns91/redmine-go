@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -29,18 +29,24 @@ var issueRelationListCmd = &cobra.Command{
 			return fmt.Errorf("無効なissue_id: %w", err)
 		}
 
+		format, _ := cmd.Flags().GetString("format")
+
 		result, err := client.ListIssueRelations(context.Background(), issueID)
 		if err != nil {
 			return fmt.Errorf("チケット関連の取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatTable:
+			return formatIssueRelationsTable(result.Relations)
+		case formatText:
+			return formatIssueRelationsText(result.Relations)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -55,18 +61,22 @@ var issueRelationGetCmd = &cobra.Command{
 			return fmt.Errorf("無効なrelation_id: %w", err)
 		}
 
+		format, _ := cmd.Flags().GetString("format")
+
 		result, err := client.ShowIssueRelation(context.Background(), relationID)
 		if err != nil {
 			return fmt.Errorf("チケット関連の取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatText:
+			return formatIssueRelationDetail(&result.Relation)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -103,13 +113,7 @@ var issueRelationCreateCmd = &cobra.Command{
 			return fmt.Errorf("チケット関連の作成に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
-		}
-
-		fmt.Println(string(output))
-		return nil
+		return formatter.OutputJSON(result)
 	},
 }
 
@@ -134,6 +138,74 @@ var issueRelationDeleteCmd = &cobra.Command{
 	},
 }
 
+// formatIssueRelationDetail formats a single issue relation in detailed text format.
+func formatIssueRelationDetail(r *redmine.IssueRelation) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("Issue Relation #" + strconv.Itoa(r.ID)))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(r.ID)))
+	fmt.Println(formatter.FormatKeyValue("Issue ID", strconv.Itoa(r.IssueID)))
+	fmt.Println(formatter.FormatKeyValue("Issue To ID", strconv.Itoa(r.IssueToID)))
+	fmt.Println(formatter.FormatKeyValue("Relation Type", r.RelationType))
+	if r.Delay != 0 {
+		fmt.Println(formatter.FormatKeyValue("Delay", strconv.Itoa(r.Delay)))
+	}
+
+	return nil
+}
+
+// formatIssueRelationsTable formats issue relations in table format.
+func formatIssueRelationsTable(relations []redmine.IssueRelation) error {
+	if len(relations) == 0 {
+		fmt.Println("チケット関連が見つかりませんでした。")
+		return nil
+	}
+
+	headers := []string{"ID", "Issue ID", "Issue To ID", "Type", "Delay"}
+	rows := make([][]string, 0, len(relations))
+
+	for _, r := range relations {
+		delayStr := ""
+		if r.Delay != 0 {
+			delayStr = strconv.Itoa(r.Delay)
+		}
+		rows = append(rows, []string{
+			strconv.Itoa(r.ID),
+			strconv.Itoa(r.IssueID),
+			strconv.Itoa(r.IssueToID),
+			r.RelationType,
+			delayStr,
+		})
+	}
+
+	formatter.RenderTable(headers, rows)
+	return nil
+}
+
+// formatIssueRelationsText formats issue relations in simple text format.
+func formatIssueRelationsText(relations []redmine.IssueRelation) error {
+	if len(relations) == 0 {
+		fmt.Println("チケット関連が見つかりませんでした。")
+		return nil
+	}
+
+	for _, r := range relations {
+		fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(r.ID)))
+		fmt.Println(formatter.FormatKeyValue("Issue ID", strconv.Itoa(r.IssueID)))
+		fmt.Println(formatter.FormatKeyValue("Issue To ID", strconv.Itoa(r.IssueToID)))
+		fmt.Println(formatter.FormatKeyValue("Type", r.RelationType))
+		if r.Delay != 0 {
+			fmt.Println(formatter.FormatKeyValue("Delay", strconv.Itoa(r.Delay)))
+		}
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(issueRelationCmd)
 
@@ -142,6 +214,12 @@ func init() {
 	issueRelationCmd.AddCommand(issueRelationGetCmd)
 	issueRelationCmd.AddCommand(issueRelationCreateCmd)
 	issueRelationCmd.AddCommand(issueRelationDeleteCmd)
+
+	// Flags for list command
+	issueRelationListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
+
+	// Flags for get command
+	issueRelationGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for create command
 	issueRelationCreateCmd.Flags().Int("issue-to-id", 0, "関連先チケットID (必須)")

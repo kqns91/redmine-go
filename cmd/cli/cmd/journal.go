@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/spf13/cobra"
+
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
+	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
 var journalCmd = &cobra.Command{
@@ -26,19 +28,54 @@ var journalGetCmd = &cobra.Command{
 			return fmt.Errorf("無効なjournal_id: %w", err)
 		}
 
+		format, _ := cmd.Flags().GetString("format")
+
 		result, err := client.ShowJournal(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("ジャーナルの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatText:
+			return formatJournalDetail(&result.Journal)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
+}
+
+// formatJournalDetail formats a single journal in detailed text format.
+func formatJournalDetail(j *redmine.Journal) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("Journal #" + strconv.Itoa(j.ID)))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(j.ID)))
+	if j.User.Name != "" {
+		fmt.Println(formatter.FormatKeyValue("User", j.User.Name))
+	}
+	if j.Notes != "" {
+		fmt.Println(formatter.FormatKeyValue("Notes", j.Notes))
+	}
+	fmt.Println(formatter.FormatKeyValue("Created", j.CreatedOn))
+
+	// Details
+	if len(j.Details) > 0 {
+		fmt.Println()
+		fmt.Println(formatter.FormatSection("変更内容"))
+		for _, detail := range j.Details {
+			if detail.Property != "" {
+				fmt.Printf("  %s.%s: %s -> %s\n", detail.Property, detail.Name, detail.OldValue, detail.NewValue)
+			}
+		}
+	}
+
+	return nil
 }
 
 func init() {
@@ -46,4 +83,7 @@ func init() {
 
 	// Subcommands
 	journalCmd.AddCommand(journalGetCmd)
+
+	// Flags for get command
+	journalGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 }

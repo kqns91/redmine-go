@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -28,18 +28,22 @@ var attachmentShowCmd = &cobra.Command{
 			return fmt.Errorf("無効なattachment_id: %w", err)
 		}
 
+		format, _ := cmd.Flags().GetString("format")
+
 		result, err := client.ShowAttachment(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("添付ファイルの取得に失敗しました: %w", err)
 		}
 
-		output, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)
+		// Format output based on --format flag
+		switch format {
+		case formatJSON:
+			return formatter.OutputJSON(result)
+		case formatText:
+			return formatAttachmentDetail(&result.Attachment)
+		default:
+			return fmt.Errorf("不明な出力フォーマット: %s (利用可能: json, text)", format)
 		}
-
-		fmt.Println(string(output))
-		return nil
 	},
 }
 
@@ -93,6 +97,36 @@ var attachmentDeleteCmd = &cobra.Command{
 	},
 }
 
+// formatAttachmentDetail formats a single attachment in detailed text format.
+func formatAttachmentDetail(a *redmine.Attachment) error {
+	// Title
+	fmt.Println(formatter.FormatTitle("Attachment: " + a.Filename))
+	fmt.Println()
+
+	// Basic Info
+	fmt.Println(formatter.FormatSection("基本情報"))
+	fmt.Println(formatter.FormatKeyValue("ID", strconv.Itoa(a.ID)))
+	fmt.Println(formatter.FormatKeyValue("Filename", a.Filename))
+	fmt.Println(formatter.FormatKeyValue("Filesize", strconv.Itoa(a.Filesize)))
+	fmt.Println(formatter.FormatKeyValue("Content-Type", a.ContentType))
+	if a.Description != "" {
+		fmt.Println(formatter.FormatKeyValue("Description", a.Description))
+	}
+	if a.ContentURL != "" {
+		fmt.Println(formatter.FormatKeyValue("Content URL", a.ContentURL))
+	}
+	fmt.Println(formatter.FormatKeyValue("Created", a.CreatedOn))
+
+	// Author Info
+	if a.Author.ID != 0 {
+		fmt.Println()
+		fmt.Println(formatter.FormatSection("作成者"))
+		fmt.Println(formatter.FormatKeyValue("Name", a.Author.Name))
+	}
+
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(attachmentCmd)
 
@@ -100,6 +134,9 @@ func init() {
 	attachmentCmd.AddCommand(attachmentShowCmd)
 	attachmentCmd.AddCommand(attachmentUpdateCmd)
 	attachmentCmd.AddCommand(attachmentDeleteCmd)
+
+	// Flags for show command
+	attachmentShowCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for update command
 	attachmentUpdateCmd.Flags().String("filename", "", "ファイル名")
