@@ -14,4 +14,13 @@ type UseCases struct {
 	Attachment    *AttachmentUseCase
 	Membership    *MembershipUseCase
 	Group         *GroupUseCase
+	Wiki          *WikiUseCase
+	News          *NewsUseCase
+	File          *FileUseCase
+	Query         *QueryUseCase
+	CustomField   *CustomFieldUseCase
+	Journal       *JournalUseCase
+	Role          *RoleUseCase
+	Enumeration   *EnumerationUseCase
+	MyAccount     *MyAccountUseCase
 }

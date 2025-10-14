@@ -28,6 +28,15 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 		Attachment:    usecase.NewAttachmentUseCase(client),
 		Membership:    usecase.NewMembershipUseCase(client),
 		Group:         usecase.NewGroupUseCase(client),
+		Wiki:          usecase.NewWikiUseCase(client),
+		News:          usecase.NewNewsUseCase(client),
+		File:          usecase.NewFileUseCase(client),
+		Query:         usecase.NewQueryUseCase(client),
+		CustomField:   usecase.NewCustomFieldUseCase(client),
+		Journal:       usecase.NewJournalUseCase(client),
+		Role:          usecase.NewRoleUseCase(client),
+		Enumeration:   usecase.NewEnumerationUseCase(client),
+		MyAccount:     usecase.NewMyAccountUseCase(client),
 	}
 
 	// Create MCP server
@@ -49,6 +58,15 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 	handlers.RegisterAttachmentTools(server, useCases, cfg)
 	handlers.RegisterMembershipTools(server, useCases, cfg)
 	handlers.RegisterGroupTools(server, useCases, cfg)
+	handlers.RegisterWikiTools(server, useCases, cfg)
+	handlers.RegisterNewsTools(server, useCases, cfg)
+	handlers.RegisterFileTools(server, useCases, cfg)
+	handlers.RegisterQueryTools(server, useCases, cfg)
+	handlers.RegisterCustomFieldTools(server, useCases, cfg)
+	handlers.RegisterJournalTools(server, useCases, cfg)
+	handlers.RegisterRoleTools(server, useCases, cfg)
+	handlers.RegisterEnumerationTools(server, useCases, cfg)
+	handlers.RegisterMyAccountTools(server, useCases, cfg)
 
 	return server, nil
 }
