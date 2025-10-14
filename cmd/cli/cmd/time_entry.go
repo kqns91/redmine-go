@@ -105,21 +105,21 @@ var timeEntryCreateCmd = &cobra.Command{
 			return errors.New("--issue-id または --project-id のいずれかは必須です")
 		}
 
-		timeEntry := redmine.TimeEntry{
-			Hours:    hours,
-			Activity: redmine.Resource{ID: activityID},
-			Comments: comments,
-			SpentOn:  spentOn,
+		req := redmine.TimeEntryCreateRequest{
+			Hours:      hours,
+			ActivityID: activityID,
+			Comments:   comments,
+			SpentOn:    spentOn,
 		}
 
 		if issueID > 0 {
-			timeEntry.Issue = redmine.Resource{ID: issueID}
+			req.IssueID = issueID
 		}
 		if projectID > 0 {
-			timeEntry.Project = redmine.Resource{ID: projectID}
+			req.ProjectID = projectID
 		}
 
-		result, err := client.CreateTimeEntry(context.Background(), timeEntry)
+		result, err := client.CreateTimeEntry(context.Background(), req)
 		if err != nil {
 			return fmt.Errorf("作業時間の記録に失敗しました: %w", err)
 		}
@@ -150,19 +150,19 @@ var timeEntryUpdateCmd = &cobra.Command{
 		comments, _ := cmd.Flags().GetString("comments")
 		spentOn, _ := cmd.Flags().GetString("spent-on")
 
-		timeEntry := redmine.TimeEntry{
+		req := redmine.TimeEntryUpdateRequest{
 			Comments: comments,
 			SpentOn:  spentOn,
 		}
 
 		if hours > 0 {
-			timeEntry.Hours = hours
+			req.Hours = hours
 		}
 		if activityID > 0 {
-			timeEntry.Activity = redmine.Resource{ID: activityID}
+			req.ActivityID = activityID
 		}
 
-		err = client.UpdateTimeEntry(context.Background(), id, timeEntry)
+		err = client.UpdateTimeEntry(context.Background(), id, req)
 		if err != nil {
 			return fmt.Errorf("作業時間の更新に失敗しました: %w", err)
 		}

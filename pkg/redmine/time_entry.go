@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// TimeEntry represents a time entry returned by GET endpoints
 type TimeEntry struct {
 	ID        int      `json:"id,omitempty"`
 	Project   Resource `json:"project,omitempty"`
@@ -24,6 +25,28 @@ type TimeEntry struct {
 	UpdatedOn string   `json:"updated_on,omitempty"`
 }
 
+// TimeEntryCreateRequest represents the request body for creating a new time entry
+type TimeEntryCreateRequest struct {
+	IssueID    int     `json:"issue_id,omitempty"`
+	ProjectID  int     `json:"project_id,omitempty"`
+	SpentOn    string  `json:"spent_on,omitempty"`
+	Hours      float64 `json:"hours"`
+	ActivityID int     `json:"activity_id,omitempty"`
+	Comments   string  `json:"comments,omitempty"`
+	UserID     int     `json:"user_id,omitempty"`
+}
+
+// TimeEntryUpdateRequest represents the request body for updating an existing time entry
+type TimeEntryUpdateRequest struct {
+	IssueID    int     `json:"issue_id,omitempty"`
+	ProjectID  int     `json:"project_id,omitempty"`
+	SpentOn    string  `json:"spent_on,omitempty"`
+	Hours      float64 `json:"hours,omitempty"`
+	ActivityID int     `json:"activity_id,omitempty"`
+	Comments   string  `json:"comments,omitempty"`
+	UserID     int     `json:"user_id,omitempty"`
+}
+
 type TimeEntriesResponse struct {
 	TimeEntries []TimeEntry `json:"time_entries"`
 	TotalCount  int         `json:"total_count,omitempty"`
@@ -35,8 +58,12 @@ type TimeEntryResponse struct {
 	TimeEntry TimeEntry `json:"time_entry"`
 }
 
-type TimeEntryRequest struct {
-	TimeEntry TimeEntry `json:"time_entry"`
+type TimeEntryCreateRequestWrapper struct {
+	TimeEntry TimeEntryCreateRequest `json:"time_entry"`
+}
+
+type TimeEntryUpdateRequestWrapper struct {
+	TimeEntry TimeEntryUpdateRequest `json:"time_entry"`
 }
 
 type ListTimeEntriesOptions struct {
@@ -126,10 +153,10 @@ func (c *Client) ShowTimeEntry(ctx context.Context, id int) (*TimeEntryResponse,
 }
 
 // CreateTimeEntry creates a new time entry
-func (c *Client) CreateTimeEntry(ctx context.Context, timeEntry TimeEntry) (*TimeEntryResponse, error) {
+func (c *Client) CreateTimeEntry(ctx context.Context, req TimeEntryCreateRequest) (*TimeEntryResponse, error) {
 	endpoint := c.baseURL + "/time_entries.json"
 
-	reqBody := TimeEntryRequest{TimeEntry: timeEntry}
+	reqBody := TimeEntryCreateRequestWrapper{TimeEntry: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
@@ -161,10 +188,10 @@ func (c *Client) CreateTimeEntry(ctx context.Context, timeEntry TimeEntry) (*Tim
 }
 
 // UpdateTimeEntry updates an existing time entry
-func (c *Client) UpdateTimeEntry(ctx context.Context, id int, timeEntry TimeEntry) error {
+func (c *Client) UpdateTimeEntry(ctx context.Context, id int, req TimeEntryUpdateRequest) error {
 	endpoint := fmt.Sprintf("%s/time_entries/%d.json", c.baseURL, id)
 
-	reqBody := TimeEntryRequest{TimeEntry: timeEntry}
+	reqBody := TimeEntryUpdateRequestWrapper{TimeEntry: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)

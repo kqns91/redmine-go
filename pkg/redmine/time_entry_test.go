@@ -117,7 +117,7 @@ func TestCreateTimeEntry(t *testing.T) {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
 
-		var req TimeEntryRequest
+		var req TimeEntryCreateRequestWrapper
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
 		}
@@ -126,11 +126,16 @@ func TestCreateTimeEntry(t *testing.T) {
 			t.Errorf("Expected hours 4.5, got %f", req.TimeEntry.Hours)
 		}
 
+		if req.TimeEntry.ProjectID != 1 {
+			t.Errorf("Expected project_id 1, got %d", req.TimeEntry.ProjectID)
+		}
+
 		w.WriteHeader(http.StatusCreated)
 		response := TimeEntryResponse{
 			TimeEntry: TimeEntry{
-				ID:    999,
-				Hours: req.TimeEntry.Hours,
+				ID:      999,
+				Hours:   req.TimeEntry.Hours,
+				Project: Resource{ID: req.TimeEntry.ProjectID, Name: "Test Project"},
 			},
 		}
 		_ = json.NewEncoder(w).Encode(response)
@@ -139,11 +144,12 @@ func TestCreateTimeEntry(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	timeEntry := TimeEntry{
-		Hours:    4.5,
-		Comments: "Bug fixing",
+	req := TimeEntryCreateRequest{
+		ProjectID: 1,
+		Hours:     4.5,
+		Comments:  "Bug fixing",
 	}
-	result, err := client.CreateTimeEntry(context.Background(), timeEntry)
+	result, err := client.CreateTimeEntry(context.Background(), req)
 	if err != nil {
 		t.Fatalf("CreateTimeEntry failed: %v", err)
 	}
@@ -162,9 +168,13 @@ func TestUpdateTimeEntry(t *testing.T) {
 			t.Errorf("Expected path /time_entries/123.json, got %s", r.URL.Path)
 		}
 
-		var req TimeEntryRequest
+		var req TimeEntryUpdateRequestWrapper
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request: %v", err)
+		}
+
+		if req.TimeEntry.Hours != 6.0 {
+			t.Errorf("Expected hours 6.0, got %f", req.TimeEntry.Hours)
 		}
 
 		w.WriteHeader(http.StatusNoContent)
@@ -173,11 +183,11 @@ func TestUpdateTimeEntry(t *testing.T) {
 
 	client := New(server.URL, "test-api-key")
 
-	timeEntry := TimeEntry{
+	req := TimeEntryUpdateRequest{
 		Hours:    6.0,
 		Comments: "Updated hours",
 	}
-	err := client.UpdateTimeEntry(context.Background(), 123, timeEntry)
+	err := client.UpdateTimeEntry(context.Background(), 123, req)
 	if err != nil {
 		t.Fatalf("UpdateTimeEntry failed: %v", err)
 	}
