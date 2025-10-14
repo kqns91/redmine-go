@@ -16,9 +16,9 @@ import (
 func RegisterSearchTools(server *mcp.Server, useCases *usecase.UseCases, cfg *config.Config) {
 	const toolGroup = "search"
 
-	if cfg.IsToolEnabled(toolGroup, "redmine_search") {
+	if cfg.IsToolEnabled(toolGroup, "search") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_search",
+			Name:        "search",
 			Description: "Search across Redmine for issues, projects, news, documents, changesets, wiki pages, messages, and users.",
 		}, handleSearch(useCases))
 	}

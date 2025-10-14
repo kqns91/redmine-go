@@ -17,57 +17,57 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 	const toolGroup = "issues"
 
 	// List Issues tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_list_issues") {
+	if cfg.IsToolEnabled(toolGroup, "list_issues") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_list_issues",
+			Name:        "list_issues",
 			Description: "List issues in Redmine. Supports filtering, pagination, and sorting.",
 		}, handleListIssues(useCases))
 	}
 
 	// Show Issue tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_show_issue") {
+	if cfg.IsToolEnabled(toolGroup, "show_issue") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_show_issue",
+			Name:        "show_issue",
 			Description: "Get details of a specific issue by ID.",
 		}, handleShowIssue(useCases))
 	}
 
 	// Create Issue tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_create_issue") {
+	if cfg.IsToolEnabled(toolGroup, "create_issue") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_create_issue",
+			Name:        "create_issue",
 			Description: "Create a new issue in Redmine.",
 		}, handleCreateIssue(useCases))
 	}
 
 	// Update Issue tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_update_issue") {
+	if cfg.IsToolEnabled(toolGroup, "update_issue") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_update_issue",
+			Name:        "update_issue",
 			Description: "Update an existing issue in Redmine.",
 		}, handleUpdateIssue(useCases))
 	}
 
 	// Delete Issue tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_delete_issue") {
+	if cfg.IsToolEnabled(toolGroup, "delete_issue") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_delete_issue",
+			Name:        "delete_issue",
 			Description: "Delete an issue from Redmine. This action cannot be undone.",
 		}, handleDeleteIssue(useCases))
 	}
 
 	// Add Watcher tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_add_watcher") {
+	if cfg.IsToolEnabled(toolGroup, "add_watcher") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_add_watcher",
+			Name:        "add_watcher",
 			Description: "Add a watcher to an issue.",
 		}, handleAddWatcher(useCases))
 	}
 
 	// Remove Watcher tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_remove_watcher") {
+	if cfg.IsToolEnabled(toolGroup, "remove_watcher") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_remove_watcher",
+			Name:        "remove_watcher",
 			Description: "Remove a watcher from an issue.",
 		}, handleRemoveWatcher(useCases))
 	}

@@ -19,57 +19,57 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 	const toolGroup = "projects"
 
 	// List Projects tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_list_projects") {
+	if cfg.IsToolEnabled(toolGroup, "list_projects") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_list_projects",
+			Name:        "list_projects",
 			Description: "List all projects in Redmine. Supports pagination and optional includes.",
 		}, handleListProjects(useCases))
 	}
 
 	// Show Project tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_show_project") {
+	if cfg.IsToolEnabled(toolGroup, "show_project") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_show_project",
+			Name:        "show_project",
 			Description: "Get details of a specific project by ID or identifier.",
 		}, handleShowProject(useCases))
 	}
 
 	// Create Project tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_create_project") {
+	if cfg.IsToolEnabled(toolGroup, "create_project") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_create_project",
+			Name:        "create_project",
 			Description: "Create a new project in Redmine.",
 		}, handleCreateProject(useCases))
 	}
 
 	// Update Project tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_update_project") {
+	if cfg.IsToolEnabled(toolGroup, "update_project") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_update_project",
+			Name:        "update_project",
 			Description: "Update an existing project in Redmine.",
 		}, handleUpdateProject(useCases))
 	}
 
 	// Delete Project tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_delete_project") {
+	if cfg.IsToolEnabled(toolGroup, "delete_project") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_delete_project",
+			Name:        "delete_project",
 			Description: "Delete a project from Redmine. This action cannot be undone.",
 		}, handleDeleteProject(useCases))
 	}
 
 	// Archive Project tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_archive_project") {
+	if cfg.IsToolEnabled(toolGroup, "archive_project") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_archive_project",
+			Name:        "archive_project",
 			Description: "Archive a project in Redmine (Redmine 5.0+).",
 		}, handleArchiveProject(useCases))
 	}
 
 	// Unarchive Project tool
-	if cfg.IsToolEnabled(toolGroup, "redmine_unarchive_project") {
+	if cfg.IsToolEnabled(toolGroup, "unarchive_project") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_unarchive_project",
+			Name:        "unarchive_project",
 			Description: "Unarchive a project in Redmine (Redmine 5.0+).",
 		}, handleUnarchiveProject(useCases))
 	}

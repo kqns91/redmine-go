@@ -16,44 +16,44 @@ import (
 func RegisterUserTools(server *mcp.Server, useCases *usecase.UseCases, cfg *config.Config) {
 	const toolGroup = "users"
 
-	if cfg.IsToolEnabled(toolGroup, "redmine_list_users") {
+	if cfg.IsToolEnabled(toolGroup, "list_users") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_list_users",
+			Name:        "list_users",
 			Description: "List users in Redmine with filtering options.",
 		}, handleListUsers(useCases))
 	}
 
-	if cfg.IsToolEnabled(toolGroup, "redmine_show_user") {
+	if cfg.IsToolEnabled(toolGroup, "show_user") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_show_user",
+			Name:        "show_user",
 			Description: "Get details of a specific user by ID.",
 		}, handleShowUser(useCases))
 	}
 
-	if cfg.IsToolEnabled(toolGroup, "redmine_current_user") {
+	if cfg.IsToolEnabled(toolGroup, "current_user") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_get_current_user",
+			Name:        "current_user",
 			Description: "Get details of the current authenticated user.",
 		}, handleGetCurrentUser(useCases))
 	}
 
-	if cfg.IsToolEnabled(toolGroup, "redmine_create_user") {
+	if cfg.IsToolEnabled(toolGroup, "create_user") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_create_user",
+			Name:        "create_user",
 			Description: "Create a new user in Redmine (admin only).",
 		}, handleCreateUser(useCases))
 	}
 
-	if cfg.IsToolEnabled(toolGroup, "redmine_update_user") {
+	if cfg.IsToolEnabled(toolGroup, "update_user") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_update_user",
+			Name:        "update_user",
 			Description: "Update an existing user in Redmine (admin only).",
 		}, handleUpdateUser(useCases))
 	}
 
-	if cfg.IsToolEnabled(toolGroup, "redmine_delete_user") {
+	if cfg.IsToolEnabled(toolGroup, "delete_user") {
 		mcp.AddTool(server, &mcp.Tool{
-			Name:        "redmine_delete_user",
+			Name:        "delete_user",
 			Description: "Delete a user from Redmine (admin only).",
 		}, handleDeleteUser(useCases))
 	}

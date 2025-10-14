@@ -11,44 +11,44 @@ This project provides a comprehensive MCP server for Redmine, enabling AI assist
 ### Implemented Services (28 Tools)
 
 #### Projects (7 tools)
-- `redmine_list_projects` - List all projects with filtering options
-- `redmine_show_project` - Get detailed project information
-- `redmine_create_project` - Create new projects
-- `redmine_update_project` - Update existing projects
-- `redmine_delete_project` - Delete projects
-- `redmine_archive_project` - Archive projects
-- `redmine_unarchive_project` - Unarchive projects
+- `list_projects` - List all projects with filtering options
+- `show_project` - Get detailed project information
+- `create_project` - Create new projects
+- `update_project` - Update existing projects
+- `delete_project` - Delete projects
+- `archive_project` - Archive projects
+- `unarchive_project` - Unarchive projects
 
 #### Issues (7 tools)
-- `redmine_list_issues` - List issues with advanced filtering, sorting, and pagination
-- `redmine_show_issue` - Get detailed issue information
-- `redmine_create_issue` - Create new issues with full field support
-- `redmine_update_issue` - Update existing issues
-- `redmine_delete_issue` - Delete issues
-- `redmine_add_watcher` - Add watchers to issues
-- `redmine_remove_watcher` - Remove watchers from issues
+- `list_issues` - List issues with advanced filtering, sorting, and pagination
+- `show_issue` - Get detailed issue information
+- `create_issue` - Create new issues with full field support
+- `update_issue` - Update existing issues
+- `delete_issue` - Delete issues
+- `add_watcher` - Add watchers to issues
+- `remove_watcher` - Remove watchers from issues
 
 #### Users (6 tools)
-- `redmine_list_users` - List users with filtering options
-- `redmine_show_user` - Get user details by ID
-- `redmine_get_current_user` - Get current authenticated user
-- `redmine_create_user` - Create new users (admin only)
-- `redmine_update_user` - Update existing users (admin only)
-- `redmine_delete_user` - Delete users (admin only)
+- `list_users` - List users with filtering options
+- `show_user` - Get user details by ID
+- `current_user` - Get current authenticated user
+- `create_user` - Create new users (admin only)
+- `update_user` - Update existing users (admin only)
+- `delete_user` - Delete users (admin only)
 
 #### Issue Categories (5 tools)
-- `redmine_list_issue_categories` - List categories for a project
-- `redmine_show_issue_category` - Get category details
-- `redmine_create_issue_category` - Create new category
-- `redmine_update_issue_category` - Update existing category
-- `redmine_delete_issue_category` - Delete category with reassignment option
+- `list_issue_categories` - List categories for a project
+- `show_issue_category` - Get category details
+- `create_issue_category` - Create new category
+- `update_issue_category` - Update existing category
+- `delete_issue_category` - Delete category with reassignment option
 
 #### Search (1 tool)
-- `redmine_search` - Universal search across issues, wiki pages, and attachments
+- `search` - Universal search across issues, wiki pages, and attachments
 
 #### Metadata (2 tools)
-- `redmine_list_trackers` - List all available trackers (Bug, Feature, Support, etc.)
-- `redmine_list_issue_statuses` - List all available issue statuses
+- `list_trackers` - List all available trackers (Bug, Feature, Support, etc.)
+- `list_issue_statuses` - List all available issue statuses
 
 ## Architecture
 
@@ -137,21 +137,21 @@ export REDMINE_ENABLED_TOOLS="projects,issues,search"
 
 **Pattern 3: Enable all groups but disable specific tools**
 ```bash
-export REDMINE_DISABLED_TOOLS="redmine_delete_project,redmine_delete_issue,redmine_delete_user"
+export REDMINE_DISABLED_TOOLS="delete_project,delete_issue,delete_user"
 # Enables 25 tools (all tools except the 3 delete operations)
 ```
 
 **Pattern 4: Read-only mode (disable all write operations)**
 ```bash
 export REDMINE_ENABLED_TOOLS="all"
-export REDMINE_DISABLED_TOOLS="redmine_create_project,redmine_update_project,redmine_delete_project,redmine_archive_project,redmine_unarchive_project,redmine_create_issue,redmine_update_issue,redmine_delete_issue,redmine_add_watcher,redmine_remove_watcher,redmine_create_user,redmine_update_user,redmine_delete_user,redmine_create_issue_category,redmine_update_issue_category,redmine_delete_issue_category"
+export REDMINE_DISABLED_TOOLS="create_project,update_project,delete_project,archive_project,unarchive_project,create_issue,update_issue,delete_issue,add_watcher,remove_watcher,create_user,update_user,delete_user,create_issue_category,update_issue_category,delete_issue_category"
 # Enables only read operations (list, show, get)
 ```
 
 **Pattern 5: Minimal setup (projects and issues only, no destructive operations)**
 ```bash
 export REDMINE_ENABLED_TOOLS="projects,issues,search"
-export REDMINE_DISABLED_TOOLS="redmine_delete_project,redmine_delete_issue"
+export REDMINE_DISABLED_TOOLS="delete_project,delete_issue"
 # Enables 13 tools: project/issue management + search, excluding delete operations
 ```
 
@@ -194,7 +194,7 @@ To use with Claude Desktop or other MCP clients, add to your MCP settings config
         "REDMINE_URL": "https://your-redmine-instance.com",
         "REDMINE_API_KEY": "your-api-key-here",
         "REDMINE_ENABLED_TOOLS": "projects,issues,search",
-        "REDMINE_DISABLED_TOOLS": "redmine_delete_project,redmine_delete_issue"
+        "REDMINE_DISABLED_TOOLS": "delete_project,delete_issue"
       }
     }
   }
