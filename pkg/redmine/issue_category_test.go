@@ -54,7 +54,7 @@ func TestCreateIssueCategory(t *testing.T) {
 			t.Errorf("Expected path /projects/test-project/issue_categories.json, got %s", r.URL.Path)
 		}
 
-		var req IssueCategoryRequest
+		var req IssueCategoryCreateRequestWrapper
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Fatalf("Failed to decode request body: %v", err)
 		}
@@ -74,10 +74,10 @@ func TestCreateIssueCategory(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, "test-api-key")
-	category := IssueCategory{
+	req := IssueCategoryCreateRequest{
 		Name: "New Category",
 	}
-	result, err := client.CreateIssueCategory(context.Background(), "test-project", category)
+	result, err := client.CreateIssueCategory(context.Background(), "test-project", req)
 	if err != nil {
 		t.Fatalf("CreateIssueCategory failed: %v", err)
 	}

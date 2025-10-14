@@ -29,13 +29,13 @@ func (u *CategoryUseCase) ShowIssueCategory(ctx context.Context, id int) (*redmi
 }
 
 // CreateIssueCategory creates a new issue category.
-func (u *CategoryUseCase) CreateIssueCategory(ctx context.Context, projectID string, category redmine.IssueCategory) (*redmine.IssueCategoryResponse, error) {
-	return u.client.CreateIssueCategory(ctx, projectID, category)
+func (u *CategoryUseCase) CreateIssueCategory(ctx context.Context, projectID string, req redmine.IssueCategoryCreateRequest) (*redmine.IssueCategoryResponse, error) {
+	return u.client.CreateIssueCategory(ctx, projectID, req)
 }
 
 // UpdateIssueCategory updates an existing issue category.
-func (u *CategoryUseCase) UpdateIssueCategory(ctx context.Context, id int, category redmine.IssueCategory) error {
-	return u.client.UpdateIssueCategory(ctx, id, category)
+func (u *CategoryUseCase) UpdateIssueCategory(ctx context.Context, id int, req redmine.IssueCategoryUpdateRequest) error {
+	return u.client.UpdateIssueCategory(ctx, id, req)
 }
 
 // DeleteIssueCategory deletes an issue category.

@@ -78,15 +78,12 @@ var issueCategoryCreateCmd = &cobra.Command{
 			return errors.New("--name フラグは必須です")
 		}
 
-		category := redmine.IssueCategory{
-			Name: name,
+		req := redmine.IssueCategoryCreateRequest{
+			Name:         name,
+			AssignedToID: assignedToID,
 		}
 
-		if assignedToID > 0 {
-			category.AssignedTo = redmine.Resource{ID: assignedToID}
-		}
-
-		result, err := client.CreateIssueCategory(context.Background(), args[0], category)
+		result, err := client.CreateIssueCategory(context.Background(), args[0], req)
 		if err != nil {
 			return fmt.Errorf("チケットカテゴリの作成に失敗しました: %w", err)
 		}
@@ -115,15 +112,12 @@ var issueCategoryUpdateCmd = &cobra.Command{
 		name, _ := cmd.Flags().GetString("name")
 		assignedToID, _ := cmd.Flags().GetInt("assigned-to-id")
 
-		category := redmine.IssueCategory{
-			Name: name,
+		req := redmine.IssueCategoryUpdateRequest{
+			Name:         name,
+			AssignedToID: assignedToID,
 		}
 
-		if assignedToID > 0 {
-			category.AssignedTo = redmine.Resource{ID: assignedToID}
-		}
-
-		err = client.UpdateIssueCategory(context.Background(), id, category)
+		err = client.UpdateIssueCategory(context.Background(), id, req)
 		if err != nil {
 			return fmt.Errorf("チケットカテゴリの更新に失敗しました: %w", err)
 		}

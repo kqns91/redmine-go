@@ -99,14 +99,12 @@ type CreateIssueCategoryOutput struct {
 
 func handleCreateIssueCategory(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args CreateIssueCategoryArgs) (*mcp.CallToolResult, CreateIssueCategoryOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args CreateIssueCategoryArgs) (*mcp.CallToolResult, CreateIssueCategoryOutput, error) {
-		category := redmine.IssueCategory{
-			Name: args.Name,
-		}
-		if args.AssignedToID > 0 {
-			category.AssignedTo = redmine.Resource{ID: args.AssignedToID}
+		req := redmine.IssueCategoryCreateRequest{
+			Name:         args.Name,
+			AssignedToID: args.AssignedToID,
 		}
 
-		result, err := useCases.Category.CreateIssueCategory(ctx, args.ProjectID, category)
+		result, err := useCases.Category.CreateIssueCategory(ctx, args.ProjectID, req)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, CreateIssueCategoryOutput{}, fmt.Errorf("failed to create issue category: %w", err)
 		}
@@ -132,14 +130,12 @@ type UpdateIssueCategoryOutput struct {
 
 func handleUpdateIssueCategory(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args UpdateIssueCategoryArgs) (*mcp.CallToolResult, UpdateIssueCategoryOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args UpdateIssueCategoryArgs) (*mcp.CallToolResult, UpdateIssueCategoryOutput, error) {
-		category := redmine.IssueCategory{
-			Name: args.Name,
-		}
-		if args.AssignedToID > 0 {
-			category.AssignedTo = redmine.Resource{ID: args.AssignedToID}
+		req := redmine.IssueCategoryUpdateRequest{
+			Name:         args.Name,
+			AssignedToID: args.AssignedToID,
 		}
 
-		err := useCases.Category.UpdateIssueCategory(ctx, args.ID, category)
+		err := useCases.Category.UpdateIssueCategory(ctx, args.ID, req)
 		if err != nil {
 			return &mcp.CallToolResult{IsError: true}, UpdateIssueCategoryOutput{}, fmt.Errorf("failed to update issue category: %w", err)
 		}

@@ -10,11 +10,24 @@ import (
 	"strconv"
 )
 
+// IssueCategory represents an issue category returned by GET endpoints
 type IssueCategory struct {
 	ID         int      `json:"id,omitempty"`
 	Project    Resource `json:"project,omitempty"`
 	Name       string   `json:"name,omitempty"`
 	AssignedTo Resource `json:"assigned_to,omitempty"`
+}
+
+// IssueCategoryCreateRequest represents the request body for creating a new issue category
+type IssueCategoryCreateRequest struct {
+	Name         string `json:"name"`
+	AssignedToID int    `json:"assigned_to_id,omitempty"`
+}
+
+// IssueCategoryUpdateRequest represents the request body for updating an existing issue category
+type IssueCategoryUpdateRequest struct {
+	Name         string `json:"name,omitempty"`
+	AssignedToID int    `json:"assigned_to_id,omitempty"`
 }
 
 type IssueCategoriesResponse struct {
@@ -25,8 +38,12 @@ type IssueCategoryResponse struct {
 	IssueCategory IssueCategory `json:"issue_category"`
 }
 
-type IssueCategoryRequest struct {
-	IssueCategory IssueCategory `json:"issue_category"`
+type IssueCategoryCreateRequestWrapper struct {
+	IssueCategory IssueCategoryCreateRequest `json:"issue_category"`
+}
+
+type IssueCategoryUpdateRequestWrapper struct {
+	IssueCategory IssueCategoryUpdateRequest `json:"issue_category"`
 }
 
 // ListIssueCategories retrieves all issue categories for a specific project
@@ -78,10 +95,10 @@ func (c *Client) ShowIssueCategory(ctx context.Context, id int) (*IssueCategoryR
 }
 
 // CreateIssueCategory creates a new issue category for a project
-func (c *Client) CreateIssueCategory(ctx context.Context, projectIDOrIdentifier string, category IssueCategory) (*IssueCategoryResponse, error) {
+func (c *Client) CreateIssueCategory(ctx context.Context, projectIDOrIdentifier string, req IssueCategoryCreateRequest) (*IssueCategoryResponse, error) {
 	endpoint := fmt.Sprintf("%s/projects/%s/issue_categories.json", c.baseURL, projectIDOrIdentifier)
 
-	reqBody := IssueCategoryRequest{IssueCategory: category}
+	reqBody := IssueCategoryCreateRequestWrapper{IssueCategory: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
@@ -113,10 +130,10 @@ func (c *Client) CreateIssueCategory(ctx context.Context, projectIDOrIdentifier 
 }
 
 // UpdateIssueCategory updates an existing issue category
-func (c *Client) UpdateIssueCategory(ctx context.Context, id int, category IssueCategory) error {
+func (c *Client) UpdateIssueCategory(ctx context.Context, id int, req IssueCategoryUpdateRequest) error {
 	endpoint := fmt.Sprintf("%s/issue_categories/%d.json", c.baseURL, id)
 
-	reqBody := IssueCategoryRequest{IssueCategory: category}
+	reqBody := IssueCategoryUpdateRequestWrapper{IssueCategory: req}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)
