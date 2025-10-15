@@ -13,26 +13,32 @@ import (
 
 // Issue represents an issue returned by GET endpoints
 type Issue struct {
-	ID             int           `json:"id,omitempty"`
-	Project        Resource      `json:"project,omitempty"`
-	Tracker        Resource      `json:"tracker,omitempty"`
-	Status         Resource      `json:"status,omitempty"`
-	Priority       Resource      `json:"priority,omitempty"`
-	Author         Resource      `json:"author,omitempty"`
-	AssignedTo     Resource      `json:"assigned_to,omitempty"`
-	Category       Resource      `json:"category,omitempty"`
-	Subject        string        `json:"subject,omitempty"`
-	Description    string        `json:"description,omitempty"`
-	StartDate      string        `json:"start_date,omitempty"`
-	DueDate        string        `json:"due_date,omitempty"`
-	DoneRatio      int           `json:"done_ratio,omitempty"`
-	IsPrivate      bool          `json:"is_private,omitempty"`
-	EstimatedHours float64       `json:"estimated_hours,omitempty"`
-	CustomFields   []CustomField `json:"custom_fields,omitempty"`
-	CreatedOn      string        `json:"created_on,omitempty"`
-	UpdatedOn      string        `json:"updated_on,omitempty"`
-	ClosedOn       string        `json:"closed_on,omitempty"`
-	Journals       []Journal     `json:"journals,omitempty"`
+	ID              int             `json:"id,omitempty"`
+	Project         Resource        `json:"project,omitempty"`
+	Tracker         Resource        `json:"tracker,omitempty"`
+	Status          Resource        `json:"status,omitempty"`
+	Priority        Resource        `json:"priority,omitempty"`
+	Author          Resource        `json:"author,omitempty"`
+	AssignedTo      Resource        `json:"assigned_to,omitempty"`
+	Category        Resource        `json:"category,omitempty"`
+	Subject         string          `json:"subject,omitempty"`
+	Description     string          `json:"description,omitempty"`
+	StartDate       string          `json:"start_date,omitempty"`
+	DueDate         string          `json:"due_date,omitempty"`
+	DoneRatio       int             `json:"done_ratio,omitempty"`
+	IsPrivate       bool            `json:"is_private,omitempty"`
+	EstimatedHours  float64         `json:"estimated_hours,omitempty"`
+	CustomFields    []CustomField   `json:"custom_fields,omitempty"`
+	CreatedOn       string          `json:"created_on,omitempty"`
+	UpdatedOn       string          `json:"updated_on,omitempty"`
+	ClosedOn        string          `json:"closed_on,omitempty"`
+	Journals        []Journal       `json:"journals,omitempty"`
+	Children        []Issue         `json:"children,omitempty"`
+	Attachments     []Attachment    `json:"attachments,omitempty"`
+	Relations       []IssueRelation `json:"relations,omitempty"`
+	Changesets      []Changeset     `json:"changesets,omitempty"`
+	Watchers        []Watcher       `json:"watchers,omitempty"`
+	AllowedStatuses []IssueStatus   `json:"allowed_statuses,omitempty"`
 }
 
 // IssueCreateRequest represents the request body for creating a new issue
