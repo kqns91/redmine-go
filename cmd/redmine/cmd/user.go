@@ -131,6 +131,10 @@ var userCreateCmd = &cobra.Command{
 		lastname, _ := cmd.Flags().GetString("lastname")
 		mail, _ := cmd.Flags().GetString("mail")
 		password, _ := cmd.Flags().GetString("password")
+		authSourceID, _ := cmd.Flags().GetInt("auth-source-id")
+		mailNotification, _ := cmd.Flags().GetString("mail-notification")
+		mustChangePasswd, _ := cmd.Flags().GetBool("must-change-passwd")
+		generatePassword, _ := cmd.Flags().GetBool("generate-password")
 
 		if login == "" {
 			return errors.New("--login フラグは必須です")
@@ -146,16 +150,16 @@ var userCreateCmd = &cobra.Command{
 		}
 
 		user := redmine.User{
-			Login:     login,
-			Firstname: firstname,
-			Lastname:  lastname,
-			Mail:      mail,
+			Login:             login,
+			Firstname:         firstname,
+			Lastname:          lastname,
+			Mail:              mail,
+			Password:          password,
+			AuthSourceID:      authSourceID,
+			MailNotification:  mailNotification,
+			MustChangePasswd:  mustChangePasswd,
+			GeneratePassword:  generatePassword,
 		}
-
-		// パスワードは別の方法で設定する必要があるため、ここではユーザー作成のみ
-		// 実際のAPIではパスワードフィールドが存在する可能性がありますが、
-		// 現在のUser構造体には含まれていないため、コメントとして残しておきます
-		_ = password
 
 		result, err := client.CreateUser(context.Background(), user)
 		if err != nil {
@@ -187,12 +191,22 @@ var userUpdateCmd = &cobra.Command{
 		firstname, _ := cmd.Flags().GetString("firstname")
 		lastname, _ := cmd.Flags().GetString("lastname")
 		mail, _ := cmd.Flags().GetString("mail")
+		password, _ := cmd.Flags().GetString("password")
+		authSourceID, _ := cmd.Flags().GetInt("auth-source-id")
+		mailNotification, _ := cmd.Flags().GetString("mail-notification")
+		mustChangePasswd, _ := cmd.Flags().GetBool("must-change-passwd")
+		generatePassword, _ := cmd.Flags().GetBool("generate-password")
 
 		user := redmine.User{
-			Login:     login,
-			Firstname: firstname,
-			Lastname:  lastname,
-			Mail:      mail,
+			Login:             login,
+			Firstname:         firstname,
+			Lastname:          lastname,
+			Mail:              mail,
+			Password:          password,
+			AuthSourceID:      authSourceID,
+			MailNotification:  mailNotification,
+			MustChangePasswd:  mustChangePasswd,
+			GeneratePassword:  generatePassword,
 		}
 
 		err = client.UpdateUser(context.Background(), id, user)
@@ -381,10 +395,19 @@ func init() {
 	userCreateCmd.Flags().String("lastname", "", "姓 (必須)")
 	userCreateCmd.Flags().String("mail", "", "メールアドレス (必須)")
 	userCreateCmd.Flags().String("password", "", "パスワード")
+	userCreateCmd.Flags().Int("auth-source-id", 0, "認証ソースID")
+	userCreateCmd.Flags().String("mail-notification", "", "メール通知設定 (all, selected, only_my_events, only_assigned, only_owner, none)")
+	userCreateCmd.Flags().Bool("must-change-passwd", false, "初回ログイン時にパスワード変更を強制")
+	userCreateCmd.Flags().Bool("generate-password", false, "パスワードを自動生成")
 
 	// Flags for update command
 	userUpdateCmd.Flags().String("login", "", "ログインID")
 	userUpdateCmd.Flags().String("firstname", "", "名")
 	userUpdateCmd.Flags().String("lastname", "", "姓")
 	userUpdateCmd.Flags().String("mail", "", "メールアドレス")
+	userUpdateCmd.Flags().String("password", "", "パスワード")
+	userUpdateCmd.Flags().Int("auth-source-id", 0, "認証ソースID")
+	userUpdateCmd.Flags().String("mail-notification", "", "メール通知設定 (all, selected, only_my_events, only_assigned, only_owner, none)")
+	userUpdateCmd.Flags().Bool("must-change-passwd", false, "次回ログイン時にパスワード変更を強制")
+	userUpdateCmd.Flags().Bool("generate-password", false, "パスワードを自動生成")
 }

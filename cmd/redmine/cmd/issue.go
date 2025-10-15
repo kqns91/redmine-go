@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -29,6 +30,10 @@ var issueListCmd = &cobra.Command{
 		trackerID, _ := cmd.Flags().GetInt("tracker-id")
 		statusID, _ := cmd.Flags().GetString("status-id")
 		assignedToID, _ := cmd.Flags().GetString("assigned-to-id")
+		issueID, _ := cmd.Flags().GetString("issue-id")
+		parentID, _ := cmd.Flags().GetInt("parent-id")
+		createdOn, _ := cmd.Flags().GetString("created-on")
+		updatedOn, _ := cmd.Flags().GetString("updated-on")
 		include, _ := cmd.Flags().GetString("include")
 		limit, _ := cmd.Flags().GetInt("limit")
 		offset, _ := cmd.Flags().GetInt("offset")
@@ -41,6 +46,10 @@ var issueListCmd = &cobra.Command{
 			TrackerID:    trackerID,
 			StatusID:     statusID,
 			AssignedToID: assignedToID,
+			IssueID:      issueID,
+			ParentID:     parentID,
+			CreatedOn:    createdOn,
+			UpdatedOn:    updatedOn,
 			Include:      include,
 			Limit:        limit,
 			Offset:       offset,
@@ -111,6 +120,8 @@ var issueCreateCmd = &cobra.Command{
 		statusID, _ := cmd.Flags().GetInt("status-id")
 		priorityID, _ := cmd.Flags().GetInt("priority-id")
 		categoryID, _ := cmd.Flags().GetInt("category-id")
+		fixedVersionID, _ := cmd.Flags().GetInt("fixed-version-id")
+		parentIssueID, _ := cmd.Flags().GetInt("parent-issue-id")
 		subject, _ := cmd.Flags().GetString("subject")
 		description, _ := cmd.Flags().GetString("description")
 		assignedToID, _ := cmd.Flags().GetInt("assigned-to-id")
@@ -119,6 +130,7 @@ var issueCreateCmd = &cobra.Command{
 		doneRatio, _ := cmd.Flags().GetInt("done-ratio")
 		estimatedHours, _ := cmd.Flags().GetFloat64("estimated-hours")
 		isPrivate, _ := cmd.Flags().GetBool("is-private")
+		watcherUserIDsStr, _ := cmd.Flags().GetString("watcher-user-ids")
 
 		if projectID == 0 {
 			return errors.New("--project-id フラグは必須です")
@@ -137,6 +149,8 @@ var issueCreateCmd = &cobra.Command{
 			StatusID:       statusID,
 			PriorityID:     priorityID,
 			CategoryID:     categoryID,
+			FixedVersionID: fixedVersionID,
+			ParentIssueID:  parentIssueID,
 			AssignedToID:   assignedToID,
 			Description:    description,
 			StartDate:      startDate,
@@ -144,6 +158,15 @@ var issueCreateCmd = &cobra.Command{
 			DoneRatio:      doneRatio,
 			EstimatedHours: estimatedHours,
 			IsPrivate:      isPrivate,
+		}
+
+		// Parse watcher user IDs if provided
+		if watcherUserIDsStr != "" {
+			watcherIDs, err := parseIntSlice(watcherUserIDsStr)
+			if err != nil {
+				return fmt.Errorf("無効なwatcher-user-ids: %w", err)
+			}
+			req.WatcherUserIDs = watcherIDs
 		}
 
 		result, err := client.CreateIssue(context.Background(), req)
@@ -177,18 +200,24 @@ var issueUpdateCmd = &cobra.Command{
 		statusID, _ := cmd.Flags().GetInt("status-id")
 		priorityID, _ := cmd.Flags().GetInt("priority-id")
 		categoryID, _ := cmd.Flags().GetInt("category-id")
+		fixedVersionID, _ := cmd.Flags().GetInt("fixed-version-id")
+		parentIssueID, _ := cmd.Flags().GetInt("parent-issue-id")
 		assignedToID, _ := cmd.Flags().GetInt("assigned-to-id")
 		startDate, _ := cmd.Flags().GetString("start-date")
 		dueDate, _ := cmd.Flags().GetString("due-date")
 		doneRatio, _ := cmd.Flags().GetInt("done-ratio")
 		estimatedHours, _ := cmd.Flags().GetFloat64("estimated-hours")
 		isPrivate, _ := cmd.Flags().GetBool("is-private")
+		notes, _ := cmd.Flags().GetString("notes")
+		privateNotes, _ := cmd.Flags().GetBool("private-notes")
 
 		req := redmine.IssueUpdateRequest{
 			Subject:        subject,
 			StatusID:       statusID,
 			PriorityID:     priorityID,
 			CategoryID:     categoryID,
+			FixedVersionID: fixedVersionID,
+			ParentIssueID:  parentIssueID,
 			AssignedToID:   assignedToID,
 			Description:    description,
 			StartDate:      startDate,
@@ -196,6 +225,8 @@ var issueUpdateCmd = &cobra.Command{
 			DoneRatio:      doneRatio,
 			EstimatedHours: estimatedHours,
 			IsPrivate:      isPrivate,
+			Notes:          notes,
+			PrivateNotes:   privateNotes,
 		}
 
 		err = client.UpdateIssue(context.Background(), id, req)
@@ -443,6 +474,23 @@ func includeOptionsForIssueGet() []string {
 	return []string{"children", "attachments", "relations", "changesets", "journals", "watchers", "allowed_statuses"}
 }
 
+// parseIntSlice parses a comma-separated string of integers
+func parseIntSlice(s string) ([]int, error) {
+	if s == "" {
+		return nil, nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]int, 0, len(parts))
+	for _, part := range parts {
+		id, err := strconv.Atoi(strings.TrimSpace(part))
+		if err != nil {
+			return nil, fmt.Errorf("無効な数値: %s", part)
+		}
+		result = append(result, id)
+	}
+	return result, nil
+}
+
 //nolint:funlen // Flag definitions are necessarily verbose
 func init() {
 	rootCmd.AddCommand(issueCmd)
@@ -462,6 +510,10 @@ func init() {
 	issueListCmd.Flags().Int("tracker-id", 0, "トラッカーID")
 	issueListCmd.Flags().String("status-id", "", "ステータスID")
 	issueListCmd.Flags().String("assigned-to-id", "", "担当者ID")
+	issueListCmd.Flags().String("issue-id", "", "特定のissue IDでフィルター")
+	issueListCmd.Flags().Int("parent-id", 0, "親issueでフィルター")
+	issueListCmd.Flags().String("created-on", "", "作成日でフィルター (例: >=2024-01-01)")
+	issueListCmd.Flags().String("updated-on", "", "更新日でフィルター (例: >=2024-01-01)")
 	issueListCmd.Flags().String("include", "", "追加で取得する情報 (attachments, relations)")
 	issueListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	issueListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
@@ -488,6 +540,8 @@ func init() {
 	issueCreateCmd.Flags().Int("status-id", 0, "ステータスID")
 	issueCreateCmd.Flags().Int("priority-id", 0, "優先度ID")
 	issueCreateCmd.Flags().Int("category-id", 0, "カテゴリID")
+	issueCreateCmd.Flags().Int("fixed-version-id", 0, "バージョン/マイルストーンID")
+	issueCreateCmd.Flags().Int("parent-issue-id", 0, "親issue ID")
 	issueCreateCmd.Flags().String("subject", "", "件名 (必須)")
 	issueCreateCmd.Flags().String("description", "", "説明")
 	issueCreateCmd.Flags().Int("assigned-to-id", 0, "担当者ID")
@@ -496,6 +550,7 @@ func init() {
 	issueCreateCmd.Flags().Int("done-ratio", 0, "進捗率 (0-100)")
 	issueCreateCmd.Flags().Float64("estimated-hours", 0, "予定工数")
 	issueCreateCmd.Flags().Bool("is-private", false, "プライベート設定")
+	issueCreateCmd.Flags().String("watcher-user-ids", "", "ウォッチャーのユーザーIDリスト (カンマ区切り, 例: 1,2,3)")
 
 	// Flags for update command
 	issueUpdateCmd.Flags().String("subject", "", "件名")
@@ -503,10 +558,14 @@ func init() {
 	issueUpdateCmd.Flags().Int("status-id", 0, "ステータスID")
 	issueUpdateCmd.Flags().Int("priority-id", 0, "優先度ID")
 	issueUpdateCmd.Flags().Int("category-id", 0, "カテゴリID")
+	issueUpdateCmd.Flags().Int("fixed-version-id", 0, "バージョン/マイルストーンID")
+	issueUpdateCmd.Flags().Int("parent-issue-id", 0, "親issue ID")
 	issueUpdateCmd.Flags().Int("assigned-to-id", 0, "担当者ID")
 	issueUpdateCmd.Flags().String("start-date", "", "開始日 (YYYY-MM-DD)")
 	issueUpdateCmd.Flags().String("due-date", "", "期日 (YYYY-MM-DD)")
 	issueUpdateCmd.Flags().Int("done-ratio", 0, "進捗率 (0-100)")
 	issueUpdateCmd.Flags().Float64("estimated-hours", 0, "予定工数")
 	issueUpdateCmd.Flags().Bool("is-private", false, "プライベート設定")
+	issueUpdateCmd.Flags().String("notes", "", "更新コメント")
+	issueUpdateCmd.Flags().Bool("private-notes", false, "コメントをプライベートにする")
 }

@@ -10,6 +10,8 @@
 
 # Build artifacts
 /mcp-server
+/mcp
+/redmine
 bin/
 
 # Test binary, built with `go test -c`

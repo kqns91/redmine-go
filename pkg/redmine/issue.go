@@ -43,13 +43,16 @@ type IssueCreateRequest struct {
 	StatusID       int           `json:"status_id,omitempty"`
 	PriorityID     int           `json:"priority_id,omitempty"`
 	CategoryID     int           `json:"category_id,omitempty"`
+	FixedVersionID int           `json:"fixed_version_id,omitempty"`
 	AssignedToID   int           `json:"assigned_to_id,omitempty"`
+	ParentIssueID  int           `json:"parent_issue_id,omitempty"`
 	Description    string        `json:"description,omitempty"`
 	StartDate      string        `json:"start_date,omitempty"`
 	DueDate        string        `json:"due_date,omitempty"`
 	DoneRatio      int           `json:"done_ratio,omitempty"`
 	EstimatedHours float64       `json:"estimated_hours,omitempty"`
 	IsPrivate      bool          `json:"is_private,omitempty"`
+	WatcherUserIDs []int         `json:"watcher_user_ids,omitempty"`
 	CustomFields   []CustomField `json:"custom_fields,omitempty"`
 }
 
@@ -61,13 +64,17 @@ type IssueUpdateRequest struct {
 	StatusID       int           `json:"status_id,omitempty"`
 	PriorityID     int           `json:"priority_id,omitempty"`
 	CategoryID     int           `json:"category_id,omitempty"`
+	FixedVersionID int           `json:"fixed_version_id,omitempty"`
 	AssignedToID   int           `json:"assigned_to_id,omitempty"`
+	ParentIssueID  int           `json:"parent_issue_id,omitempty"`
 	Description    string        `json:"description,omitempty"`
 	StartDate      string        `json:"start_date,omitempty"`
 	DueDate        string        `json:"due_date,omitempty"`
 	DoneRatio      int           `json:"done_ratio,omitempty"`
 	EstimatedHours float64       `json:"estimated_hours,omitempty"`
 	IsPrivate      bool          `json:"is_private,omitempty"`
+	Notes          string        `json:"notes,omitempty"`
+	PrivateNotes   bool          `json:"private_notes,omitempty"`
 	CustomFields   []CustomField `json:"custom_fields,omitempty"`
 }
 
@@ -96,6 +103,10 @@ type ListIssuesOptions struct {
 	TrackerID    int
 	StatusID     string
 	AssignedToID string
+	IssueID      string
+	ParentID     int
+	CreatedOn    string
+	UpdatedOn    string
 	Include      string
 	Limit        int
 	Offset       int
@@ -122,6 +133,18 @@ func (c *Client) ListIssues(ctx context.Context, opts *ListIssuesOptions) (*Issu
 		}
 		if opts.AssignedToID != "" {
 			params.Add("assigned_to_id", opts.AssignedToID)
+		}
+		if opts.IssueID != "" {
+			params.Add("issue_id", opts.IssueID)
+		}
+		if opts.ParentID > 0 {
+			params.Add("parent_id", strconv.Itoa(opts.ParentID))
+		}
+		if opts.CreatedOn != "" {
+			params.Add("created_on", opts.CreatedOn)
+		}
+		if opts.UpdatedOn != "" {
+			params.Add("updated_on", opts.UpdatedOn)
 		}
 		if opts.Include != "" {
 			params.Add("include", opts.Include)
