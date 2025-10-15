@@ -297,7 +297,6 @@ func formatGroupsText(groups []redmine.Group) error {
 	return nil
 }
 
-
 // includeOptionsForGroup returns valid include options for group commands
 func includeOptionsForGroup() []string {
 	return []string{"users", "memberships"}

@@ -212,7 +212,6 @@ func formatWikiPagesText(pages []redmine.WikiPageIndex) error {
 	return nil
 }
 
-
 // includeOptionsForWiki returns valid include options for wiki commands
 func includeOptionsForWiki() []string {
 	return []string{"attachments"}

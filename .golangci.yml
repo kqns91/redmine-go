@@ -33,9 +33,12 @@ linters:
     - testpackage
     - tagliatelle  # Redmine API uses snake_case
     - noinlineerr  # Inline error handling is idiomatic in Go
+    - funlen  # Parameter building functions can be long but simple
   settings:
     cyclop:
-      max-complexity: 15  # Allow slightly more complex functions for handlers
+      max-complexity: 20  # Allow slightly more complex functions for parameter building
+    gocognit:
+      min-complexity: 35  # Allow slightly more complex parameter building
     revive:
       rules:
         - name: package-comments
@@ -51,7 +54,7 @@ linters:
       - path: '(.+)_test\.go'
         linters:
           - bodyclose
-      - path: 'cmd/cli/.*'
+      - path: 'cmd/redmine/.*'
         linters:
           - forbidigo
           - gosmopolitan

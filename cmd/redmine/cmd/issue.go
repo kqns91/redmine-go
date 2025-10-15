@@ -446,11 +446,11 @@ func formatJournals(journals []redmine.Journal) {
 		fmt.Println(formatter.FormatKeyValue("Journal ID", strconv.Itoa(journal.ID)))
 		fmt.Println(formatter.FormatKeyValue("User", journal.User.Name))
 		fmt.Println(formatter.FormatKeyValue("Created", journal.CreatedOn))
-		
+
 		if journal.Notes != "" {
 			fmt.Println(formatter.FormatKeyValue("Notes", journal.Notes))
 		}
-		
+
 		if len(journal.Details) > 0 {
 			fmt.Println("  Changes:")
 			for _, detail := range journal.Details {

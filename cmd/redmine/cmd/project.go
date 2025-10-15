@@ -307,7 +307,6 @@ func formatProjectsText(projects []redmine.Project) error {
 	return nil
 }
 
-
 // includeOptionsForProject returns valid include options for project commands
 func includeOptionsForProject() []string {
 	return []string{"trackers", "issue_categories", "enabled_modules", "time_entry_activities", "issue_custom_fields"}

@@ -150,15 +150,15 @@ var userCreateCmd = &cobra.Command{
 		}
 
 		user := redmine.User{
-			Login:             login,
-			Firstname:         firstname,
-			Lastname:          lastname,
-			Mail:              mail,
-			Password:          password,
-			AuthSourceID:      authSourceID,
-			MailNotification:  mailNotification,
-			MustChangePasswd:  mustChangePasswd,
-			GeneratePassword:  generatePassword,
+			Login:            login,
+			Firstname:        firstname,
+			Lastname:         lastname,
+			Mail:             mail,
+			Password:         password,
+			AuthSourceID:     authSourceID,
+			MailNotification: mailNotification,
+			MustChangePasswd: mustChangePasswd,
+			GeneratePassword: generatePassword,
 		}
 
 		result, err := client.CreateUser(context.Background(), user)
@@ -198,15 +198,15 @@ var userUpdateCmd = &cobra.Command{
 		generatePassword, _ := cmd.Flags().GetBool("generate-password")
 
 		user := redmine.User{
-			Login:             login,
-			Firstname:         firstname,
-			Lastname:          lastname,
-			Mail:              mail,
-			Password:          password,
-			AuthSourceID:      authSourceID,
-			MailNotification:  mailNotification,
-			MustChangePasswd:  mustChangePasswd,
-			GeneratePassword:  generatePassword,
+			Login:            login,
+			Firstname:        firstname,
+			Lastname:         lastname,
+			Mail:             mail,
+			Password:         password,
+			AuthSourceID:     authSourceID,
+			MailNotification: mailNotification,
+			MustChangePasswd: mustChangePasswd,
+			GeneratePassword: generatePassword,
 		}
 
 		err = client.UpdateUser(context.Background(), id, user)
@@ -340,7 +340,6 @@ func formatUsersText(users []redmine.User) error {
 
 	return nil
 }
-
 
 // includeOptionsForUser returns valid include options for user commands
 func includeOptionsForUser() []string {

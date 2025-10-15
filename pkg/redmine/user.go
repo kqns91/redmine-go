@@ -12,25 +12,25 @@ import (
 )
 
 type User struct {
-	ID                int           `json:"id,omitempty"`
-	Login             string        `json:"login,omitempty"`
-	Admin             bool          `json:"admin,omitempty"`
-	Firstname         string        `json:"firstname,omitempty"`
-	Lastname          string        `json:"lastname,omitempty"`
-	Mail              string        `json:"mail,omitempty"`
-	CreatedOn         string        `json:"created_on,omitempty"`
-	UpdatedOn         string        `json:"updated_on,omitempty"`
-	LastLoginOn       string        `json:"last_login_on,omitempty"`
-	PasswdChangedOn   string        `json:"passwd_changed_on,omitempty"`
-	TwofaScheme       string        `json:"twofa_scheme,omitempty"`
-	APIKey            string        `json:"api_key,omitempty"`
-	Status            int           `json:"status,omitempty"`
-	AuthSourceID      int           `json:"auth_source_id,omitempty"`
-	Password          string        `json:"password,omitempty"`
-	MailNotification  string        `json:"mail_notification,omitempty"`
-	MustChangePasswd  bool          `json:"must_change_passwd,omitempty"`
-	GeneratePassword  bool          `json:"generate_password,omitempty"`
-	CustomFields      []CustomField `json:"custom_fields,omitempty"`
+	ID               int           `json:"id,omitempty"`
+	Login            string        `json:"login,omitempty"`
+	Admin            bool          `json:"admin,omitempty"`
+	Firstname        string        `json:"firstname,omitempty"`
+	Lastname         string        `json:"lastname,omitempty"`
+	Mail             string        `json:"mail,omitempty"`
+	CreatedOn        string        `json:"created_on,omitempty"`
+	UpdatedOn        string        `json:"updated_on,omitempty"`
+	LastLoginOn      string        `json:"last_login_on,omitempty"`
+	PasswdChangedOn  string        `json:"passwd_changed_on,omitempty"`
+	TwofaScheme      string        `json:"twofa_scheme,omitempty"`
+	APIKey           string        `json:"api_key,omitempty"`
+	Status           int           `json:"status,omitempty"`
+	AuthSourceID     int           `json:"auth_source_id,omitempty"`
+	Password         string        `json:"password,omitempty"`
+	MailNotification string        `json:"mail_notification,omitempty"`
+	MustChangePasswd bool          `json:"must_change_passwd,omitempty"`
+	GeneratePassword bool          `json:"generate_password,omitempty"`
+	CustomFields     []CustomField `json:"custom_fields,omitempty"`
 }
 
 type UsersResponse struct {
