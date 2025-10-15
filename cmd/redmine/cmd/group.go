@@ -297,6 +297,12 @@ func formatGroupsText(groups []redmine.Group) error {
 	return nil
 }
 
+
+// includeOptionsForGroup returns valid include options for group commands
+func includeOptionsForGroup() []string {
+	return []string{"users", "memberships"}
+}
+
 func init() {
 	rootCmd.AddCommand(groupCmd)
 
@@ -310,12 +316,22 @@ func init() {
 	groupCmd.AddCommand(groupRemoveUserCmd)
 
 	// Flags for list command
-	groupListCmd.Flags().String("include", "", "追加で取得する情報 (例: users, memberships)")
+	groupListCmd.Flags().String("include", "", "追加で取得する情報 (users, memberships)")
 	groupListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
+	// Register flag completion for list command
+	_ = groupListCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForGroup(), cobra.ShellCompDirectiveNoFileComp
+	})
+
 	// Flags for get command
-	groupGetCmd.Flags().String("include", "", "追加で取得する情報 (例: users, memberships)")
+	groupGetCmd.Flags().String("include", "", "追加で取得する情報 (users, memberships)")
 	groupGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
+
+	// Register flag completion for get command
+	_ = groupGetCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForGroup(), cobra.ShellCompDirectiveNoFileComp
+	})
 
 	// Flags for create command
 	groupCreateCmd.Flags().String("name", "", "グループ名 (必須)")

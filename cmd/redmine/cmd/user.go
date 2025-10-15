@@ -327,6 +327,12 @@ func formatUsersText(users []redmine.User) error {
 	return nil
 }
 
+
+// includeOptionsForUser returns valid include options for user commands
+func includeOptionsForUser() []string {
+	return []string{"memberships", "groups"}
+}
+
 func init() {
 	rootCmd.AddCommand(userCmd)
 
@@ -342,17 +348,32 @@ func init() {
 	userListCmd.Flags().String("status", "", "ステータス (active, locked, registered)")
 	userListCmd.Flags().String("name", "", "ユーザー名")
 	userListCmd.Flags().Int("group-id", 0, "グループID")
-	userListCmd.Flags().String("include", "", "追加で取得する情報")
+	userListCmd.Flags().String("include", "", "追加で取得する情報 (memberships, groups)")
 	userListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	userListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
 	userListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
+	// Register flag completion for list command
+	_ = userListCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForUser(), cobra.ShellCompDirectiveNoFileComp
+	})
+
 	// Flags for get command
-	userGetCmd.Flags().String("include", "", "追加で取得する情報")
+	userGetCmd.Flags().String("include", "", "追加で取得する情報 (memberships, groups)")
 	userGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
+	// Register flag completion for get command
+	_ = userGetCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForUser(), cobra.ShellCompDirectiveNoFileComp
+	})
+
 	// Flags for current command
-	userCurrentCmd.Flags().String("include", "", "追加で取得する情報")
+	userCurrentCmd.Flags().String("include", "", "追加で取得する情報 (memberships, groups)")
+
+	// Register flag completion for current command
+	_ = userCurrentCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForUser(), cobra.ShellCompDirectiveNoFileComp
+	})
 
 	// Flags for create command
 	userCreateCmd.Flags().String("login", "", "ログインID (必須)")

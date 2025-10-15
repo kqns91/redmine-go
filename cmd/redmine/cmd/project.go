@@ -307,6 +307,12 @@ func formatProjectsText(projects []redmine.Project) error {
 	return nil
 }
 
+
+// includeOptionsForProject returns valid include options for project commands
+func includeOptionsForProject() []string {
+	return []string{"trackers", "issue_categories", "enabled_modules", "time_entry_activities", "issue_custom_fields"}
+}
+
 func init() {
 	rootCmd.AddCommand(projectCmd)
 
@@ -320,14 +326,24 @@ func init() {
 	projectCmd.AddCommand(projectUnarchiveCmd)
 
 	// Flags for list command
-	projectListCmd.Flags().String("include", "", "追加で取得する情報 (例: trackers,issue_categories)")
+	projectListCmd.Flags().String("include", "", "追加で取得する情報 (trackers, issue_categories, enabled_modules, time_entry_activities, issue_custom_fields)")
 	projectListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	projectListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
 	projectListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
+	// Register flag completion for list command
+	_ = projectListCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForProject(), cobra.ShellCompDirectiveNoFileComp
+	})
+
 	// Flags for get command
-	projectGetCmd.Flags().String("include", "", "追加で取得する情報 (例: trackers,issue_categories)")
+	projectGetCmd.Flags().String("include", "", "追加で取得する情報 (trackers, issue_categories, enabled_modules, time_entry_activities, issue_custom_fields)")
 	projectGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
+
+	// Register flag completion for get command
+	_ = projectGetCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForProject(), cobra.ShellCompDirectiveNoFileComp
+	})
 
 	// Flags for create command
 	projectCreateCmd.Flags().String("name", "", "プロジェクト名 (必須)")

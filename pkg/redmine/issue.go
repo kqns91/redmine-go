@@ -32,6 +32,7 @@ type Issue struct {
 	CreatedOn      string        `json:"created_on,omitempty"`
 	UpdatedOn      string        `json:"updated_on,omitempty"`
 	ClosedOn       string        `json:"closed_on,omitempty"`
+	Journals       []Journal     `json:"journals,omitempty"`
 }
 
 // IssueCreateRequest represents the request body for creating a new issue

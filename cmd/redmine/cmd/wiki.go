@@ -212,6 +212,12 @@ func formatWikiPagesText(pages []redmine.WikiPageIndex) error {
 	return nil
 }
 
+
+// includeOptionsForWiki returns valid include options for wiki commands
+func includeOptionsForWiki() []string {
+	return []string{"attachments"}
+}
+
 func init() {
 	rootCmd.AddCommand(wikiCmd)
 
@@ -225,9 +231,14 @@ func init() {
 	wikiListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
 	// Flags for get command
-	wikiGetCmd.Flags().String("include", "", "追加で取得する情報 (例: attachments)")
+	wikiGetCmd.Flags().String("include", "", "追加で取得する情報 (attachments)")
 	wikiGetCmd.Flags().Int("version", 0, "取得するバージョン番号")
 	wikiGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
+
+	// Register flag completion for get command
+	_ = wikiGetCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForWiki(), cobra.ShellCompDirectiveNoFileComp
+	})
 
 	// Flags for create-or-update command
 	wikiCreateOrUpdateCmd.Flags().String("text", "", "Wikiページの本文 (必須)")

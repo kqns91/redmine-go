@@ -394,7 +394,53 @@ func formatIssueDetail(issue *redmine.Issue) error {
 		fmt.Println(formatter.FormatKeyValue("Closed", issue.ClosedOn))
 	}
 
+	// Journals (if included)
+	formatJournals(issue.Journals)
+
 	return nil
+}
+
+// formatJournals formats journal entries for display
+func formatJournals(journals []redmine.Journal) {
+	if len(journals) == 0 {
+		return
+	}
+
+	fmt.Println()
+	fmt.Println(formatter.FormatSection("履歴"))
+	for i, journal := range journals {
+		if i > 0 {
+			fmt.Println()
+		}
+		fmt.Println(formatter.FormatKeyValue("Journal ID", strconv.Itoa(journal.ID)))
+		fmt.Println(formatter.FormatKeyValue("User", journal.User.Name))
+		fmt.Println(formatter.FormatKeyValue("Created", journal.CreatedOn))
+		
+		if journal.Notes != "" {
+			fmt.Println(formatter.FormatKeyValue("Notes", journal.Notes))
+		}
+		
+		if len(journal.Details) > 0 {
+			fmt.Println("  Changes:")
+			for _, detail := range journal.Details {
+				changeDesc := fmt.Sprintf("    - %s: %s → %s", detail.Name, detail.OldValue, detail.NewValue)
+				if detail.Property != "" {
+					changeDesc = fmt.Sprintf("    - [%s] %s: %s → %s", detail.Property, detail.Name, detail.OldValue, detail.NewValue)
+				}
+				fmt.Println(changeDesc)
+			}
+		}
+	}
+}
+
+// includeOptionsForIssueList returns valid include options for issue list command
+func includeOptionsForIssueList() []string {
+	return []string{"attachments", "relations"}
+}
+
+// includeOptionsForIssueGet returns valid include options for issue get command
+func includeOptionsForIssueGet() []string {
+	return []string{"children", "attachments", "relations", "changesets", "journals", "watchers", "allowed_statuses"}
 }
 
 //nolint:funlen // Flag definitions are necessarily verbose
@@ -416,15 +462,25 @@ func init() {
 	issueListCmd.Flags().Int("tracker-id", 0, "トラッカーID")
 	issueListCmd.Flags().String("status-id", "", "ステータスID")
 	issueListCmd.Flags().String("assigned-to-id", "", "担当者ID")
-	issueListCmd.Flags().String("include", "", "追加で取得する情報")
+	issueListCmd.Flags().String("include", "", "追加で取得する情報 (attachments, relations)")
 	issueListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	issueListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")
 	issueListCmd.Flags().String("sort", "", "ソート順")
 	issueListCmd.Flags().StringP("format", "f", formatTable, "出力フォーマット (json, table, text)")
 
+	// Register flag completion for list command
+	_ = issueListCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForIssueList(), cobra.ShellCompDirectiveNoFileComp
+	})
+
 	// Flags for get command
-	issueGetCmd.Flags().String("include", "", "追加で取得する情報")
+	issueGetCmd.Flags().String("include", "", "追加で取得する情報 (children, attachments, relations, changesets, journals, watchers, allowed_statuses)")
 	issueGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
+
+	// Register flag completion for get command
+	_ = issueGetCmd.RegisterFlagCompletionFunc("include", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return includeOptionsForIssueGet(), cobra.ShellCompDirectiveNoFileComp
+	})
 
 	// Flags for create command
 	issueCreateCmd.Flags().Int("project-id", 0, "プロジェクトID (必須)")
