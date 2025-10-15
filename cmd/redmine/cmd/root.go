@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cliconfig "github.com/kqns91/redmine-go/cmd/cli/internal/config"
+	cliconfig "github.com/kqns91/redmine-go/cmd/redmine/internal/config"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -25,9 +25,9 @@ var (
 
 // rootCmd はCLIのルートコマンドを表します
 var rootCmd = &cobra.Command{
-	Use:   "redmine-cli",
+	Use:   "redmine",
 	Short: "Redmine API client CLI",
-	Long: `redmine-cli は Redmine の REST API を操作するための CLI ツールです。
+	Long: `redmine は Redmine の REST API を操作するための CLI ツールです。
 すべての Redmine API 操作を CLI から実行できます。`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Skip config initialization for config commands
@@ -60,10 +60,10 @@ var rootCmd = &cobra.Command{
 		}
 
 		if apiURL == "" {
-			return errors.New("REDMINE_API_URL が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine-cli config init' で設定ファイルを作成\n  2. --url フラグを指定\n  3. REDMINE_API_URL 環境変数を設定")
+			return errors.New("REDMINE_API_URL が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. --url フラグを指定\n  3. REDMINE_API_URL 環境変数を設定")
 		}
 		if apiKey == "" {
-			return errors.New("REDMINE_API_KEY が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine-cli config init' で設定ファイルを作成\n  2. --key フラグを指定\n  3. REDMINE_API_KEY 環境変数を設定")
+			return errors.New("REDMINE_API_KEY が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. --key フラグを指定\n  3. REDMINE_API_KEY 環境変数を設定")
 		}
 
 		// Redmine クライアントを初期化

@@ -42,7 +42,7 @@ func Load() (*Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, errors.New("設定ファイルが見つかりません。'redmine-cli config init' を実行して初期設定を行ってください")
+			return nil, errors.New("設定ファイルが見つかりません。'redmine config init' を実行して初期設定を行ってください")
 		}
 		return nil, fmt.Errorf("設定ファイルの読み込みに失敗しました: %w", err)
 	}

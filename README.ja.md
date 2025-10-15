@@ -36,13 +36,13 @@ go get github.com/kqns91/redmine-go
 ### CLI
 
 ```bash
-go install github.com/kqns91/redmine-go/cmd/cli@latest
+go install github.com/kqns91/redmine-go/cmd/redmine@latest
 ```
 
 ### MCP サーバー
 
 ```bash
-go install github.com/kqns91/redmine-go/cmd/mcp-server@latest
+go install github.com/kqns91/redmine-go/cmd/mcp@latest
 ```
 
 ---
@@ -143,17 +143,17 @@ SDK は Redmine REST API をサポートしています：
 config コマンドで対話的に設定：
 
 ```bash
-redmine-cli config set url https://your-redmine.com
-redmine-cli config set api_key your-api-key
+redmine config set url https://your-redmine.com
+redmine config set api_key your-api-key
 ```
 
 現在の設定を確認：
 
 ```bash
-redmine-cli config list
+redmine config list
 ```
 
-設定は `~/.redmine-cli/config.yaml` に保存されます。必要に応じて直接編集することもできます。
+設定は `~/.redmine/config.yaml` に保存されます。必要に応じて直接編集することもできます。
 
 環境変数やコマンドラインフラグでも設定できます：
 
@@ -163,7 +163,7 @@ export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 
 # コマンドラインフラグ
-redmine-cli --url https://your-redmine.com --api-key your-api-key <command>
+redmine --url https://your-redmine.com --api-key your-api-key <command>
 ```
 
 ### API キーの取得方法
@@ -177,19 +177,19 @@ redmine-cli --url https://your-redmine.com --api-key your-api-key <command>
 
 ```bash
 # プロジェクト
-redmine-cli projects list
-redmine-cli projects show <project-id>
+redmine projects list
+redmine projects show <project-id>
 
 # 課題
-redmine-cli issues list --project <project-id>
-redmine-cli issues show <issue-id>
-redmine-cli issues create --project <project-id> --subject "タイトル" --description "説明"
-redmine-cli issues update <issue-id> --status <status-id> --assigned-to <user-id>
+redmine issues list --project <project-id>
+redmine issues show <issue-id>
+redmine issues create --project <project-id> --subject "タイトル" --description "説明"
+redmine issues update <issue-id> --status <status-id> --assigned-to <user-id>
 
 # ユーザー
-redmine-cli users list
-redmine-cli users show <user-id>
-redmine-cli users current
+redmine users list
+redmine users show <user-id>
+redmine users current
 ```
 
 ### 出力フォーマット
@@ -198,19 +198,19 @@ CLI は3つの出力フォーマットをサポートしています：
 
 **テーブルフォーマット**（デフォルト）
 ```bash
-redmine-cli projects list --format table
+redmine projects list --format table
 ```
 列を持つ構造化されたテーブルで、ターミナルでの閲覧に適しています。
 
 **JSON フォーマット**
 ```bash
-redmine-cli projects list --format json
+redmine projects list --format json
 ```
 機械可読な JSON 出力で、スクリプトや統合に便利です。
 
 **テキストフォーマット**
 ```bash
-redmine-cli projects list --format text
+redmine projects list --format text
 ```
 最小限の書式設定を行ったプレーンテキスト出力です。
 
@@ -219,9 +219,9 @@ redmine-cli projects list --format text
 すべてのコマンドで詳細なヘルプを表示できます：
 
 ```bash
-redmine-cli --help
-redmine-cli projects --help
-redmine-cli issues create --help
+redmine --help
+redmine projects --help
+redmine issues create --help
 ```
 
 ---
@@ -245,7 +245,7 @@ MCP クライアントの設定ファイルに追加します。
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp-server",
+      "command": "/path/to/mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key"
@@ -293,7 +293,7 @@ MCP クライアントの設定ファイルに追加します。
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp-server",
+      "command": "/path/to/mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key",

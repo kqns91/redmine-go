@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/kqns91/redmine-go/cmd/cli/internal/formatter"
+	"github.com/kqns91/redmine-go/cmd/redmine/internal/formatter"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 

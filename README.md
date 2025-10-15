@@ -36,13 +36,13 @@ go get github.com/kqns91/redmine-go
 ### CLI
 
 ```bash
-go install github.com/kqns91/redmine-go/cmd/cli@latest
+go install github.com/kqns91/redmine-go/cmd/redmine@latest
 ```
 
 ### MCP Server
 
 ```bash
-go install github.com/kqns91/redmine-go/cmd/mcp-server@latest
+go install github.com/kqns91/redmine-go/cmd/mcp@latest
 ```
 
 ---
@@ -143,17 +143,17 @@ Command-line tool for managing Redmine from the terminal.
 Run the config command to set up interactively:
 
 ```bash
-redmine-cli config set url https://your-redmine.com
-redmine-cli config set api_key your-api-key
+redmine config set url https://your-redmine.com
+redmine config set api_key your-api-key
 ```
 
 View current configuration:
 
 ```bash
-redmine-cli config list
+redmine config list
 ```
 
-The configuration is stored at `~/.redmine-cli/config.yaml`. You can also edit this file directly if needed.
+The configuration is stored at `~/.redmine/config.yaml`. You can also edit this file directly if needed.
 
 Alternatively, you can use environment variables or command-line flags:
 
@@ -163,7 +163,7 @@ export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 
 # Command-line flags
-redmine-cli --url https://your-redmine.com --api-key your-api-key <command>
+redmine --url https://your-redmine.com --api-key your-api-key <command>
 ```
 
 ### Getting Your API Key
@@ -177,19 +177,19 @@ redmine-cli --url https://your-redmine.com --api-key your-api-key <command>
 
 ```bash
 # Projects
-redmine-cli projects list
-redmine-cli projects show <project-id>
+redmine projects list
+redmine projects show <project-id>
 
 # Issues
-redmine-cli issues list --project <project-id>
-redmine-cli issues show <issue-id>
-redmine-cli issues create --project <project-id> --subject "Title" --description "Description"
-redmine-cli issues update <issue-id> --status <status-id> --assigned-to <user-id>
+redmine issues list --project <project-id>
+redmine issues show <issue-id>
+redmine issues create --project <project-id> --subject "Title" --description "Description"
+redmine issues update <issue-id> --status <status-id> --assigned-to <user-id>
 
 # Users
-redmine-cli users list
-redmine-cli users show <user-id>
-redmine-cli users current
+redmine users list
+redmine users show <user-id>
+redmine users current
 ```
 
 ### Output Formats
@@ -198,19 +198,19 @@ The CLI supports three output formats:
 
 **Table format** (default)
 ```bash
-redmine-cli projects list --format table
+redmine projects list --format table
 ```
 Structured table with columns, suitable for terminal viewing.
 
 **JSON format**
 ```bash
-redmine-cli projects list --format json
+redmine projects list --format json
 ```
 Machine-readable JSON output, useful for scripting and integration.
 
 **Text format**
 ```bash
-redmine-cli projects list --format text
+redmine projects list --format text
 ```
 Plain text output with minimal formatting.
 
@@ -219,9 +219,9 @@ Plain text output with minimal formatting.
 All commands provide detailed help:
 
 ```bash
-redmine-cli --help
-redmine-cli projects --help
-redmine-cli issues create --help
+redmine --help
+redmine projects --help
+redmine issues create --help
 ```
 
 ---
@@ -245,7 +245,7 @@ Basic configuration (all tools enabled):
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp-server",
+      "command": "/path/to/mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key"
@@ -293,7 +293,7 @@ Use `REDMINE_ENABLED_TOOLS` to specify which tool groups to enable:
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp-server",
+      "command": "/path/to/mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key",
