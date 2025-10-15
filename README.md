@@ -3,6 +3,7 @@
 Unofficial Redmine API implementation in Go.
 
 [![Go Version](https://img.shields.io/badge/Go-1.25.2%2B-00ADD8?logo=go)](https://go.dev/)
+[![Go Reference](https://pkg.go.dev/badge/github.com/kqns91/redmine-go.svg)](https://pkg.go.dev/github.com/kqns91/redmine-go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 English | [日本語](README.ja.md)
