@@ -30,6 +30,7 @@ type User struct {
 	MailNotification string        `json:"mail_notification,omitempty"`
 	MustChangePasswd bool          `json:"must_change_passwd,omitempty"`
 	GeneratePassword bool          `json:"generate_password,omitempty"`
+	SendInformation  bool          `json:"send_information,omitempty"`
 	CustomFields     []CustomField `json:"custom_fields,omitempty"`
 }
 

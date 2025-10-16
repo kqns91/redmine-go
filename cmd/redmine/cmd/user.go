@@ -135,6 +135,7 @@ var userCreateCmd = &cobra.Command{
 		mailNotification, _ := cmd.Flags().GetString("mail-notification")
 		mustChangePasswd, _ := cmd.Flags().GetBool("must-change-passwd")
 		generatePassword, _ := cmd.Flags().GetBool("generate-password")
+		sendInformation, _ := cmd.Flags().GetBool("send-information")
 
 		if login == "" {
 			return errors.New("--login フラグは必須です")
@@ -159,6 +160,7 @@ var userCreateCmd = &cobra.Command{
 			MailNotification: mailNotification,
 			MustChangePasswd: mustChangePasswd,
 			GeneratePassword: generatePassword,
+			SendInformation:  sendInformation,
 		}
 
 		result, err := client.CreateUser(context.Background(), user)
@@ -398,6 +400,7 @@ func init() {
 	userCreateCmd.Flags().String("mail-notification", "", "メール通知設定 (all, selected, only_my_events, only_assigned, only_owner, none)")
 	userCreateCmd.Flags().Bool("must-change-passwd", false, "初回ログイン時にパスワード変更を強制")
 	userCreateCmd.Flags().Bool("generate-password", false, "パスワードを自動生成")
+	userCreateCmd.Flags().Bool("send-information", false, "アカウント情報メールを送信")
 
 	// Flags for update command
 	userUpdateCmd.Flags().String("login", "", "ログインID")
