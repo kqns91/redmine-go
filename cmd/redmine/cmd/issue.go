@@ -152,6 +152,7 @@ var issueCreateCmd = &cobra.Command{
 		isPrivate, _ := cmd.Flags().GetBool("is-private")
 		watcherUserIDsStr, _ := cmd.Flags().GetString("watcher-user-ids")
 		uploadsJSON, _ := cmd.Flags().GetString("uploads")
+		customFieldsJSON, _ := cmd.Flags().GetString("custom-fields")
 
 		if projectID == 0 {
 			return errors.New("--project-id フラグは必須です")
@@ -199,6 +200,13 @@ var issueCreateCmd = &cobra.Command{
 			req.Uploads = uploads
 		}
 
+		// Parse custom fields if provided
+		customFields, err := parseCustomFieldsForIssue(customFieldsJSON)
+		if err != nil {
+			return fmt.Errorf("カスタムフィールドのパースに失敗しました: %w", err)
+		}
+		req.CustomFields = customFields
+
 		result, err := client.CreateIssue(context.Background(), req)
 		if err != nil {
 			return fmt.Errorf("チケットの作成に失敗しました: %w", err)
@@ -241,6 +249,7 @@ var issueUpdateCmd = &cobra.Command{
 		notes, _ := cmd.Flags().GetString("notes")
 		privateNotes, _ := cmd.Flags().GetBool("private-notes")
 		uploadsJSON, _ := cmd.Flags().GetString("uploads")
+		customFieldsJSON, _ := cmd.Flags().GetString("custom-fields")
 
 		req := redmine.IssueUpdateRequest{
 			Subject:        subject,
@@ -268,6 +277,13 @@ var issueUpdateCmd = &cobra.Command{
 			}
 			req.Uploads = uploads
 		}
+
+		// Parse custom fields if provided
+		customFields, err := parseCustomFieldsForIssue(customFieldsJSON)
+		if err != nil {
+			return fmt.Errorf("カスタムフィールドのパースに失敗しました: %w", err)
+		}
+		req.CustomFields = customFields
 
 		err = client.UpdateIssue(context.Background(), id, req)
 		if err != nil {
@@ -531,6 +547,18 @@ func parseIntSlice(s string) ([]int, error) {
 	return result, nil
 }
 
+// parseCustomFieldsForIssue parses custom fields from JSON string to []CustomField
+func parseCustomFieldsForIssue(s string) ([]redmine.CustomField, error) {
+	if s == "" {
+		return nil, nil
+	}
+	var result []redmine.CustomField
+	if err := json.Unmarshal([]byte(s), &result); err != nil {
+		return nil, fmt.Errorf("無効なJSON: %w", err)
+	}
+	return result, nil
+}
+
 //nolint:funlen // Flag definitions are necessarily verbose
 func init() {
 	rootCmd.AddCommand(issueCmd)
@@ -602,6 +630,7 @@ func init() {
 	issueCreateCmd.Flags().Bool("is-private", false, "プライベート設定")
 	issueCreateCmd.Flags().String("watcher-user-ids", "", "ウォッチャーのユーザーIDリスト (カンマ区切り, 例: 1,2,3)")
 	issueCreateCmd.Flags().String("uploads", "", "アップロードファイル情報 (JSON形式, 例: '[{\"token\":\"xxx\",\"filename\":\"file.pdf\"}]')")
+	issueCreateCmd.Flags().String("custom-fields", "", "カスタムフィールド (JSON形式, 例: '[{\"id\":1,\"value\":\"foo\"}]')")
 
 	// Flags for update command
 	issueUpdateCmd.Flags().String("subject", "", "件名")
@@ -620,4 +649,5 @@ func init() {
 	issueUpdateCmd.Flags().String("notes", "", "更新コメント")
 	issueUpdateCmd.Flags().Bool("private-notes", false, "コメントをプライベートにする")
 	issueUpdateCmd.Flags().String("uploads", "", "アップロードファイル情報 (JSON形式, 例: '[{\"token\":\"xxx\",\"filename\":\"file.pdf\"}]')")
+	issueUpdateCmd.Flags().String("custom-fields", "", "カスタムフィールド (JSON形式, 例: '[{\"id\":1,\"value\":\"foo\"}]')")
 }
