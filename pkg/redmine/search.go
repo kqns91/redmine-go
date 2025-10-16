@@ -30,8 +30,16 @@ type SearchResponse struct {
 type SearchOptions struct {
 	Query       []string
 	Scope       string
+	AllWords    bool
+	TitlesOnly  bool
 	Issues      bool
+	News        bool
+	Documents   bool
+	Changesets  bool
 	WikiPages   bool
+	Messages    bool
+	Projects    bool
+	OpenIssues  bool
 	Attachments bool
 	Offset      int
 	Limit       int
@@ -51,11 +59,35 @@ func (c *Client) Search(ctx context.Context, opts *SearchOptions) (*SearchRespon
 		if opts.Scope != "" {
 			params.Add("scope", opts.Scope)
 		}
+		if opts.AllWords {
+			params.Add("all_words", "1")
+		}
+		if opts.TitlesOnly {
+			params.Add("titles_only", "1")
+		}
 		if opts.Issues {
 			params.Add("issues", "1")
 		}
+		if opts.News {
+			params.Add("news", "1")
+		}
+		if opts.Documents {
+			params.Add("documents", "1")
+		}
+		if opts.Changesets {
+			params.Add("changesets", "1")
+		}
 		if opts.WikiPages {
 			params.Add("wiki_pages", "1")
+		}
+		if opts.Messages {
+			params.Add("messages", "1")
+		}
+		if opts.Projects {
+			params.Add("projects", "1")
+		}
+		if opts.OpenIssues {
+			params.Add("open_issues", "1")
 		}
 		if opts.Attachments {
 			params.Add("attachments", "1")

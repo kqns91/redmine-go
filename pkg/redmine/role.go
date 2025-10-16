@@ -9,10 +9,13 @@ import (
 )
 
 type Role struct {
-	ID          int      `json:"id,omitempty"`
-	Name        string   `json:"name,omitempty"`
-	Assignable  bool     `json:"assignable,omitempty"`
-	Permissions []string `json:"permissions,omitempty"`
+	ID                    int      `json:"id,omitempty"`
+	Name                  string   `json:"name,omitempty"`
+	Assignable            bool     `json:"assignable,omitempty"`
+	IssuesVisibility      string   `json:"issues_visibility,omitempty"`
+	UsersVisibility       string   `json:"users_visibility,omitempty"`
+	TimeEntriesVisibility string   `json:"time_entries_visibility,omitempty"`
+	Permissions           []string `json:"permissions,omitempty"`
 }
 
 type RolesResponse struct {

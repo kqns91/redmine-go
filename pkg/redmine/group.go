@@ -11,9 +11,11 @@ import (
 )
 
 type Group struct {
-	ID      int    `json:"id,omitempty"`
-	Name    string `json:"name,omitempty"`
-	UserIDs []int  `json:"user_ids,omitempty"`
+	ID          int          `json:"id,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	UserIDs     []int        `json:"user_ids,omitempty"`
+	Users       []User       `json:"users,omitempty"`
+	Memberships []Membership `json:"memberships,omitempty"`
 }
 
 type GroupsResponse struct {
