@@ -131,6 +131,7 @@ var issueCreateCmd = &cobra.Command{
 		estimatedHours, _ := cmd.Flags().GetFloat64("estimated-hours")
 		isPrivate, _ := cmd.Flags().GetBool("is-private")
 		watcherUserIDsStr, _ := cmd.Flags().GetString("watcher-user-ids")
+		uploadsJSON, _ := cmd.Flags().GetString("uploads")
 
 		if projectID == 0 {
 			return errors.New("--project-id フラグは必須です")
@@ -167,6 +168,15 @@ var issueCreateCmd = &cobra.Command{
 				return fmt.Errorf("無効なwatcher-user-ids: %w", err)
 			}
 			req.WatcherUserIDs = watcherIDs
+		}
+
+		// Parse uploads if provided
+		if uploadsJSON != "" {
+			var uploads []redmine.Upload
+			if err := json.Unmarshal([]byte(uploadsJSON), &uploads); err != nil {
+				return fmt.Errorf("無効なuploads JSON: %w", err)
+			}
+			req.Uploads = uploads
 		}
 
 		result, err := client.CreateIssue(context.Background(), req)
@@ -210,6 +220,7 @@ var issueUpdateCmd = &cobra.Command{
 		isPrivate, _ := cmd.Flags().GetBool("is-private")
 		notes, _ := cmd.Flags().GetString("notes")
 		privateNotes, _ := cmd.Flags().GetBool("private-notes")
+		uploadsJSON, _ := cmd.Flags().GetString("uploads")
 
 		req := redmine.IssueUpdateRequest{
 			Subject:        subject,
@@ -227,6 +238,15 @@ var issueUpdateCmd = &cobra.Command{
 			IsPrivate:      isPrivate,
 			Notes:          notes,
 			PrivateNotes:   privateNotes,
+		}
+
+		// Parse uploads if provided
+		if uploadsJSON != "" {
+			var uploads []redmine.Upload
+			if err := json.Unmarshal([]byte(uploadsJSON), &uploads); err != nil {
+				return fmt.Errorf("無効なuploads JSON: %w", err)
+			}
+			req.Uploads = uploads
 		}
 
 		err = client.UpdateIssue(context.Background(), id, req)
@@ -551,6 +571,7 @@ func init() {
 	issueCreateCmd.Flags().Float64("estimated-hours", 0, "予定工数")
 	issueCreateCmd.Flags().Bool("is-private", false, "プライベート設定")
 	issueCreateCmd.Flags().String("watcher-user-ids", "", "ウォッチャーのユーザーIDリスト (カンマ区切り, 例: 1,2,3)")
+	issueCreateCmd.Flags().String("uploads", "", "アップロードファイル情報 (JSON形式, 例: '[{\"token\":\"xxx\",\"filename\":\"file.pdf\"}]')")
 
 	// Flags for update command
 	issueUpdateCmd.Flags().String("subject", "", "件名")
@@ -568,4 +589,5 @@ func init() {
 	issueUpdateCmd.Flags().Bool("is-private", false, "プライベート設定")
 	issueUpdateCmd.Flags().String("notes", "", "更新コメント")
 	issueUpdateCmd.Flags().Bool("private-notes", false, "コメントをプライベートにする")
+	issueUpdateCmd.Flags().String("uploads", "", "アップロードファイル情報 (JSON形式, 例: '[{\"token\":\"xxx\",\"filename\":\"file.pdf\"}]')")
 }

@@ -60,6 +60,7 @@ type IssueCreateRequest struct {
 	IsPrivate      bool          `json:"is_private,omitempty"`
 	WatcherUserIDs []int         `json:"watcher_user_ids,omitempty"`
 	CustomFields   []CustomField `json:"custom_fields,omitempty"`
+	Uploads        []Upload      `json:"uploads,omitempty"`
 }
 
 // IssueUpdateRequest represents the request body for updating an existing issue
@@ -82,6 +83,7 @@ type IssueUpdateRequest struct {
 	Notes          string        `json:"notes,omitempty"`
 	PrivateNotes   bool          `json:"private_notes,omitempty"`
 	CustomFields   []CustomField `json:"custom_fields,omitempty"`
+	Uploads        []Upload      `json:"uploads,omitempty"`
 }
 
 type IssuesResponse struct {

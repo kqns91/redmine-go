@@ -22,3 +22,10 @@ type Changeset struct {
 	Comments    string   `json:"comments,omitempty"`
 	CommittedOn string   `json:"committed_on,omitempty"`
 }
+
+type Upload struct {
+	Token       string `json:"token"`
+	Filename    string `json:"filename,omitempty"`
+	Description string `json:"description,omitempty"`
+	ContentType string `json:"content_type,omitempty"`
+}

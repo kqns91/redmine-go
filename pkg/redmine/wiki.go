@@ -15,6 +15,7 @@ type WikiPage struct {
 	Text        string       `json:"text,omitempty"`
 	Version     int          `json:"version,omitempty"`
 	Author      Resource     `json:"author,omitempty"`
+	Parent      Resource     `json:"parent,omitempty"`
 	Comments    string       `json:"comments,omitempty"`
 	CreatedOn   string       `json:"created_on,omitempty"`
 	UpdatedOn   string       `json:"updated_on,omitempty"`
@@ -42,9 +43,10 @@ type WikiPageRequest struct {
 }
 
 type WikiPageUpdate struct {
-	Text     string `json:"text,omitempty"`
-	Comments string `json:"comments,omitempty"`
-	Version  int    `json:"version,omitempty"`
+	Text     string   `json:"text,omitempty"`
+	Comments string   `json:"comments,omitempty"`
+	Version  int      `json:"version,omitempty"`
+	Uploads  []Upload `json:"uploads,omitempty"`
 }
 
 // ListWikiPages retrieves wiki pages index for a project

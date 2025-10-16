@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -86,6 +87,7 @@ var wikiCreateOrUpdateCmd = &cobra.Command{
 		text, _ := cmd.Flags().GetString("text")
 		comments, _ := cmd.Flags().GetString("comments")
 		version, _ := cmd.Flags().GetInt("version")
+		uploadsJSON, _ := cmd.Flags().GetString("uploads")
 
 		if text == "" {
 			return errors.New("--text フラグは必須です")
@@ -95,6 +97,15 @@ var wikiCreateOrUpdateCmd = &cobra.Command{
 			Text:     text,
 			Comments: comments,
 			Version:  version,
+		}
+
+		// Parse uploads if provided
+		if uploadsJSON != "" {
+			var uploads []redmine.Upload
+			if err := json.Unmarshal([]byte(uploadsJSON), &uploads); err != nil {
+				return fmt.Errorf("無効なuploads JSON: %w", err)
+			}
+			page.Uploads = uploads
 		}
 
 		err := client.CreateOrUpdateWikiPage(context.Background(), args[0], args[1], page)
@@ -243,4 +254,5 @@ func init() {
 	wikiCreateOrUpdateCmd.Flags().String("text", "", "Wikiページの本文 (必須)")
 	wikiCreateOrUpdateCmd.Flags().String("comments", "", "更新コメント")
 	wikiCreateOrUpdateCmd.Flags().Int("version", 0, "更新するバージョン番号（競合チェック用）")
+	wikiCreateOrUpdateCmd.Flags().String("uploads", "", "アップロードファイル情報 (JSON形式, 例: '[{\"token\":\"xxx\",\"filename\":\"file.pdf\"}]')")
 }
