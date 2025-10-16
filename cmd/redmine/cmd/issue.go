@@ -30,10 +30,20 @@ var issueListCmd = &cobra.Command{
 		trackerID, _ := cmd.Flags().GetInt("tracker-id")
 		statusID, _ := cmd.Flags().GetString("status-id")
 		assignedToID, _ := cmd.Flags().GetString("assigned-to-id")
+		priorityID, _ := cmd.Flags().GetInt("priority-id")
+		categoryID, _ := cmd.Flags().GetInt("category-id")
+		fixedVersionID, _ := cmd.Flags().GetInt("fixed-version-id")
 		issueID, _ := cmd.Flags().GetString("issue-id")
 		parentID, _ := cmd.Flags().GetInt("parent-id")
+		subject, _ := cmd.Flags().GetString("subject")
+		description, _ := cmd.Flags().GetString("description")
 		createdOn, _ := cmd.Flags().GetString("created-on")
 		updatedOn, _ := cmd.Flags().GetString("updated-on")
+		closedOn, _ := cmd.Flags().GetString("closed-on")
+		startDate, _ := cmd.Flags().GetString("start-date")
+		dueDate, _ := cmd.Flags().GetString("due-date")
+		estimatedHours, _ := cmd.Flags().GetString("estimated-hours")
+		doneRatio, _ := cmd.Flags().GetString("done-ratio")
 		include, _ := cmd.Flags().GetString("include")
 		limit, _ := cmd.Flags().GetInt("limit")
 		offset, _ := cmd.Flags().GetInt("offset")
@@ -41,19 +51,29 @@ var issueListCmd = &cobra.Command{
 		format, _ := cmd.Flags().GetString("format")
 
 		opts := &redmine.ListIssuesOptions{
-			ProjectID:    projectID,
-			SubprojectID: subprojectID,
-			TrackerID:    trackerID,
-			StatusID:     statusID,
-			AssignedToID: assignedToID,
-			IssueID:      issueID,
-			ParentID:     parentID,
-			CreatedOn:    createdOn,
-			UpdatedOn:    updatedOn,
-			Include:      include,
-			Limit:        limit,
-			Offset:       offset,
-			Sort:         sort,
+			ProjectID:      projectID,
+			SubprojectID:   subprojectID,
+			TrackerID:      trackerID,
+			StatusID:       statusID,
+			AssignedToID:   assignedToID,
+			PriorityID:     priorityID,
+			CategoryID:     categoryID,
+			FixedVersionID: fixedVersionID,
+			IssueID:        issueID,
+			ParentID:       parentID,
+			Subject:        subject,
+			Description:    description,
+			CreatedOn:      createdOn,
+			UpdatedOn:      updatedOn,
+			ClosedOn:       closedOn,
+			StartDate:      startDate,
+			DueDate:        dueDate,
+			EstimatedHours: estimatedHours,
+			DoneRatio:      doneRatio,
+			Include:        include,
+			Limit:          limit,
+			Offset:         offset,
+			Sort:           sort,
 		}
 
 		result, err := client.ListIssues(context.Background(), opts)
@@ -530,10 +550,20 @@ func init() {
 	issueListCmd.Flags().Int("tracker-id", 0, "トラッカーID")
 	issueListCmd.Flags().String("status-id", "", "ステータスID")
 	issueListCmd.Flags().String("assigned-to-id", "", "担当者ID")
+	issueListCmd.Flags().Int("priority-id", 0, "優先度ID")
+	issueListCmd.Flags().Int("category-id", 0, "カテゴリID")
+	issueListCmd.Flags().Int("fixed-version-id", 0, "対象バージョンID")
 	issueListCmd.Flags().String("issue-id", "", "特定のissue IDでフィルター")
 	issueListCmd.Flags().Int("parent-id", 0, "親issueでフィルター")
+	issueListCmd.Flags().String("subject", "", "件名でフィルター（部分一致）")
+	issueListCmd.Flags().String("description", "", "説明文でフィルター（部分一致）")
 	issueListCmd.Flags().String("created-on", "", "作成日でフィルター (例: >=2024-01-01)")
 	issueListCmd.Flags().String("updated-on", "", "更新日でフィルター (例: >=2024-01-01)")
+	issueListCmd.Flags().String("closed-on", "", "クローズ日でフィルター (例: >=2024-01-01)")
+	issueListCmd.Flags().String("start-date", "", "開始日でフィルター (例: >=2024-01-01)")
+	issueListCmd.Flags().String("due-date", "", "期日でフィルター (例: >=2024-01-01)")
+	issueListCmd.Flags().String("estimated-hours", "", "予定工数でフィルター (例: >=8)")
+	issueListCmd.Flags().String("done-ratio", "", "進捗率でフィルター (例: >=50)")
 	issueListCmd.Flags().String("include", "", "追加で取得する情報 (attachments, relations)")
 	issueListCmd.Flags().Int("limit", 0, "取得する最大件数")
 	issueListCmd.Flags().Int("offset", 0, "取得開始位置のオフセット")

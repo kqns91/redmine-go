@@ -106,19 +106,29 @@ type IssueUpdateRequestWrapper struct {
 }
 
 type ListIssuesOptions struct {
-	ProjectID    int
-	SubprojectID string
-	TrackerID    int
-	StatusID     string
-	AssignedToID string
-	IssueID      string
-	ParentID     int
-	CreatedOn    string
-	UpdatedOn    string
-	Include      string
-	Limit        int
-	Offset       int
-	Sort         string
+	ProjectID      int
+	SubprojectID   string
+	TrackerID      int
+	StatusID       string
+	AssignedToID   string
+	PriorityID     int
+	CategoryID     int
+	FixedVersionID int
+	IssueID        string
+	ParentID       int
+	Subject        string
+	Description    string
+	CreatedOn      string
+	UpdatedOn      string
+	ClosedOn       string
+	StartDate      string
+	DueDate        string
+	EstimatedHours string
+	DoneRatio      string
+	Include        string
+	Limit          int
+	Offset         int
+	Sort           string
 }
 
 // ListIssues retrieves a list of issues
@@ -142,17 +152,47 @@ func (c *Client) ListIssues(ctx context.Context, opts *ListIssuesOptions) (*Issu
 		if opts.AssignedToID != "" {
 			params.Add("assigned_to_id", opts.AssignedToID)
 		}
+		if opts.PriorityID > 0 {
+			params.Add("priority_id", strconv.Itoa(opts.PriorityID))
+		}
+		if opts.CategoryID > 0 {
+			params.Add("category_id", strconv.Itoa(opts.CategoryID))
+		}
+		if opts.FixedVersionID > 0 {
+			params.Add("fixed_version_id", strconv.Itoa(opts.FixedVersionID))
+		}
 		if opts.IssueID != "" {
 			params.Add("issue_id", opts.IssueID)
 		}
 		if opts.ParentID > 0 {
 			params.Add("parent_id", strconv.Itoa(opts.ParentID))
 		}
+		if opts.Subject != "" {
+			params.Add("subject", opts.Subject)
+		}
+		if opts.Description != "" {
+			params.Add("description", opts.Description)
+		}
 		if opts.CreatedOn != "" {
 			params.Add("created_on", opts.CreatedOn)
 		}
 		if opts.UpdatedOn != "" {
 			params.Add("updated_on", opts.UpdatedOn)
+		}
+		if opts.ClosedOn != "" {
+			params.Add("closed_on", opts.ClosedOn)
+		}
+		if opts.StartDate != "" {
+			params.Add("start_date", opts.StartDate)
+		}
+		if opts.DueDate != "" {
+			params.Add("due_date", opts.DueDate)
+		}
+		if opts.EstimatedHours != "" {
+			params.Add("estimated_hours", opts.EstimatedHours)
+		}
+		if opts.DoneRatio != "" {
+			params.Add("done_ratio", opts.DoneRatio)
 		}
 		if opts.Include != "" {
 			params.Add("include", opts.Include)
