@@ -10,16 +10,18 @@ import (
 )
 
 type Version struct {
-	ID            int      `json:"id,omitempty"`
-	Project       Resource `json:"project,omitempty"`
-	Name          string   `json:"name,omitempty"`
-	Description   string   `json:"description,omitempty"`
-	Status        string   `json:"status,omitempty"`
-	DueDate       string   `json:"due_date,omitempty"`
-	Sharing       string   `json:"sharing,omitempty"`
-	WikiPageTitle string   `json:"wiki_page_title,omitempty"`
-	CreatedOn     string   `json:"created_on,omitempty"`
-	UpdatedOn     string   `json:"updated_on,omitempty"`
+	ID             int      `json:"id,omitempty"`
+	Project        Resource `json:"project,omitempty"`
+	Name           string   `json:"name,omitempty"`
+	Description    string   `json:"description,omitempty"`
+	Status         string   `json:"status,omitempty"`
+	DueDate        string   `json:"due_date,omitempty"`
+	Sharing        string   `json:"sharing,omitempty"`
+	WikiPageTitle  string   `json:"wiki_page_title,omitempty"`
+	EstimatedHours float64  `json:"estimated_hours,omitempty"`
+	SpentHours     float64  `json:"spent_hours,omitempty"`
+	CreatedOn      string   `json:"created_on,omitempty"`
+	UpdatedOn      string   `json:"updated_on,omitempty"`
 }
 
 type VersionsResponse struct {

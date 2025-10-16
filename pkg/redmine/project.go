@@ -22,6 +22,8 @@ type Project struct {
 	Status                 int           `json:"status,omitempty"`
 	IsPublic               bool          `json:"is_public,omitempty"`
 	InheritMembers         bool          `json:"inherit_members,omitempty"`
+	DefaultAssignedTo      Resource      `json:"default_assigned_to,omitempty"`
+	DefaultVersion         Resource      `json:"default_version,omitempty"`
 	CustomFields           []CustomField `json:"custom_fields,omitempty"`
 	ActiveNewTicketMessage string        `json:"active_new_ticket_message,omitempty"`
 	EnableNewTicketMessage int           `json:"enable_new_ticket_message,omitempty"`
