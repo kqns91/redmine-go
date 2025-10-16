@@ -13,38 +13,41 @@ import (
 
 // TimeEntry represents a time entry returned by GET endpoints
 type TimeEntry struct {
-	ID        int      `json:"id,omitempty"`
-	Project   Resource `json:"project,omitempty"`
-	Issue     Resource `json:"issue,omitempty"`
-	User      Resource `json:"user,omitempty"`
-	Activity  Resource `json:"activity,omitempty"`
-	Hours     float64  `json:"hours,omitempty"`
-	Comments  string   `json:"comments,omitempty"`
-	SpentOn   string   `json:"spent_on,omitempty"`
-	CreatedOn string   `json:"created_on,omitempty"`
-	UpdatedOn string   `json:"updated_on,omitempty"`
+	ID           int           `json:"id,omitempty"`
+	Project      Resource      `json:"project,omitempty"`
+	Issue        Resource      `json:"issue,omitempty"`
+	User         Resource      `json:"user,omitempty"`
+	Activity     Resource      `json:"activity,omitempty"`
+	Hours        float64       `json:"hours,omitempty"`
+	Comments     string        `json:"comments,omitempty"`
+	SpentOn      string        `json:"spent_on,omitempty"`
+	CreatedOn    string        `json:"created_on,omitempty"`
+	UpdatedOn    string        `json:"updated_on,omitempty"`
+	CustomFields []CustomField `json:"custom_fields,omitempty"`
 }
 
 // TimeEntryCreateRequest represents the request body for creating a new time entry
 type TimeEntryCreateRequest struct {
-	IssueID    int     `json:"issue_id,omitempty"`
-	ProjectID  int     `json:"project_id,omitempty"`
-	SpentOn    string  `json:"spent_on,omitempty"`
-	Hours      float64 `json:"hours"`
-	ActivityID int     `json:"activity_id,omitempty"`
-	Comments   string  `json:"comments,omitempty"`
-	UserID     int     `json:"user_id,omitempty"`
+	IssueID      int           `json:"issue_id,omitempty"`
+	ProjectID    int           `json:"project_id,omitempty"`
+	SpentOn      string        `json:"spent_on,omitempty"`
+	Hours        float64       `json:"hours"`
+	ActivityID   int           `json:"activity_id,omitempty"`
+	Comments     string        `json:"comments,omitempty"`
+	UserID       int           `json:"user_id,omitempty"`
+	CustomFields []CustomField `json:"custom_fields,omitempty"`
 }
 
 // TimeEntryUpdateRequest represents the request body for updating an existing time entry
 type TimeEntryUpdateRequest struct {
-	IssueID    int     `json:"issue_id,omitempty"`
-	ProjectID  int     `json:"project_id,omitempty"`
-	SpentOn    string  `json:"spent_on,omitempty"`
-	Hours      float64 `json:"hours,omitempty"`
-	ActivityID int     `json:"activity_id,omitempty"`
-	Comments   string  `json:"comments,omitempty"`
-	UserID     int     `json:"user_id,omitempty"`
+	IssueID      int           `json:"issue_id,omitempty"`
+	ProjectID    int           `json:"project_id,omitempty"`
+	SpentOn      string        `json:"spent_on,omitempty"`
+	Hours        float64       `json:"hours,omitempty"`
+	ActivityID   int           `json:"activity_id,omitempty"`
+	Comments     string        `json:"comments,omitempty"`
+	UserID       int           `json:"user_id,omitempty"`
+	CustomFields []CustomField `json:"custom_fields,omitempty"`
 }
 
 type TimeEntriesResponse struct {

@@ -103,6 +103,7 @@ var timeEntryCreateCmd = &cobra.Command{
 		activityID, _ := cmd.Flags().GetInt("activity-id")
 		comments, _ := cmd.Flags().GetString("comments")
 		spentOn, _ := cmd.Flags().GetString("spent-on")
+		customFieldsJSON, _ := cmd.Flags().GetString("custom-fields")
 
 		if hours <= 0 {
 			return errors.New("--hours フラグは必須で、0より大きい値を指定してください")
@@ -114,11 +115,17 @@ var timeEntryCreateCmd = &cobra.Command{
 			return errors.New("--issue-id または --project-id のいずれかは必須です")
 		}
 
+		customFields, err := parseCustomFieldsForTimeEntry(customFieldsJSON)
+		if err != nil {
+			return fmt.Errorf("カスタムフィールドのパースに失敗しました: %w", err)
+		}
+
 		req := redmine.TimeEntryCreateRequest{
-			Hours:      hours,
-			ActivityID: activityID,
-			Comments:   comments,
-			SpentOn:    spentOn,
+			Hours:        hours,
+			ActivityID:   activityID,
+			Comments:     comments,
+			SpentOn:      spentOn,
+			CustomFields: customFields,
 		}
 
 		if issueID > 0 {
@@ -158,10 +165,17 @@ var timeEntryUpdateCmd = &cobra.Command{
 		activityID, _ := cmd.Flags().GetInt("activity-id")
 		comments, _ := cmd.Flags().GetString("comments")
 		spentOn, _ := cmd.Flags().GetString("spent-on")
+		customFieldsJSON, _ := cmd.Flags().GetString("custom-fields")
+
+		customFields, err := parseCustomFieldsForTimeEntry(customFieldsJSON)
+		if err != nil {
+			return fmt.Errorf("カスタムフィールドのパースに失敗しました: %w", err)
+		}
 
 		req := redmine.TimeEntryUpdateRequest{
-			Comments: comments,
-			SpentOn:  spentOn,
+			Comments:     comments,
+			SpentOn:      spentOn,
+			CustomFields: customFields,
 		}
 
 		if hours > 0 {
@@ -299,6 +313,18 @@ func formatTimeEntriesText(entries []redmine.TimeEntry) error {
 	return nil
 }
 
+// parseCustomFieldsForTimeEntry parses custom fields from JSON string to []CustomField
+func parseCustomFieldsForTimeEntry(s string) ([]redmine.CustomField, error) {
+	if s == "" {
+		return nil, nil
+	}
+	var result []redmine.CustomField
+	if err := json.Unmarshal([]byte(s), &result); err != nil {
+		return nil, fmt.Errorf("無効なJSON: %w", err)
+	}
+	return result, nil
+}
+
 func init() {
 	rootCmd.AddCommand(timeEntryCmd)
 
@@ -329,10 +355,12 @@ func init() {
 	timeEntryCreateCmd.Flags().Int("activity-id", 0, "作業分類ID (必須)")
 	timeEntryCreateCmd.Flags().String("comments", "", "コメント")
 	timeEntryCreateCmd.Flags().String("spent-on", "", "作業日 (YYYY-MM-DD)")
+	timeEntryCreateCmd.Flags().String("custom-fields", "", "カスタムフィールド (JSON形式, 例: '[{\"id\":1,\"value\":\"foo\"}]')")
 
 	// Flags for update command
 	timeEntryUpdateCmd.Flags().Float64("hours", 0, "作業時間（時間単位）")
 	timeEntryUpdateCmd.Flags().Int("activity-id", 0, "作業分類ID")
 	timeEntryUpdateCmd.Flags().String("comments", "", "コメント")
 	timeEntryUpdateCmd.Flags().String("spent-on", "", "作業日 (YYYY-MM-DD)")
+	timeEntryUpdateCmd.Flags().String("custom-fields", "", "カスタムフィールド (JSON形式, 例: '[{\"id\":1,\"value\":\"foo\"}]')")
 }
