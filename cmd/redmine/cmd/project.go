@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -102,6 +103,12 @@ var projectCreateCmd = &cobra.Command{
 		isPublic, _ := cmd.Flags().GetBool("public")
 		inheritMembers, _ := cmd.Flags().GetBool("inherit-members")
 		parentID, _ := cmd.Flags().GetInt("parent-id")
+		defaultAssignedToID, _ := cmd.Flags().GetInt("default-assigned-to-id")
+		defaultVersionID, _ := cmd.Flags().GetInt("default-version-id")
+		trackerIDsStr, _ := cmd.Flags().GetString("tracker-ids")
+		enabledModuleNamesStr, _ := cmd.Flags().GetString("enabled-module-names")
+		issueCustomFieldIDsStr, _ := cmd.Flags().GetString("issue-custom-field-ids")
+		customFieldValuesJSON, _ := cmd.Flags().GetString("custom-field-values")
 
 		if name == "" {
 			return errors.New("--name フラグは必須です")
@@ -111,13 +118,47 @@ var projectCreateCmd = &cobra.Command{
 		}
 
 		req := redmine.ProjectCreateRequest{
-			Name:           name,
-			Identifier:     identifier,
-			Description:    description,
-			Homepage:       homepage,
-			IsPublic:       isPublic,
-			InheritMembers: inheritMembers,
-			ParentID:       parentID,
+			Name:                name,
+			Identifier:          identifier,
+			Description:         description,
+			Homepage:            homepage,
+			IsPublic:            isPublic,
+			InheritMembers:      inheritMembers,
+			ParentID:            parentID,
+			DefaultAssignedToID: defaultAssignedToID,
+			DefaultVersionID:    defaultVersionID,
+		}
+
+		// Parse tracker IDs
+		if trackerIDsStr != "" {
+			trackerIDs, err := parseIntSliceForProject(trackerIDsStr)
+			if err != nil {
+				return fmt.Errorf("無効なtracker-ids: %w", err)
+			}
+			req.TrackerIDs = trackerIDs
+		}
+
+		// Parse enabled module names
+		if enabledModuleNamesStr != "" {
+			req.EnabledModuleNames = parseStringSliceForProject(enabledModuleNamesStr)
+		}
+
+		// Parse issue custom field IDs
+		if issueCustomFieldIDsStr != "" {
+			issueCustomFieldIDs, err := parseIntSliceForProject(issueCustomFieldIDsStr)
+			if err != nil {
+				return fmt.Errorf("無効なissue-custom-field-ids: %w", err)
+			}
+			req.IssueCustomFieldIDs = issueCustomFieldIDs
+		}
+
+		// Parse custom field values
+		if customFieldValuesJSON != "" {
+			customFieldValues, err := parseCustomFieldValues(customFieldValuesJSON)
+			if err != nil {
+				return fmt.Errorf("無効なcustom-field-values: %w", err)
+			}
+			req.CustomFieldValues = customFieldValues
 		}
 
 		result, err := client.CreateProject(context.Background(), req)
@@ -147,14 +188,54 @@ var projectUpdateCmd = &cobra.Command{
 		isPublic, _ := cmd.Flags().GetBool("public")
 		inheritMembers, _ := cmd.Flags().GetBool("inherit-members")
 		parentID, _ := cmd.Flags().GetInt("parent-id")
+		defaultAssignedToID, _ := cmd.Flags().GetInt("default-assigned-to-id")
+		defaultVersionID, _ := cmd.Flags().GetInt("default-version-id")
+		trackerIDsStr, _ := cmd.Flags().GetString("tracker-ids")
+		enabledModuleNamesStr, _ := cmd.Flags().GetString("enabled-module-names")
+		issueCustomFieldIDsStr, _ := cmd.Flags().GetString("issue-custom-field-ids")
+		customFieldValuesJSON, _ := cmd.Flags().GetString("custom-field-values")
 
 		req := redmine.ProjectUpdateRequest{
-			Name:           name,
-			Description:    description,
-			Homepage:       homepage,
-			IsPublic:       isPublic,
-			InheritMembers: inheritMembers,
-			ParentID:       parentID,
+			Name:                name,
+			Description:         description,
+			Homepage:            homepage,
+			IsPublic:            isPublic,
+			InheritMembers:      inheritMembers,
+			ParentID:            parentID,
+			DefaultAssignedToID: defaultAssignedToID,
+			DefaultVersionID:    defaultVersionID,
+		}
+
+		// Parse tracker IDs
+		if trackerIDsStr != "" {
+			trackerIDs, err := parseIntSliceForProject(trackerIDsStr)
+			if err != nil {
+				return fmt.Errorf("無効なtracker-ids: %w", err)
+			}
+			req.TrackerIDs = trackerIDs
+		}
+
+		// Parse enabled module names
+		if enabledModuleNamesStr != "" {
+			req.EnabledModuleNames = parseStringSliceForProject(enabledModuleNamesStr)
+		}
+
+		// Parse issue custom field IDs
+		if issueCustomFieldIDsStr != "" {
+			issueCustomFieldIDs, err := parseIntSliceForProject(issueCustomFieldIDsStr)
+			if err != nil {
+				return fmt.Errorf("無効なissue-custom-field-ids: %w", err)
+			}
+			req.IssueCustomFieldIDs = issueCustomFieldIDs
+		}
+
+		// Parse custom field values
+		if customFieldValuesJSON != "" {
+			customFieldValues, err := parseCustomFieldValues(customFieldValuesJSON)
+			if err != nil {
+				return fmt.Errorf("無効なcustom-field-values: %w", err)
+			}
+			req.CustomFieldValues = customFieldValues
 		}
 
 		err := client.UpdateProject(context.Background(), args[0], req)
@@ -312,6 +393,51 @@ func includeOptionsForProject() []string {
 	return []string{"trackers", "issue_categories", "enabled_modules", "time_entry_activities", "issue_custom_fields"}
 }
 
+// parseIntSliceForProject parses a comma-separated string of integers
+func parseIntSliceForProject(s string) ([]int, error) {
+	if s == "" {
+		return nil, nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]int, 0, len(parts))
+	for _, part := range parts {
+		id, err := strconv.Atoi(strings.TrimSpace(part))
+		if err != nil {
+			return nil, fmt.Errorf("無効な数値: %s", part)
+		}
+		result = append(result, id)
+	}
+	return result, nil
+}
+
+// parseStringSliceForProject parses a comma-separated string
+func parseStringSliceForProject(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
+}
+
+// parseCustomFieldValues parses JSON string into map[string]string
+func parseCustomFieldValues(s string) (map[string]string, error) {
+	if s == "" {
+		return make(map[string]string), nil
+	}
+	var result map[string]string
+	if err := json.Unmarshal([]byte(s), &result); err != nil {
+		return nil, fmt.Errorf("無効なJSON: %w", err)
+	}
+	return result, nil
+}
+
 func init() {
 	rootCmd.AddCommand(projectCmd)
 
@@ -352,6 +478,12 @@ func init() {
 	projectCreateCmd.Flags().Bool("public", true, "公開プロジェクトにするかどうか")
 	projectCreateCmd.Flags().Bool("inherit-members", false, "親プロジェクトのメンバーを継承するかどうか")
 	projectCreateCmd.Flags().Int("parent-id", 0, "親プロジェクトID")
+	projectCreateCmd.Flags().Int("default-assigned-to-id", 0, "デフォルト担当者ID")
+	projectCreateCmd.Flags().Int("default-version-id", 0, "デフォルトバージョンID")
+	projectCreateCmd.Flags().String("tracker-ids", "", "トラッカーIDリスト (カンマ区切り, 例: 1,2,3)")
+	projectCreateCmd.Flags().String("enabled-module-names", "", "有効化モジュール (カンマ区切り, 例: issues,wiki,calendar)")
+	projectCreateCmd.Flags().String("issue-custom-field-ids", "", "カスタムフィールドIDリスト (カンマ区切り, 例: 1,2,3)")
+	projectCreateCmd.Flags().String("custom-field-values", "", "カスタムフィールド値 (JSON形式, 例: '{\"1\":\"value1\",\"2\":\"value2\"}')")
 
 	// Flags for update command
 	projectUpdateCmd.Flags().String("name", "", "プロジェクト名")
@@ -360,4 +492,10 @@ func init() {
 	projectUpdateCmd.Flags().Bool("public", false, "公開プロジェクトにするかどうか")
 	projectUpdateCmd.Flags().Bool("inherit-members", false, "親プロジェクトのメンバーを継承するかどうか")
 	projectUpdateCmd.Flags().Int("parent-id", 0, "親プロジェクトID")
+	projectUpdateCmd.Flags().Int("default-assigned-to-id", 0, "デフォルト担当者ID")
+	projectUpdateCmd.Flags().Int("default-version-id", 0, "デフォルトバージョンID")
+	projectUpdateCmd.Flags().String("tracker-ids", "", "トラッカーIDリスト (カンマ区切り, 例: 1,2,3)")
+	projectUpdateCmd.Flags().String("enabled-module-names", "", "有効化モジュール (カンマ区切り, 例: issues,wiki,calendar)")
+	projectUpdateCmd.Flags().String("issue-custom-field-ids", "", "カスタムフィールドIDリスト (カンマ区切り, 例: 1,2,3)")
+	projectUpdateCmd.Flags().String("custom-field-values", "", "カスタムフィールド値 (JSON形式, 例: '{\"1\":\"value1\",\"2\":\"value2\"}')")
 }
