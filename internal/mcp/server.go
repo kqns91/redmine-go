@@ -16,6 +16,7 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 
 	// Initialize use cases
 	useCases := &usecase.UseCases{
+		RedmineClient: client,
 		Project:       usecase.NewProjectUseCase(client),
 		Issue:         usecase.NewIssueUseCase(client),
 		User:          usecase.NewUserUseCase(client),
@@ -67,6 +68,8 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 	handlers.RegisterRoleTools(server, useCases, cfg)
 	handlers.RegisterEnumerationTools(server, useCases, cfg)
 	handlers.RegisterMyAccountTools(server, useCases, cfg)
+	handlers.RegisterBatchOperationTools(server, useCases, cfg)
+	handlers.RegisterProgressMonitoringTools(server, useCases, cfg)
 
 	return server, nil
 }

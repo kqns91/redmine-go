@@ -1,7 +1,10 @@
 package usecase
 
+import "github.com/kqns91/redmine-go/pkg/redmine"
+
 // UseCases holds all use case instances.
 type UseCases struct {
+	RedmineClient *redmine.Client       // Direct access to Redmine client for batch operations
 	Project       *ProjectUseCase
 	Issue         *IssueUseCase
 	User          *UserUseCase
