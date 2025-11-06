@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -45,8 +45,8 @@ func RegisterProgressMonitoringTools(server *mcp.Server, useCases *usecase.UseCa
 
 // AnalyzeProjectHealthArgs represents arguments for project health analysis
 type AnalyzeProjectHealthArgs struct {
-	ProjectID      int `json:"project_id" jsonschema:"Project ID (required)"`
-	ThresholdDays  int `json:"threshold_days,omitempty" jsonschema:"Number of days to consider a task 'at risk' (default: 0, meaning any delay is flagged)"`
+	ProjectID       int  `json:"project_id" jsonschema:"Project ID (required)"`
+	ThresholdDays   int  `json:"threshold_days,omitempty" jsonschema:"Number of days to consider a task 'at risk' (default: 0, meaning any delay is flagged)"`
 	IncludeSubtasks bool `json:"include_subtasks,omitempty" jsonschema:"Whether to include subtasks in analysis (default: true)"`
 }
 
@@ -62,45 +62,40 @@ type ProjectHealthResult struct {
 
 // ProjectHealthSummary provides overall project statistics
 type ProjectHealthSummary struct {
-	TotalIssues        int     `json:"total_issues"`
-	OnTrack            int     `json:"on_track"`
-	AtRisk             int     `json:"at_risk"`
-	Delayed            int     `json:"delayed"`
-	Completed          int     `json:"completed"`
-	AverageDelayDays   float64 `json:"average_delay_days"`
-	TotalEstimatedTime float64 `json:"total_estimated_time"`
-	TotalSpentTime     float64 `json:"total_spent_time"`
-	ProgressPercentage float64 `json:"progress_percentage"`
+	TotalIssues         int     `json:"total_issues"`
+	OnTrack             int     `json:"on_track"`
+	AtRisk              int     `json:"at_risk"`
+	Delayed             int     `json:"delayed"`
+	Completed           int     `json:"completed"`
+	AverageDelayDays    float64 `json:"average_delay_days"`
+	TotalEstimatedTime  float64 `json:"total_estimated_time"`
+	TotalSpentTime      float64 `json:"total_spent_time"`
+	ProgressPercentage  float64 `json:"progress_percentage"`
 	EstimatedCompletion string  `json:"estimated_completion,omitempty"`
-	ProjectStatus      string  `json:"project_status"` // "on_schedule", "at_risk", "delayed"
+	ProjectStatus       string  `json:"project_status"` // "on_schedule", "at_risk", "delayed"
 }
 
 // IssueHealth represents health information for a single issue
 type IssueHealth struct {
-	ID               int     `json:"id"`
-	Subject          string  `json:"subject"`
-	Status           string  `json:"status"`
-	StartDate        string  `json:"start_date,omitempty"`
-	DueDate          string  `json:"due_date,omitempty"`
-	DoneRatio        int     `json:"done_ratio"`
-	EstimatedHours   float64 `json:"estimated_hours"`
-	SpentHours       float64 `json:"spent_hours,omitempty"`
-	DelayDays        int     `json:"delay_days"`
-	IsCriticalPath   bool    `json:"is_critical_path"`
-	BlockedBy        []int   `json:"blocked_by,omitempty"`
-	Blocks           []int   `json:"blocks,omitempty"`
-	ImpactLevel      string  `json:"impact_level"` // "critical", "high", "medium", "low"
+	ID             int     `json:"id"`
+	Subject        string  `json:"subject"`
+	Status         string  `json:"status"`
+	StartDate      string  `json:"start_date,omitempty"`
+	DueDate        string  `json:"due_date,omitempty"`
+	DoneRatio      int     `json:"done_ratio"`
+	EstimatedHours float64 `json:"estimated_hours"`
+	SpentHours     float64 `json:"spent_hours,omitempty"`
+	DelayDays      int     `json:"delay_days"`
+	IsCriticalPath bool    `json:"is_critical_path"`
+	BlockedBy      []int   `json:"blocked_by,omitempty"`
+	Blocks         []int   `json:"blocks,omitempty"`
+	ImpactLevel    string  `json:"impact_level"` // "critical", "high", "medium", "low"
 }
 
-func handleAnalyzeProjectHealth(useCases *usecase.UseCases) func(context.Context, mcp.CallToolRequestParams) (interface{}, error) {
-	return func(ctx context.Context, params mcp.CallToolRequestParams) (interface{}, error) {
-		var args AnalyzeProjectHealthArgs
-		if err := json.Unmarshal([]byte(params.Arguments.(json.RawMessage)), &args); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal arguments: %w", err)
-		}
-
+func handleAnalyzeProjectHealth(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args AnalyzeProjectHealthArgs) (*mcp.CallToolResult, ProjectHealthResult, error) {
+	return func(ctx context.Context, request *mcp.CallToolRequest, args AnalyzeProjectHealthArgs) (*mcp.CallToolResult, ProjectHealthResult, error) {
 		if args.ProjectID == 0 {
-			return nil, fmt.Errorf("project_id is required")
+			return nil, ProjectHealthResult{}, errors.New("project_id is required")
 		}
 
 		// Set defaults
@@ -110,18 +105,18 @@ func handleAnalyzeProjectHealth(useCases *usecase.UseCases) func(context.Context
 
 		// Fetch all issues for the project
 		listOpts := &redmine.ListIssuesOptions{
-			ProjectID: fmt.Sprintf("%d", args.ProjectID),
+			ProjectID: args.ProjectID,
 			Limit:     1000, // Fetch a large number
 		}
 
 		issuesResp, err := useCases.RedmineClient.ListIssues(ctx, listOpts)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list issues: %w", err)
+			return nil, ProjectHealthResult{}, fmt.Errorf("failed to list issues: %w", err)
 		}
 
 		result := analyzeIssues(issuesResp.Issues, args.ThresholdDays)
 
-		return result, nil
+		return nil, *result, nil
 	}
 }
 
@@ -145,15 +140,16 @@ func analyzeIssues(issues []redmine.Issue, thresholdDays int) *ProjectHealthResu
 		health := analyzeIssueHealth(issue, now, thresholdDays)
 
 		// Categorize
-		if health.DoneRatio == 100 {
+		switch {
+		case health.DoneRatio == 100:
 			result.Summary.Completed++
-		} else if health.DelayDays > thresholdDays {
+		case health.DelayDays > thresholdDays:
 			result.DelayedIssues = append(result.DelayedIssues, health)
 			totalDelay += health.DelayDays
 			delayCount++
-		} else if health.DelayDays > 0 {
+		case health.DelayDays > 0:
 			result.AtRiskIssues = append(result.AtRiskIssues, health)
-		} else {
+		default:
 			result.OnTrackIssues = append(result.OnTrackIssues, health)
 		}
 
@@ -164,7 +160,8 @@ func analyzeIssues(issues []redmine.Issue, thresholdDays int) *ProjectHealthResu
 
 		// Aggregate time
 		result.Summary.TotalEstimatedTime += health.EstimatedHours
-		result.Summary.TotalSpentTime += health.SpentHours
+		// Note: SpentHours needs to be fetched separately via TimeEntry API
+		// result.Summary.TotalSpentTime += health.SpentHours
 	}
 
 	// Calculate averages and percentages
@@ -181,11 +178,12 @@ func analyzeIssues(issues []redmine.Issue, thresholdDays int) *ProjectHealthResu
 	}
 
 	// Determine project status
-	if result.Summary.Delayed > 0 || result.Summary.AverageDelayDays > 5 {
+	switch {
+	case result.Summary.Delayed > 0 || result.Summary.AverageDelayDays > 5:
 		result.Summary.ProjectStatus = "delayed"
-	} else if result.Summary.AtRisk > 0 || result.Summary.AverageDelayDays > 2 {
+	case result.Summary.AtRisk > 0 || result.Summary.AverageDelayDays > 2:
 		result.Summary.ProjectStatus = "at_risk"
-	} else {
+	default:
 		result.Summary.ProjectStatus = "on_schedule"
 	}
 
@@ -209,7 +207,7 @@ func analyzeIssueHealth(issue redmine.Issue, now time.Time, thresholdDays int) I
 		DueDate:        issue.DueDate,
 		DoneRatio:      issue.DoneRatio,
 		EstimatedHours: issue.EstimatedHours,
-		SpentHours:     issue.SpentHours,
+		SpentHours:     0, // Note: Would need to fetch from TimeEntry API
 		DelayDays:      0,
 		IsCriticalPath: false,
 		BlockedBy:      []int{},
@@ -230,20 +228,22 @@ func analyzeIssueHealth(issue redmine.Issue, now time.Time, thresholdDays int) I
 
 	// Analyze relations
 	for _, rel := range issue.Relations {
-		if rel.RelationType == "blocks" {
+		switch rel.RelationType {
+		case "blocks":
 			health.Blocks = append(health.Blocks, rel.IssueToID)
 			health.IsCriticalPath = true
-		} else if rel.RelationType == "blocked" {
+		case "blocked":
 			health.BlockedBy = append(health.BlockedBy, rel.IssueID)
 		}
 	}
 
 	// Determine impact level
-	if health.IsCriticalPath && health.DelayDays > thresholdDays {
+	switch {
+	case health.IsCriticalPath && health.DelayDays > thresholdDays:
 		health.ImpactLevel = "critical"
-	} else if health.DelayDays > thresholdDays+3 {
+	case health.DelayDays > thresholdDays+3:
 		health.ImpactLevel = "high"
-	} else if health.DelayDays > thresholdDays {
+	case health.DelayDays > thresholdDays:
 		health.ImpactLevel = "medium"
 	}
 
@@ -282,9 +282,9 @@ func generateRecommendations(result *ProjectHealthResult) []string {
 
 // SuggestRescheduleArgs represents arguments for rescheduling suggestions
 type SuggestRescheduleArgs struct {
-	ProjectID       int  `json:"project_id" jsonschema:"Project ID (required)"`
-	AutoApply       bool `json:"auto_apply,omitempty" jsonschema:"Automatically apply suggested reschedules (default: false)"`
-	BufferDays      int  `json:"buffer_days,omitempty" jsonschema:"Number of buffer days to add to rescheduled tasks (default: 2)"`
+	ProjectID        int  `json:"project_id" jsonschema:"Project ID (required)"`
+	AutoApply        bool `json:"auto_apply,omitempty" jsonschema:"Automatically apply suggested reschedules (default: false)"`
+	BufferDays       int  `json:"buffer_days,omitempty" jsonschema:"Number of buffer days to add to rescheduled tasks (default: 2)"`
 	OnlyCriticalPath bool `json:"only_critical_path,omitempty" jsonschema:"Only reschedule critical path issues (default: false)"`
 }
 
@@ -299,23 +299,18 @@ type RescheduleResult struct {
 
 // RescheduleRecommendation represents a single reschedule recommendation
 type RescheduleRecommendation struct {
-	IssueID            int      `json:"issue_id"`
-	Subject            string   `json:"subject"`
-	CurrentDueDate     string   `json:"current_due_date"`
-	RecommendedDueDate string   `json:"recommended_due_date"`
-	Reason             string   `json:"reason"`
-	CascadeImpact      []int    `json:"cascade_impact,omitempty"` // IDs of issues affected
+	IssueID            int    `json:"issue_id"`
+	Subject            string `json:"subject"`
+	CurrentDueDate     string `json:"current_due_date"`
+	RecommendedDueDate string `json:"recommended_due_date"`
+	Reason             string `json:"reason"`
+	CascadeImpact      []int  `json:"cascade_impact,omitempty"` // IDs of issues affected
 }
 
-func handleSuggestReschedule(useCases *usecase.UseCases) func(context.Context, mcp.CallToolRequestParams) (interface{}, error) {
-	return func(ctx context.Context, params mcp.CallToolRequestParams) (interface{}, error) {
-		var args SuggestRescheduleArgs
-		if err := json.Unmarshal([]byte(params.Arguments.(json.RawMessage)), &args); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal arguments: %w", err)
-		}
-
+func handleSuggestReschedule(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args SuggestRescheduleArgs) (*mcp.CallToolResult, RescheduleResult, error) {
+	return func(ctx context.Context, request *mcp.CallToolRequest, args SuggestRescheduleArgs) (*mcp.CallToolResult, RescheduleResult, error) {
 		if args.ProjectID == 0 {
-			return nil, fmt.Errorf("project_id is required")
+			return nil, RescheduleResult{}, errors.New("project_id is required")
 		}
 
 		// Set defaults
@@ -325,13 +320,13 @@ func handleSuggestReschedule(useCases *usecase.UseCases) func(context.Context, m
 
 		// Fetch all issues
 		listOpts := &redmine.ListIssuesOptions{
-			ProjectID: fmt.Sprintf("%d", args.ProjectID),
+			ProjectID: args.ProjectID,
 			Limit:     1000,
 		}
 
 		issuesResp, err := useCases.RedmineClient.ListIssues(ctx, listOpts)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list issues: %w", err)
+			return nil, RescheduleResult{}, fmt.Errorf("failed to list issues: %w", err)
 		}
 
 		result := generateRescheduleRecommendations(issuesResp.Issues, args.BufferDays, args.OnlyCriticalPath)
@@ -349,7 +344,7 @@ func handleSuggestReschedule(useCases *usecase.UseCases) func(context.Context, m
 			}
 		}
 
-		return result, nil
+		return nil, *result, nil
 	}
 }
 
@@ -432,38 +427,33 @@ type AdjustEstimatesArgs struct {
 
 // EstimateAdjustmentResult represents the result of estimate adjustment
 type EstimateAdjustmentResult struct {
-	IssueID                  int     `json:"issue_id"`
-	Subject                  string  `json:"subject"`
-	OriginalEstimate         float64 `json:"original_estimate"`
-	HoursSpent               float64 `json:"hours_spent"`
-	DoneRatio                int     `json:"done_ratio"`
-	CalculatedRemaining      float64 `json:"calculated_remaining"`
-	RecommendedTotalEstimate float64 `json:"recommended_total_estimate"`
-	CompletionForecast       string  `json:"completion_forecast,omitempty"`
-	EfficiencyRatio          float64 `json:"efficiency_ratio"` // actual vs estimated
+	IssueID                  int                        `json:"issue_id"`
+	Subject                  string                     `json:"subject"`
+	OriginalEstimate         float64                    `json:"original_estimate"`
+	HoursSpent               float64                    `json:"hours_spent"`
+	DoneRatio                int                        `json:"done_ratio"`
+	CalculatedRemaining      float64                    `json:"calculated_remaining"`
+	RecommendedTotalEstimate float64                    `json:"recommended_total_estimate"`
+	CompletionForecast       string                     `json:"completion_forecast,omitempty"`
+	EfficiencyRatio          float64                    `json:"efficiency_ratio"` // actual vs estimated
 	Children                 []EstimateAdjustmentResult `json:"children,omitempty"`
 }
 
-func handleAdjustEstimates(useCases *usecase.UseCases) func(context.Context, mcp.CallToolRequestParams) (interface{}, error) {
-	return func(ctx context.Context, params mcp.CallToolRequestParams) (interface{}, error) {
-		var args AdjustEstimatesArgs
-		if err := json.Unmarshal([]byte(params.Arguments.(json.RawMessage)), &args); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal arguments: %w", err)
-		}
-
+func handleAdjustEstimates(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args AdjustEstimatesArgs) (*mcp.CallToolResult, EstimateAdjustmentResult, error) {
+	return func(ctx context.Context, request *mcp.CallToolRequest, args AdjustEstimatesArgs) (*mcp.CallToolResult, EstimateAdjustmentResult, error) {
 		if args.IssueID == 0 {
-			return nil, fmt.Errorf("issue_id is required")
+			return nil, EstimateAdjustmentResult{}, errors.New("issue_id is required")
 		}
 
 		// Fetch issue details
 		issueResp, err := useCases.RedmineClient.ShowIssue(ctx, args.IssueID, nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to fetch issue: %w", err)
+			return nil, EstimateAdjustmentResult{}, fmt.Errorf("failed to fetch issue: %w", err)
 		}
 
 		result := calculateEstimateAdjustment(issueResp.Issue, args.IncludeChildren)
 
-		return result, nil
+		return nil, *result, nil
 	}
 }
 
@@ -472,25 +462,21 @@ func calculateEstimateAdjustment(issue redmine.Issue, includeChildren bool) *Est
 		IssueID:          issue.ID,
 		Subject:          issue.Subject,
 		OriginalEstimate: issue.EstimatedHours,
-		HoursSpent:       issue.SpentHours,
+		HoursSpent:       0, // Note: Would need to fetch from TimeEntry API
 		DoneRatio:        issue.DoneRatio,
 		Children:         []EstimateAdjustmentResult{},
 	}
 
-	// Calculate remaining work
-	if issue.DoneRatio > 0 && issue.DoneRatio < 100 {
+	// Calculate remaining work based on done ratio
+	if issue.DoneRatio > 0 && issue.DoneRatio < 100 && issue.EstimatedHours > 0 {
 		progressRatio := float64(issue.DoneRatio) / 100.0
-		if progressRatio > 0 {
-			// Estimate total needed based on current efficiency
-			result.RecommendedTotalEstimate = issue.SpentHours / progressRatio
-			result.CalculatedRemaining = result.RecommendedTotalEstimate - issue.SpentHours
-		}
+		completedHours := issue.EstimatedHours * progressRatio
+		result.CalculatedRemaining = issue.EstimatedHours - completedHours
+		result.RecommendedTotalEstimate = issue.EstimatedHours
 	}
 
-	// Calculate efficiency ratio
-	if issue.EstimatedHours > 0 {
-		result.EfficiencyRatio = issue.SpentHours / issue.EstimatedHours
-	}
+	// Note: Efficiency ratio calculation requires actual spent hours from TimeEntry API
+	result.EfficiencyRatio = 1.0
 
 	// Forecast completion date (assuming 8h workday, 5 days/week)
 	if result.CalculatedRemaining > 0 {

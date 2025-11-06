@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -54,13 +54,13 @@ type CreateTaskTreeArgs struct {
 
 // CreateTaskTreeResult represents the result of task tree creation
 type CreateTaskTreeResult struct {
-	Success      bool                      `json:"success"`
-	CreatedCount int                       `json:"created_count"`
-	TaskMapping  map[string]int            `json:"task_mapping"` // ref -> issue_id
-	Tasks        []CreatedTaskInfo         `json:"tasks"`
-	Relations    []CreatedRelationInfo     `json:"relations"`
-	Errors       []string                  `json:"errors,omitempty"`
-	Summary      TaskTreeCreationSummary   `json:"summary"`
+	Success      bool                    `json:"success"`
+	CreatedCount int                     `json:"created_count"`
+	TaskMapping  map[string]int          `json:"task_mapping"` // ref -> issue_id
+	Tasks        []CreatedTaskInfo       `json:"tasks"`
+	Relations    []CreatedRelationInfo   `json:"relations"`
+	Errors       []string                `json:"errors,omitempty"`
+	Summary      TaskTreeCreationSummary `json:"summary"`
 }
 
 // CreatedTaskInfo represents information about a created task
@@ -88,19 +88,14 @@ type TaskTreeCreationSummary struct {
 	LatestDueDate      string  `json:"latest_due_date,omitempty"`
 }
 
-func handleCreateTaskTree(useCases *usecase.UseCases) func(context.Context, mcp.CallToolRequestParams) (interface{}, error) {
-	return func(ctx context.Context, params mcp.CallToolRequestParams) (interface{}, error) {
-		var args CreateTaskTreeArgs
-		if err := json.Unmarshal([]byte(params.Arguments.(json.RawMessage)), &args); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal arguments: %w", err)
-		}
-
+func handleCreateTaskTree(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args CreateTaskTreeArgs) (*mcp.CallToolResult, CreateTaskTreeResult, error) {
+	return func(ctx context.Context, request *mcp.CallToolRequest, args CreateTaskTreeArgs) (*mcp.CallToolResult, CreateTaskTreeResult, error) {
 		if args.ProjectID == 0 {
-			return nil, fmt.Errorf("project_id is required")
+			return nil, CreateTaskTreeResult{}, errors.New("project_id is required")
 		}
 
 		if len(args.Tasks) == 0 {
-			return nil, fmt.Errorf("at least one task is required")
+			return nil, CreateTaskTreeResult{}, errors.New("at least one task is required")
 		}
 
 		result := &CreateTaskTreeResult{
@@ -123,17 +118,14 @@ func handleCreateTaskTree(useCases *usecase.UseCases) func(context.Context, mcp.
 		}
 
 		// Create relations between tasks
-		if err := createTaskRelations(ctx, useCases, args.Tasks, result); err != nil {
-			result.Success = false
-			result.Errors = append(result.Errors, err.Error())
-		}
+		createTaskRelations(ctx, useCases, args.Tasks, result)
 
 		// Calculate summary
 		calculateSummary(result)
 
 		result.CreatedCount = len(result.Tasks)
 
-		return result, nil
+		return nil, *result, nil
 	}
 }
 
@@ -186,7 +178,7 @@ func createTaskNodeRecursive(ctx context.Context, useCases *usecase.UseCases, pr
 	return nil
 }
 
-func createTaskRelations(ctx context.Context, useCases *usecase.UseCases, tasks []TaskNode, result *CreateTaskTreeResult) error {
+func createTaskRelations(ctx context.Context, useCases *usecase.UseCases, tasks []TaskNode, result *CreateTaskTreeResult) {
 	// Build a flat list of all tasks including children
 	var flatTasks []TaskNode
 	var collectTasks func([]TaskNode)
@@ -215,7 +207,7 @@ func createTaskRelations(ctx context.Context, useCases *usecase.UseCases, tasks 
 		for _, blocksRef := range task.BlocksRefs {
 			targetID, ok := result.TaskMapping[blocksRef]
 			if !ok {
-				result.Errors = append(result.Errors, fmt.Sprintf("referenced task not found: %s", blocksRef))
+				result.Errors = append(result.Errors, "referenced task not found: "+blocksRef)
 				continue
 			}
 
@@ -242,7 +234,7 @@ func createTaskRelations(ctx context.Context, useCases *usecase.UseCases, tasks 
 		for _, precedesRef := range task.PrecedesRefs {
 			targetID, ok := result.TaskMapping[precedesRef]
 			if !ok {
-				result.Errors = append(result.Errors, fmt.Sprintf("referenced task not found: %s", precedesRef))
+				result.Errors = append(result.Errors, "referenced task not found: "+precedesRef)
 				continue
 			}
 
@@ -265,8 +257,6 @@ func createTaskRelations(ctx context.Context, useCases *usecase.UseCases, tasks 
 			})
 		}
 	}
-
-	return nil
 }
 
 func calculateSummary(result *CreateTaskTreeResult) {
