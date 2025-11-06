@@ -427,16 +427,27 @@ type AdjustEstimatesArgs struct {
 
 // EstimateAdjustmentResult represents the result of estimate adjustment
 type EstimateAdjustmentResult struct {
-	IssueID                  int                        `json:"issue_id"`
-	Subject                  string                     `json:"subject"`
-	OriginalEstimate         float64                    `json:"original_estimate"`
-	HoursSpent               float64                    `json:"hours_spent"`
-	DoneRatio                int                        `json:"done_ratio"`
-	CalculatedRemaining      float64                    `json:"calculated_remaining"`
-	RecommendedTotalEstimate float64                    `json:"recommended_total_estimate"`
-	CompletionForecast       string                     `json:"completion_forecast,omitempty"`
-	EfficiencyRatio          float64                    `json:"efficiency_ratio"` // actual vs estimated
-	Children                 []EstimateAdjustmentResult `json:"children,omitempty"`
+	IssueID                  int                    `json:"issue_id"`
+	Subject                  string                 `json:"subject"`
+	OriginalEstimate         float64                `json:"original_estimate"`
+	HoursSpent               float64                `json:"hours_spent"`
+	DoneRatio                int                    `json:"done_ratio"`
+	CalculatedRemaining      float64                `json:"calculated_remaining"`
+	RecommendedTotalEstimate float64                `json:"recommended_total_estimate"`
+	CompletionForecast       string                 `json:"completion_forecast,omitempty"`
+	EfficiencyRatio          float64                `json:"efficiency_ratio"` // actual vs estimated
+	ChildIssues              []ChildEstimateSummary `json:"child_issues,omitempty"`
+}
+
+// ChildEstimateSummary represents a summary of a child issue's estimate information
+type ChildEstimateSummary struct {
+	IssueID                  int     `json:"issue_id"`
+	Subject                  string  `json:"subject"`
+	OriginalEstimate         float64 `json:"original_estimate"`
+	HoursSpent               float64 `json:"hours_spent"`
+	DoneRatio                int     `json:"done_ratio"`
+	RecommendedTotalEstimate float64 `json:"recommended_total_estimate"`
+	EfficiencyRatio          float64 `json:"efficiency_ratio"`
 }
 
 func handleAdjustEstimates(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args AdjustEstimatesArgs) (*mcp.CallToolResult, EstimateAdjustmentResult, error) {
@@ -464,7 +475,7 @@ func calculateEstimateAdjustment(issue redmine.Issue, includeChildren bool) *Est
 		OriginalEstimate: issue.EstimatedHours,
 		HoursSpent:       0, // Note: Would need to fetch from TimeEntry API
 		DoneRatio:        issue.DoneRatio,
-		Children:         []EstimateAdjustmentResult{},
+		ChildIssues:      []ChildEstimateSummary{},
 	}
 
 	// Calculate remaining work based on done ratio
@@ -492,7 +503,15 @@ func calculateEstimateAdjustment(issue redmine.Issue, includeChildren bool) *Est
 	if includeChildren && len(issue.Children) > 0 {
 		for _, child := range issue.Children {
 			childResult := calculateEstimateAdjustment(child, true)
-			result.Children = append(result.Children, *childResult)
+			result.ChildIssues = append(result.ChildIssues, ChildEstimateSummary{
+				IssueID:                  childResult.IssueID,
+				Subject:                  childResult.Subject,
+				OriginalEstimate:         childResult.OriginalEstimate,
+				HoursSpent:               childResult.HoursSpent,
+				DoneRatio:                childResult.DoneRatio,
+				RecommendedTotalEstimate: childResult.RecommendedTotalEstimate,
+				EfficiencyRatio:          childResult.EfficiencyRatio,
+			})
 		}
 	}
 

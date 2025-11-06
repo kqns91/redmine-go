@@ -21,7 +21,7 @@ func RegisterBatchOperationTools(server *mcp.Server, useCases *usecase.UseCases,
 	if cfg.IsToolEnabled(toolGroup, "create_task_tree") {
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_task_tree",
-			Description: "Batch create a tree of tasks with parent-child relationships, dependencies, and estimates. Ideal for creating 10-30 related tickets for a single feature.",
+			Description: "Batch create a flat list of tasks with parent-child relationships, dependencies, and estimates. Use 'parent_ref' to reference parent tasks. Ideal for creating 10-30 related tickets for a single feature.",
 		}, handleCreateTaskTree(useCases))
 	}
 }
@@ -40,7 +40,7 @@ type TaskNode struct {
 	DueDate        string                `json:"due_date,omitempty" jsonschema:"Due date in YYYY-MM-DD format (optional)"`
 	DoneRatio      int                   `json:"done_ratio,omitempty" jsonschema:"Progress percentage 0-100 (optional)"`
 	CustomFields   []redmine.CustomField `json:"custom_fields,omitempty" jsonschema:"Custom field values (optional)"`
-	Children       []TaskNode            `json:"children,omitempty" jsonschema:"Child tasks (optional)"`
+	ParentRef      string                `json:"parent_ref,omitempty" jsonschema:"Reference to parent task (use task ref like 'task1')"`
 	BlocksRefs     []string              `json:"blocks_refs,omitempty" jsonschema:"References to tasks this task blocks (use task refs like 'task1', 'task2')"`
 	PrecedesRefs   []string              `json:"precedes_refs,omitempty" jsonschema:"References to tasks this task precedes (use task refs like 'task1', 'task2')"`
 	Ref            string                `json:"ref,omitempty" jsonschema:"Unique reference for this task within the tree (e.g., 'task1', 'db_design')"`
@@ -49,7 +49,7 @@ type TaskNode struct {
 // CreateTaskTreeArgs represents arguments for creating a task tree
 type CreateTaskTreeArgs struct {
 	ProjectID int        `json:"project_id" jsonschema:"Project ID (required)"`
-	Tasks     []TaskNode `json:"tasks" jsonschema:"List of top-level tasks to create (required)"`
+	Tasks     []TaskNode `json:"tasks" jsonschema:"Flat list of tasks to create. Use parent_ref to specify parent-child relationships (required)"`
 }
 
 // CreateTaskTreeResult represents the result of task tree creation
@@ -109,13 +109,8 @@ func handleCreateTaskTree(useCases *usecase.UseCases) func(ctx context.Context, 
 			},
 		}
 
-		// Create all tasks recursively
-		for _, task := range args.Tasks {
-			if err := createTaskNodeRecursive(ctx, useCases, args.ProjectID, 0, task, result); err != nil {
-				result.Success = false
-				result.Errors = append(result.Errors, err.Error())
-			}
-		}
+		// Create all tasks in order (respecting parent references)
+		createTasksFlat(ctx, useCases, args.ProjectID, args.Tasks, result)
 
 		// Create relations between tasks
 		createTaskRelations(ctx, useCases, args.Tasks, result)
@@ -129,71 +124,87 @@ func handleCreateTaskTree(useCases *usecase.UseCases) func(ctx context.Context, 
 	}
 }
 
-func createTaskNodeRecursive(ctx context.Context, useCases *usecase.UseCases, projectID, parentID int, task TaskNode, result *CreateTaskTreeResult) error {
-	// Create the issue
-	req := redmine.IssueCreateRequest{
-		ProjectID:      projectID,
-		Subject:        task.Subject,
-		Description:    task.Description,
-		TrackerID:      task.TrackerID,
-		StatusID:       task.StatusID,
-		PriorityID:     task.PriorityID,
-		AssignedToID:   task.AssignedToID,
-		ParentIssueID:  parentID,
-		FixedVersionID: task.FixedVersionID,
-		EstimatedHours: task.EstimatedHours,
-		StartDate:      task.StartDate,
-		DueDate:        task.DueDate,
-		DoneRatio:      task.DoneRatio,
-		CustomFields:   task.CustomFields,
+func createTasksFlat(ctx context.Context, useCases *usecase.UseCases, projectID int, tasks []TaskNode, result *CreateTaskTreeResult) {
+	// Create tasks in multiple passes to handle parent references
+	// Pass 1: Create tasks without parents
+	// Pass 2+: Create tasks whose parents have been created
+
+	remaining := make([]TaskNode, len(tasks))
+	copy(remaining, tasks)
+	maxPasses := len(tasks) + 1 // Prevent infinite loops
+	pass := 0
+
+	for len(remaining) > 0 && pass < maxPasses {
+		pass++
+		var stillRemaining []TaskNode
+
+		for _, task := range remaining {
+			// Check if parent exists (if parent_ref is specified)
+			parentID := 0
+			if task.ParentRef != "" {
+				if id, ok := result.TaskMapping[task.ParentRef]; ok {
+					parentID = id
+				} else {
+					// Parent not created yet, defer to next pass
+					stillRemaining = append(stillRemaining, task)
+					continue
+				}
+			}
+
+			// Create the issue
+			req := redmine.IssueCreateRequest{
+				ProjectID:      projectID,
+				Subject:        task.Subject,
+				Description:    task.Description,
+				TrackerID:      task.TrackerID,
+				StatusID:       task.StatusID,
+				PriorityID:     task.PriorityID,
+				AssignedToID:   task.AssignedToID,
+				ParentIssueID:  parentID,
+				FixedVersionID: task.FixedVersionID,
+				EstimatedHours: task.EstimatedHours,
+				StartDate:      task.StartDate,
+				DueDate:        task.DueDate,
+				DoneRatio:      task.DoneRatio,
+				CustomFields:   task.CustomFields,
+			}
+
+			resp, err := useCases.RedmineClient.CreateIssue(ctx, req)
+			if err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("failed to create issue '%s': %v", task.Subject, err))
+				continue
+			}
+
+			issueID := resp.Issue.ID
+
+			// Store mapping if ref is provided
+			if task.Ref != "" {
+				result.TaskMapping[task.Ref] = issueID
+			}
+
+			// Store created task info
+			result.Tasks = append(result.Tasks, CreatedTaskInfo{
+				Ref:      task.Ref,
+				IssueID:  issueID,
+				Subject:  task.Subject,
+				ParentID: parentID,
+			})
+		}
+
+		remaining = stillRemaining
 	}
 
-	resp, err := useCases.RedmineClient.CreateIssue(ctx, req)
-	if err != nil {
-		return fmt.Errorf("failed to create issue '%s': %w", task.Subject, err)
-	}
-
-	issueID := resp.Issue.ID
-
-	// Store mapping if ref is provided
-	if task.Ref != "" {
-		result.TaskMapping[task.Ref] = issueID
-	}
-
-	// Store created task info
-	result.Tasks = append(result.Tasks, CreatedTaskInfo{
-		Ref:      task.Ref,
-		IssueID:  issueID,
-		Subject:  task.Subject,
-		ParentID: parentID,
-	})
-
-	// Create children recursively
-	for _, child := range task.Children {
-		if err := createTaskNodeRecursive(ctx, useCases, projectID, issueID, child, result); err != nil {
-			result.Errors = append(result.Errors, err.Error())
+	// Check if there are unresolved parent references
+	if len(remaining) > 0 {
+		for _, task := range remaining {
+			result.Errors = append(result.Errors, fmt.Sprintf("failed to create task '%s': parent reference '%s' not found", task.Subject, task.ParentRef))
 		}
 	}
-
-	return nil
 }
 
 func createTaskRelations(ctx context.Context, useCases *usecase.UseCases, tasks []TaskNode, result *CreateTaskTreeResult) {
-	// Build a flat list of all tasks including children
-	var flatTasks []TaskNode
-	var collectTasks func([]TaskNode)
-	collectTasks = func(nodes []TaskNode) {
-		for _, node := range nodes {
-			flatTasks = append(flatTasks, node)
-			if len(node.Children) > 0 {
-				collectTasks(node.Children)
-			}
-		}
-	}
-	collectTasks(tasks)
-
-	// Create relations
-	for _, task := range flatTasks {
+	// Create relations for each task
+	for _, task := range tasks {
 		if task.Ref == "" {
 			continue
 		}
