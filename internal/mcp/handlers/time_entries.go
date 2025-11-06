@@ -131,13 +131,14 @@ func handleShowTimeEntry(useCases *usecase.UseCases) func(ctx context.Context, r
 
 // CreateTimeEntryArgs defines arguments for creating a time entry
 type CreateTimeEntryArgs struct {
-	IssueID    int     `json:"issue_id,omitempty" jsonschema:"Issue ID (required if project_id is not set)"`
-	ProjectID  int     `json:"project_id,omitempty" jsonschema:"Project ID (required if issue_id is not set)"`
-	Hours      float64 `json:"hours" jsonschema:"Hours spent (required)"`
-	ActivityID int     `json:"activity_id" jsonschema:"Activity ID (required)"`
-	Comments   string  `json:"comments,omitempty" jsonschema:"Comments or description of work done (optional)"`
-	SpentOn    string  `json:"spent_on,omitempty" jsonschema:"Date the time was spent (YYYY-MM-DD, optional, defaults to today)"`
-	UserID     int     `json:"user_id,omitempty" jsonschema:"User ID (optional, defaults to current user)"`
+	IssueID      int                   `json:"issue_id,omitempty" jsonschema:"Issue ID (required if project_id is not set)"`
+	ProjectID    int                   `json:"project_id,omitempty" jsonschema:"Project ID (required if issue_id is not set)"`
+	Hours        float64               `json:"hours" jsonschema:"Hours spent (required)"`
+	ActivityID   int                   `json:"activity_id" jsonschema:"Activity ID (required)"`
+	Comments     string                `json:"comments,omitempty" jsonschema:"Comments or description of work done (optional)"`
+	SpentOn      string                `json:"spent_on,omitempty" jsonschema:"Date the time was spent (YYYY-MM-DD, optional, defaults to today)"`
+	UserID       int                   `json:"user_id,omitempty" jsonschema:"User ID (optional, defaults to current user)"`
+	CustomFields []redmine.CustomField `json:"custom_fields,omitempty" jsonschema:"Custom field values (optional)"`
 }
 
 // CreateTimeEntryOutput defines output for creating a time entry
@@ -148,13 +149,14 @@ type CreateTimeEntryOutput struct {
 func handleCreateTimeEntry(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args CreateTimeEntryArgs) (*mcp.CallToolResult, CreateTimeEntryOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args CreateTimeEntryArgs) (*mcp.CallToolResult, CreateTimeEntryOutput, error) {
 		req := redmine.TimeEntryCreateRequest{
-			IssueID:    args.IssueID,
-			ProjectID:  args.ProjectID,
-			Hours:      args.Hours,
-			ActivityID: args.ActivityID,
-			Comments:   args.Comments,
-			SpentOn:    args.SpentOn,
-			UserID:     args.UserID,
+			IssueID:      args.IssueID,
+			ProjectID:    args.ProjectID,
+			Hours:        args.Hours,
+			ActivityID:   args.ActivityID,
+			Comments:     args.Comments,
+			SpentOn:      args.SpentOn,
+			UserID:       args.UserID,
+			CustomFields: args.CustomFields,
 		}
 
 		result, err := useCases.TimeEntry.CreateTimeEntry(ctx, req)
@@ -173,14 +175,15 @@ func handleCreateTimeEntry(useCases *usecase.UseCases) func(ctx context.Context,
 
 // UpdateTimeEntryArgs defines arguments for updating a time entry
 type UpdateTimeEntryArgs struct {
-	ID         int     `json:"id" jsonschema:"Time entry ID"`
-	IssueID    int     `json:"issue_id,omitempty" jsonschema:"New issue ID (optional)"`
-	ProjectID  int     `json:"project_id,omitempty" jsonschema:"New project ID (optional)"`
-	Hours      float64 `json:"hours,omitempty" jsonschema:"New hours spent (optional)"`
-	ActivityID int     `json:"activity_id,omitempty" jsonschema:"New activity ID (optional)"`
-	Comments   string  `json:"comments,omitempty" jsonschema:"New comments (optional)"`
-	SpentOn    string  `json:"spent_on,omitempty" jsonschema:"New date (YYYY-MM-DD, optional)"`
-	UserID     int     `json:"user_id,omitempty" jsonschema:"New user ID (optional)"`
+	ID           int                   `json:"id" jsonschema:"Time entry ID"`
+	IssueID      int                   `json:"issue_id,omitempty" jsonschema:"New issue ID (optional)"`
+	ProjectID    int                   `json:"project_id,omitempty" jsonschema:"New project ID (optional)"`
+	Hours        float64               `json:"hours,omitempty" jsonschema:"New hours spent (optional)"`
+	ActivityID   int                   `json:"activity_id,omitempty" jsonschema:"New activity ID (optional)"`
+	Comments     string                `json:"comments,omitempty" jsonschema:"New comments (optional)"`
+	SpentOn      string                `json:"spent_on,omitempty" jsonschema:"New date (YYYY-MM-DD, optional)"`
+	UserID       int                   `json:"user_id,omitempty" jsonschema:"New user ID (optional)"`
+	CustomFields []redmine.CustomField `json:"custom_fields,omitempty" jsonschema:"Custom field values (optional)"`
 }
 
 // UpdateTimeEntryOutput defines output for updating a time entry
@@ -191,13 +194,14 @@ type UpdateTimeEntryOutput struct {
 func handleUpdateTimeEntry(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args UpdateTimeEntryArgs) (*mcp.CallToolResult, UpdateTimeEntryOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args UpdateTimeEntryArgs) (*mcp.CallToolResult, UpdateTimeEntryOutput, error) {
 		req := redmine.TimeEntryUpdateRequest{
-			IssueID:    args.IssueID,
-			ProjectID:  args.ProjectID,
-			Hours:      args.Hours,
-			ActivityID: args.ActivityID,
-			Comments:   args.Comments,
-			SpentOn:    args.SpentOn,
-			UserID:     args.UserID,
+			IssueID:      args.IssueID,
+			ProjectID:    args.ProjectID,
+			Hours:        args.Hours,
+			ActivityID:   args.ActivityID,
+			Comments:     args.Comments,
+			SpentOn:      args.SpentOn,
+			UserID:       args.UserID,
+			CustomFields: args.CustomFields,
 		}
 
 		err := useCases.TimeEntry.UpdateTimeEntry(ctx, args.ID, req)
