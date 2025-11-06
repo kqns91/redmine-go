@@ -148,11 +148,19 @@ func handleShowProject(useCases *usecase.UseCases) func(ctx context.Context, req
 
 // CreateProjectArgs defines arguments for creating a project
 type CreateProjectArgs struct {
-	Name        string `json:"name" jsonschema:"Project name (required)"`
-	Identifier  string `json:"identifier" jsonschema:"Project identifier (required, lowercase, no spaces)"`
-	Description string `json:"description,omitempty" jsonschema:"Project description (optional)"`
-	IsPublic    bool   `json:"is_public,omitempty" jsonschema:"Whether the project is public (default: true)"`
-	ParentID    int    `json:"parent_id,omitempty" jsonschema:"Parent project ID (optional)"`
+	Name                string            `json:"name" jsonschema:"Project name (required)"`
+	Identifier          string            `json:"identifier" jsonschema:"Project identifier (required, lowercase, no spaces)"`
+	Description         string            `json:"description,omitempty" jsonschema:"Project description (optional)"`
+	Homepage            string            `json:"homepage,omitempty" jsonschema:"Homepage URL (optional)"`
+	IsPublic            bool              `json:"is_public,omitempty" jsonschema:"Whether the project is public (default: true)"`
+	ParentID            int               `json:"parent_id,omitempty" jsonschema:"Parent project ID (optional)"`
+	InheritMembers      bool              `json:"inherit_members,omitempty" jsonschema:"Inherit members from parent project (optional)"`
+	DefaultAssignedToID int               `json:"default_assigned_to_id,omitempty" jsonschema:"Default assignee user ID (optional)"`
+	DefaultVersionID    int               `json:"default_version_id,omitempty" jsonschema:"Default version ID (optional)"`
+	TrackerIDs          []int             `json:"tracker_ids,omitempty" jsonschema:"Tracker IDs to enable (optional)"`
+	EnabledModuleNames  []string          `json:"enabled_module_names,omitempty" jsonschema:"Module names to enable (optional)"`
+	IssueCustomFieldIDs []int             `json:"issue_custom_field_ids,omitempty" jsonschema:"Issue custom field IDs (optional)"`
+	CustomFieldValues   map[string]string `json:"custom_field_values,omitempty" jsonschema:"Custom field values as key-value pairs (optional)"`
 }
 
 // CreateProjectOutput defines output for creating a project
@@ -163,11 +171,19 @@ type CreateProjectOutput struct {
 func handleCreateProject(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args CreateProjectArgs) (*mcp.CallToolResult, CreateProjectOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args CreateProjectArgs) (*mcp.CallToolResult, CreateProjectOutput, error) {
 		req := redmine.ProjectCreateRequest{
-			Name:        args.Name,
-			Identifier:  args.Identifier,
-			Description: args.Description,
-			IsPublic:    args.IsPublic,
-			ParentID:    args.ParentID,
+			Name:                args.Name,
+			Identifier:          args.Identifier,
+			Description:         args.Description,
+			Homepage:            args.Homepage,
+			IsPublic:            args.IsPublic,
+			ParentID:            args.ParentID,
+			InheritMembers:      args.InheritMembers,
+			DefaultAssignedToID: args.DefaultAssignedToID,
+			DefaultVersionID:    args.DefaultVersionID,
+			TrackerIDs:          args.TrackerIDs,
+			EnabledModuleNames:  args.EnabledModuleNames,
+			IssueCustomFieldIDs: args.IssueCustomFieldIDs,
+			CustomFieldValues:   args.CustomFieldValues,
 		}
 
 		result, err := useCases.Project.CreateProject(ctx, req)
@@ -186,11 +202,19 @@ func handleCreateProject(useCases *usecase.UseCases) func(ctx context.Context, r
 
 // UpdateProjectArgs defines arguments for updating a project
 type UpdateProjectArgs struct {
-	ID          string `json:"id" jsonschema:"Project ID or identifier"`
-	Name        string `json:"name,omitempty" jsonschema:"New project name (optional)"`
-	Description string `json:"description,omitempty" jsonschema:"New project description (optional)"`
-	IsPublic    bool   `json:"is_public,omitempty" jsonschema:"Whether the project is public (optional)"`
-	ParentID    int    `json:"parent_id,omitempty" jsonschema:"New parent project ID (optional)"`
+	ID                  string            `json:"id" jsonschema:"Project ID or identifier"`
+	Name                string            `json:"name,omitempty" jsonschema:"New project name (optional)"`
+	Description         string            `json:"description,omitempty" jsonschema:"New project description (optional)"`
+	Homepage            string            `json:"homepage,omitempty" jsonschema:"New homepage URL (optional)"`
+	IsPublic            bool              `json:"is_public,omitempty" jsonschema:"Whether the project is public (optional)"`
+	ParentID            int               `json:"parent_id,omitempty" jsonschema:"New parent project ID (optional)"`
+	InheritMembers      bool              `json:"inherit_members,omitempty" jsonschema:"Inherit members from parent project (optional)"`
+	DefaultAssignedToID int               `json:"default_assigned_to_id,omitempty" jsonschema:"Default assignee user ID (optional)"`
+	DefaultVersionID    int               `json:"default_version_id,omitempty" jsonschema:"Default version ID (optional)"`
+	TrackerIDs          []int             `json:"tracker_ids,omitempty" jsonschema:"Tracker IDs to enable (optional)"`
+	EnabledModuleNames  []string          `json:"enabled_module_names,omitempty" jsonschema:"Module names to enable (optional)"`
+	IssueCustomFieldIDs []int             `json:"issue_custom_field_ids,omitempty" jsonschema:"Issue custom field IDs (optional)"`
+	CustomFieldValues   map[string]string `json:"custom_field_values,omitempty" jsonschema:"Custom field values as key-value pairs (optional)"`
 }
 
 // UpdateProjectOutput defines output for updating a project
@@ -201,10 +225,18 @@ type UpdateProjectOutput struct {
 func handleUpdateProject(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args UpdateProjectArgs) (*mcp.CallToolResult, UpdateProjectOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args UpdateProjectArgs) (*mcp.CallToolResult, UpdateProjectOutput, error) {
 		req := redmine.ProjectUpdateRequest{
-			Name:        args.Name,
-			Description: args.Description,
-			IsPublic:    args.IsPublic,
-			ParentID:    args.ParentID,
+			Name:                args.Name,
+			Description:         args.Description,
+			Homepage:            args.Homepage,
+			IsPublic:            args.IsPublic,
+			ParentID:            args.ParentID,
+			InheritMembers:      args.InheritMembers,
+			DefaultAssignedToID: args.DefaultAssignedToID,
+			DefaultVersionID:    args.DefaultVersionID,
+			TrackerIDs:          args.TrackerIDs,
+			EnabledModuleNames:  args.EnabledModuleNames,
+			IssueCustomFieldIDs: args.IssueCustomFieldIDs,
+			CustomFieldValues:   args.CustomFieldValues,
 		}
 
 		err := useCases.Project.UpdateProject(ctx, args.ID, req)

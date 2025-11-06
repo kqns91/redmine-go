@@ -158,10 +158,17 @@ func handleGetCurrentUser(useCases *usecase.UseCases) func(ctx context.Context, 
 }
 
 type CreateUserArgs struct {
-	Login     string `json:"login" jsonschema:"User login (required)"`
-	Firstname string `json:"firstname" jsonschema:"User first name (required)"`
-	Lastname  string `json:"lastname" jsonschema:"User last name (required)"`
-	Mail      string `json:"mail" jsonschema:"User email address (required)"`
+	Login            string                `json:"login" jsonschema:"User login (required)"`
+	Firstname        string                `json:"firstname" jsonschema:"User first name (required)"`
+	Lastname         string                `json:"lastname" jsonschema:"User last name (required)"`
+	Mail             string                `json:"mail" jsonschema:"User email address (required)"`
+	Password         string                `json:"password,omitempty" jsonschema:"User password (optional)"`
+	AuthSourceID     int                   `json:"auth_source_id,omitempty" jsonschema:"Authentication source ID (optional)"`
+	MailNotification string                `json:"mail_notification,omitempty" jsonschema:"Mail notification setting (optional)"`
+	MustChangePasswd bool                  `json:"must_change_passwd,omitempty" jsonschema:"Force password change on first login (optional)"`
+	GeneratePassword bool                  `json:"generate_password,omitempty" jsonschema:"Auto-generate password (optional)"`
+	SendInformation  bool                  `json:"send_information,omitempty" jsonschema:"Send account information email (optional)"`
+	CustomFields     []redmine.CustomField `json:"custom_fields,omitempty" jsonschema:"Custom field values (optional)"`
 }
 
 type CreateUserOutput struct {
@@ -171,10 +178,17 @@ type CreateUserOutput struct {
 func handleCreateUser(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args CreateUserArgs) (*mcp.CallToolResult, CreateUserOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args CreateUserArgs) (*mcp.CallToolResult, CreateUserOutput, error) {
 		user := redmine.User{
-			Login:     args.Login,
-			Firstname: args.Firstname,
-			Lastname:  args.Lastname,
-			Mail:      args.Mail,
+			Login:            args.Login,
+			Firstname:        args.Firstname,
+			Lastname:         args.Lastname,
+			Mail:             args.Mail,
+			Password:         args.Password,
+			AuthSourceID:     args.AuthSourceID,
+			MailNotification: args.MailNotification,
+			MustChangePasswd: args.MustChangePasswd,
+			GeneratePassword: args.GeneratePassword,
+			SendInformation:  args.SendInformation,
+			CustomFields:     args.CustomFields,
 		}
 
 		result, err := useCases.User.CreateUser(ctx, user)
@@ -192,11 +206,17 @@ func handleCreateUser(useCases *usecase.UseCases) func(ctx context.Context, requ
 }
 
 type UpdateUserArgs struct {
-	ID        int    `json:"id" jsonschema:"User ID"`
-	Login     string `json:"login,omitempty" jsonschema:"New login (optional)"`
-	Firstname string `json:"firstname,omitempty" jsonschema:"New first name (optional)"`
-	Lastname  string `json:"lastname,omitempty" jsonschema:"New last name (optional)"`
-	Mail      string `json:"mail,omitempty" jsonschema:"New email address (optional)"`
+	ID               int                   `json:"id" jsonschema:"User ID"`
+	Login            string                `json:"login,omitempty" jsonschema:"New login (optional)"`
+	Firstname        string                `json:"firstname,omitempty" jsonschema:"New first name (optional)"`
+	Lastname         string                `json:"lastname,omitempty" jsonschema:"New last name (optional)"`
+	Mail             string                `json:"mail,omitempty" jsonschema:"New email address (optional)"`
+	Password         string                `json:"password,omitempty" jsonschema:"New password (optional)"`
+	AuthSourceID     int                   `json:"auth_source_id,omitempty" jsonschema:"Authentication source ID (optional)"`
+	MailNotification string                `json:"mail_notification,omitempty" jsonschema:"Mail notification setting (optional)"`
+	MustChangePasswd bool                  `json:"must_change_passwd,omitempty" jsonschema:"Force password change (optional)"`
+	Admin            bool                  `json:"admin,omitempty" jsonschema:"Admin privileges (optional)"`
+	CustomFields     []redmine.CustomField `json:"custom_fields,omitempty" jsonschema:"Custom field values (optional)"`
 }
 
 type UpdateUserOutput struct {
@@ -206,10 +226,16 @@ type UpdateUserOutput struct {
 func handleUpdateUser(useCases *usecase.UseCases) func(ctx context.Context, request *mcp.CallToolRequest, args UpdateUserArgs) (*mcp.CallToolResult, UpdateUserOutput, error) {
 	return func(ctx context.Context, request *mcp.CallToolRequest, args UpdateUserArgs) (*mcp.CallToolResult, UpdateUserOutput, error) {
 		user := redmine.User{
-			Login:     args.Login,
-			Firstname: args.Firstname,
-			Lastname:  args.Lastname,
-			Mail:      args.Mail,
+			Login:            args.Login,
+			Firstname:        args.Firstname,
+			Lastname:         args.Lastname,
+			Mail:             args.Mail,
+			Password:         args.Password,
+			AuthSourceID:     args.AuthSourceID,
+			MailNotification: args.MailNotification,
+			MustChangePasswd: args.MustChangePasswd,
+			Admin:            args.Admin,
+			CustomFields:     args.CustomFields,
 		}
 
 		err := useCases.User.UpdateUser(ctx, args.ID, user)

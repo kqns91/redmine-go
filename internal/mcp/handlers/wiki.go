@@ -113,10 +113,12 @@ func handleShowWikiPage(useCases *usecase.UseCases) func(ctx context.Context, re
 
 // CreateOrUpdateWikiPageArgs defines arguments for creating or updating a wiki page
 type CreateOrUpdateWikiPageArgs struct {
-	ProjectID string `json:"project_id" jsonschema:"Project ID or identifier (required)"`
-	Title     string `json:"title" jsonschema:"Wiki page title (required)"`
-	Text      string `json:"text" jsonschema:"Wiki page content in textile or markdown format (required)"`
-	Comments  string `json:"comments,omitempty" jsonschema:"Optional comments about the changes"`
+	ProjectID string           `json:"project_id" jsonschema:"Project ID or identifier (required)"`
+	Title     string           `json:"title" jsonschema:"Wiki page title (required)"`
+	Text      string           `json:"text" jsonschema:"Wiki page content in textile or markdown format (required)"`
+	Comments  string           `json:"comments,omitempty" jsonschema:"Optional comments about the changes"`
+	Version   int              `json:"version,omitempty" jsonschema:"Version number for conflict detection (optional)"`
+	Uploads   []redmine.Upload `json:"uploads,omitempty" jsonschema:"Upload tokens for file attachments (optional)"`
 }
 
 // CreateOrUpdateWikiPageOutput defines output for creating or updating a wiki page
@@ -129,6 +131,8 @@ func handleCreateOrUpdateWikiPage(useCases *usecase.UseCases) func(ctx context.C
 		page := redmine.WikiPageUpdate{
 			Text:     args.Text,
 			Comments: args.Comments,
+			Version:  args.Version,
+			Uploads:  args.Uploads,
 		}
 
 		err := useCases.Wiki.CreateOrUpdateWikiPage(ctx, args.ProjectID, args.Title, page)

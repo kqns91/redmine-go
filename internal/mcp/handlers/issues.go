@@ -160,19 +160,24 @@ func handleShowIssue(useCases *usecase.UseCases) func(ctx context.Context, reque
 
 // CreateIssueArgs defines arguments for creating an issue
 type CreateIssueArgs struct {
-	ProjectID      int     `json:"project_id" jsonschema:"Project ID (required)"`
-	TrackerID      int     `json:"tracker_id,omitempty" jsonschema:"Tracker ID (optional, uses project default if not specified)"`
-	StatusID       int     `json:"status_id,omitempty" jsonschema:"Status ID (optional, uses default status if not specified)"`
-	PriorityID     int     `json:"priority_id,omitempty" jsonschema:"Priority ID (optional)"`
-	Subject        string  `json:"subject" jsonschema:"Issue subject (required)"`
-	Description    string  `json:"description,omitempty" jsonschema:"Issue description (optional)"`
-	AssignedToID   int     `json:"assigned_to_id,omitempty" jsonschema:"Assigned user ID (optional)"`
-	CategoryID     int     `json:"category_id,omitempty" jsonschema:"Category ID (optional)"`
-	StartDate      string  `json:"start_date,omitempty" jsonschema:"Start date in YYYY-MM-DD format (optional)"`
-	DueDate        string  `json:"due_date,omitempty" jsonschema:"Due date in YYYY-MM-DD format (optional)"`
-	DoneRatio      int     `json:"done_ratio,omitempty" jsonschema:"Done ratio 0-100 (optional)"`
-	IsPrivate      bool    `json:"is_private,omitempty" jsonschema:"Whether the issue is private (optional)"`
-	EstimatedHours float64 `json:"estimated_hours,omitempty" jsonschema:"Estimated hours (optional)"`
+	ProjectID      int                   `json:"project_id" jsonschema:"Project ID (required)"`
+	TrackerID      int                   `json:"tracker_id,omitempty" jsonschema:"Tracker ID (optional, uses project default if not specified)"`
+	StatusID       int                   `json:"status_id,omitempty" jsonschema:"Status ID (optional, uses default status if not specified)"`
+	PriorityID     int                   `json:"priority_id,omitempty" jsonschema:"Priority ID (optional)"`
+	Subject        string                `json:"subject" jsonschema:"Issue subject (required)"`
+	Description    string                `json:"description,omitempty" jsonschema:"Issue description (optional)"`
+	AssignedToID   int                   `json:"assigned_to_id,omitempty" jsonschema:"Assigned user ID (optional)"`
+	CategoryID     int                   `json:"category_id,omitempty" jsonschema:"Category ID (optional)"`
+	FixedVersionID int                   `json:"fixed_version_id,omitempty" jsonschema:"Target version/milestone ID (optional)"`
+	ParentIssueID  int                   `json:"parent_issue_id,omitempty" jsonschema:"Parent issue ID for creating subtasks (optional)"`
+	StartDate      string                `json:"start_date,omitempty" jsonschema:"Start date in YYYY-MM-DD format (optional)"`
+	DueDate        string                `json:"due_date,omitempty" jsonschema:"Due date in YYYY-MM-DD format (optional)"`
+	DoneRatio      int                   `json:"done_ratio,omitempty" jsonschema:"Done ratio 0-100 (optional)"`
+	IsPrivate      bool                  `json:"is_private,omitempty" jsonschema:"Whether the issue is private (optional)"`
+	EstimatedHours float64               `json:"estimated_hours,omitempty" jsonschema:"Estimated hours (optional)"`
+	WatcherUserIDs []int                 `json:"watcher_user_ids,omitempty" jsonschema:"User IDs to add as watchers (optional)"`
+	CustomFields   []redmine.CustomField `json:"custom_fields,omitempty" jsonschema:"Custom field values (optional)"`
+	Uploads        []redmine.Upload      `json:"uploads,omitempty" jsonschema:"Upload tokens for file attachments (optional)"`
 }
 
 // CreateIssueOutput defines output for creating an issue
@@ -189,13 +194,18 @@ func handleCreateIssue(useCases *usecase.UseCases) func(ctx context.Context, req
 			StatusID:       args.StatusID,
 			PriorityID:     args.PriorityID,
 			CategoryID:     args.CategoryID,
+			FixedVersionID: args.FixedVersionID,
 			AssignedToID:   args.AssignedToID,
+			ParentIssueID:  args.ParentIssueID,
 			Description:    args.Description,
 			StartDate:      args.StartDate,
 			DueDate:        args.DueDate,
 			DoneRatio:      args.DoneRatio,
 			EstimatedHours: args.EstimatedHours,
 			IsPrivate:      args.IsPrivate,
+			WatcherUserIDs: args.WatcherUserIDs,
+			CustomFields:   args.CustomFields,
+			Uploads:        args.Uploads,
 		}
 
 		result, err := useCases.Issue.CreateIssue(ctx, req)
@@ -214,20 +224,26 @@ func handleCreateIssue(useCases *usecase.UseCases) func(ctx context.Context, req
 
 // UpdateIssueArgs defines arguments for updating an issue
 type UpdateIssueArgs struct {
-	ID             int     `json:"id" jsonschema:"Issue ID"`
-	ProjectID      int     `json:"project_id,omitempty" jsonschema:"New project ID (optional)"`
-	TrackerID      int     `json:"tracker_id,omitempty" jsonschema:"New tracker ID (optional)"`
-	StatusID       int     `json:"status_id,omitempty" jsonschema:"New status ID (optional)"`
-	PriorityID     int     `json:"priority_id,omitempty" jsonschema:"New priority ID (optional)"`
-	Subject        string  `json:"subject,omitempty" jsonschema:"New subject (optional)"`
-	Description    string  `json:"description,omitempty" jsonschema:"New description (optional)"`
-	AssignedToID   int     `json:"assigned_to_id,omitempty" jsonschema:"New assigned user ID (optional)"`
-	CategoryID     int     `json:"category_id,omitempty" jsonschema:"New category ID (optional)"`
-	StartDate      string  `json:"start_date,omitempty" jsonschema:"New start date in YYYY-MM-DD format (optional)"`
-	DueDate        string  `json:"due_date,omitempty" jsonschema:"New due date in YYYY-MM-DD format (optional)"`
-	DoneRatio      int     `json:"done_ratio,omitempty" jsonschema:"New done ratio 0-100 (optional)"`
-	IsPrivate      bool    `json:"is_private,omitempty" jsonschema:"Whether the issue is private (optional)"`
-	EstimatedHours float64 `json:"estimated_hours,omitempty" jsonschema:"New estimated hours (optional)"`
+	ID             int                   `json:"id" jsonschema:"Issue ID"`
+	ProjectID      int                   `json:"project_id,omitempty" jsonschema:"New project ID (optional)"`
+	TrackerID      int                   `json:"tracker_id,omitempty" jsonschema:"New tracker ID (optional)"`
+	StatusID       int                   `json:"status_id,omitempty" jsonschema:"New status ID (optional)"`
+	PriorityID     int                   `json:"priority_id,omitempty" jsonschema:"New priority ID (optional)"`
+	Subject        string                `json:"subject,omitempty" jsonschema:"New subject (optional)"`
+	Description    string                `json:"description,omitempty" jsonschema:"New description (optional)"`
+	AssignedToID   int                   `json:"assigned_to_id,omitempty" jsonschema:"New assigned user ID (optional)"`
+	CategoryID     int                   `json:"category_id,omitempty" jsonschema:"New category ID (optional)"`
+	FixedVersionID int                   `json:"fixed_version_id,omitempty" jsonschema:"New target version/milestone ID (optional)"`
+	ParentIssueID  int                   `json:"parent_issue_id,omitempty" jsonschema:"New parent issue ID (optional)"`
+	StartDate      string                `json:"start_date,omitempty" jsonschema:"New start date in YYYY-MM-DD format (optional)"`
+	DueDate        string                `json:"due_date,omitempty" jsonschema:"New due date in YYYY-MM-DD format (optional)"`
+	DoneRatio      int                   `json:"done_ratio,omitempty" jsonschema:"New done ratio 0-100 (optional)"`
+	IsPrivate      bool                  `json:"is_private,omitempty" jsonschema:"Whether the issue is private (optional)"`
+	EstimatedHours float64               `json:"estimated_hours,omitempty" jsonschema:"New estimated hours (optional)"`
+	Notes          string                `json:"notes,omitempty" jsonschema:"Update notes/comments (optional)"`
+	PrivateNotes   bool                  `json:"private_notes,omitempty" jsonschema:"Whether notes are private (optional)"`
+	CustomFields   []redmine.CustomField `json:"custom_fields,omitempty" jsonschema:"Custom field values (optional)"`
+	Uploads        []redmine.Upload      `json:"uploads,omitempty" jsonschema:"Upload tokens for file attachments (optional)"`
 }
 
 // UpdateIssueOutput defines output for updating an issue
@@ -244,13 +260,19 @@ func handleUpdateIssue(useCases *usecase.UseCases) func(ctx context.Context, req
 			StatusID:       args.StatusID,
 			PriorityID:     args.PriorityID,
 			CategoryID:     args.CategoryID,
+			FixedVersionID: args.FixedVersionID,
 			AssignedToID:   args.AssignedToID,
+			ParentIssueID:  args.ParentIssueID,
 			Description:    args.Description,
 			StartDate:      args.StartDate,
 			DueDate:        args.DueDate,
 			DoneRatio:      args.DoneRatio,
 			EstimatedHours: args.EstimatedHours,
 			IsPrivate:      args.IsPrivate,
+			Notes:          args.Notes,
+			PrivateNotes:   args.PrivateNotes,
+			CustomFields:   args.CustomFields,
+			Uploads:        args.Uploads,
 		}
 
 		err := useCases.Issue.UpdateIssue(ctx, args.ID, req)
