@@ -258,29 +258,104 @@ Basic configuration (all tools enabled):
 
 ### Available Tools
 
-The server provides 76 tools across 21 categories:
+The server provides 80 tools across 23 categories:
 
+**Core Resources**
 - Projects (7 tools)
 - Issues (7 tools)
 - Users (6 tools)
 - Issue Categories (5 tools)
 - Time Entries (5 tools)
 - Versions (5 tools)
+
+**Advanced Operations**
+- Batch Operations (1 tool) - Create multiple related tasks at once
+- Progress Monitoring (3 tools) - Analyze project health, adjust estimates, suggest reschedules
+
+**Project Management**
 - Memberships (5 tools)
 - Issue Relations (4 tools)
+- Groups (7 tools)
+
+**Content & Documentation**
 - Wiki Pages (4 tools)
 - Attachments (3 tools)
-- Enumerations (3 tools)
-- Groups (7 tools)
 - News (2 tools)
 - Files (2 tools)
+
+**Metadata & Configuration**
+- Enumerations (3 tools)
 - Roles (2 tools)
 - Metadata (2 tools)
+- Custom Fields (1 tool)
+- Queries (1 tool)
+
+**User Account**
 - My Account (2 tools)
 - Search (1 tool)
-- Queries (1 tool)
-- Custom Fields (1 tool)
 - Journals (1 tool)
+
+### Batch Operations
+
+The `create_task_tree` tool enables efficient creation of multiple related tasks with dependencies:
+
+```json
+{
+  "project_id": 1,
+  "tasks": [
+    {
+      "ref": "backend",
+      "subject": "Backend Development",
+      "tracker_id": 1,
+      "status_id": 1,
+      "priority_id": 1,
+      "assigned_to_id": 2,
+      "estimated_hours": 24,
+      "start_date": "2025-11-10",
+      "due_date": "2025-11-13"
+    },
+    {
+      "ref": "frontend",
+      "subject": "Frontend Development",
+      "parent_ref": "backend",
+      "assigned_to_id": 3,
+      "estimated_hours": 20,
+      "start_date": "2025-11-14",
+      "due_date": "2025-11-17",
+      "blocks_refs": ["backend"]
+    }
+  ]
+}
+```
+
+Features:
+- Parent-child task relationships via `parent_ref`
+- Task dependencies with `blocks_refs` and `precedes_refs`
+- Automatic assignee distribution with `assigned_to_id`
+- Estimated hours, start/due dates, custom fields support
+- Ideal for creating 10-30 related tickets for a feature
+
+### Progress Monitoring
+
+Three tools help monitor and manage project progress:
+
+**`analyze_project_health`** - Comprehensive project health analysis:
+- Lists on-track, at-risk, and delayed issues
+- Identifies critical path tasks
+- Calculates delay days and impact levels
+- Provides actionable recommendations
+
+**`adjust_estimates`** - Smart estimate adjustments:
+- Analyzes actual time entries vs. estimates
+- Forecasts completion dates based on current progress
+- Includes child issues in calculations
+- Helps maintain realistic schedules
+
+**`suggest_reschedule`** - Automatic rescheduling:
+- Detects delayed tasks and dependency conflicts
+- Suggests new dates with configurable buffer days
+- Can auto-apply changes or just preview
+- Supports critical-path-only mode
 
 ### Tool Control
 
@@ -306,7 +381,7 @@ Use `REDMINE_ENABLED_TOOLS` to specify which tool groups to enable:
 ```
 
 Available tool groups:
-`projects`, `issues`, `users`, `categories`, `time_entries`, `versions`, `memberships`, `issue_relations`, `wiki`, `attachments`, `enumerations`, `groups`, `news`, `files`, `roles`, `metadata`, `my_account`, `search`, `queries`, `custom_fields`, `journals`, `all`
+`projects`, `issues`, `users`, `categories`, `time_entries`, `versions`, `memberships`, `issue_relations`, `wiki`, `attachments`, `enumerations`, `groups`, `news`, `files`, `roles`, `metadata`, `my_account`, `search`, `queries`, `custom_fields`, `journals`, `batch_operations`, `progress_monitoring`, `all`
 
 #### Disable Specific Tools
 
