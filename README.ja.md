@@ -5,6 +5,7 @@ Redmine API の非公式 Go クライアント
 [![Go Version](https://img.shields.io/badge/Go-1.25.2%2B-00ADD8?logo=go)](https://go.dev/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/kqns91/redmine-go.svg)](https://pkg.go.dev/github.com/kqns91/redmine-go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kqns91/redmine-go)
 
 [English](README.md) | 日本語
 
@@ -18,41 +19,19 @@ Redmine API の非公式 Go クライアント
 
 3つの形態はすべて同じ SDK 基盤の上に構築されており、22 の Redmine REST API と 76 のメソッドをサポートしています。
 
-## 機能
+---
 
-- Redmine REST API のカバレッジ（22 API、76 メソッド）
-- Go の context パッケージを使用したコンテキスト対応操作
-- 包括的なエラーハンドリング
-- 複数の出力フォーマット（CLI: JSON、テーブル、シンプルテキスト）
-- 柔軟なツール制御（MCP: ツール単位での有効/無効化）
+## SDK
 
-## インストール
+Redmine REST API と連携するための Go クライアントパッケージです。
 
-### SDK
+### インストール
 
 ```bash
 go get github.com/kqns91/redmine-go
 ```
 
-### CLI
-
-```bash
-go install github.com/kqns91/redmine-go/cmd/redmine@latest
-```
-
-### MCP サーバー
-
-```bash
-go install github.com/kqns91/redmine-go/cmd/mcp@latest
-```
-
----
-
-## SDK の使い方
-
-SDK は Redmine REST API と連携するための Go クライアントを提供します。
-
-### 基本的な例
+### 基本的な使い方
 
 ```go
 package main
@@ -97,7 +76,7 @@ func main() {
 
 ### サポートしている API
 
-SDK は Redmine REST API をサポートしています：
+SDK は以下の Redmine REST API をサポートしています：
 
 **コアリソース**
 - Projects（CRUD、アーカイブ/アンアーカイブ）
@@ -135,9 +114,15 @@ SDK は Redmine REST API をサポートしています：
 
 ---
 
-## CLI の使い方
+## CLI
 
 ターミナルから Redmine を管理するためのコマンドラインツールです。
+
+### インストール
+
+```bash
+go install github.com/kqns91/redmine-go/cmd/redmine@latest
+```
 
 ### 設定
 
@@ -227,9 +212,15 @@ redmine issues create --help
 
 ---
 
-## MCP サーバーの使い方
+## MCP サーバー
 
 MCP（Model Context Protocol）サーバーは、AI アシスタントが Redmine と連携できるようにします。
+
+### インストール
+
+```bash
+go install github.com/kqns91/redmine-go/cmd/mcp@latest
+```
 
 ### 設定
 

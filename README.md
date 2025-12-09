@@ -1,16 +1,17 @@
 # redmine-go
 
-Unofficial Redmine API implementation in Go.
+Unofficial Redmine API client in Go
 
 [![Go Version](https://img.shields.io/badge/Go-1.25.2%2B-00ADD8?logo=go)](https://go.dev/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/kqns91/redmine-go.svg)](https://pkg.go.dev/github.com/kqns91/redmine-go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kqns91/redmine-go)
 
 English | [日本語](README.ja.md)
 
 ## Overview
 
-`redmine-go` is a Go implementation of the Redmine REST API. It provides three ways to interact with Redmine:
+`redmine-go` is a Redmine REST API client written in Go. It provides three ways to interact with Redmine:
 
 - **SDK** - Go package for building applications that integrate with Redmine
 - **CLI** - Command-line tool for managing Redmine from the terminal
@@ -18,41 +19,19 @@ English | [日本語](README.ja.md)
 
 All three are built on the same SDK foundation, supporting 22 Redmine REST APIs with 76 methods.
 
-## Features
+---
 
-- Coverage of Redmine REST API (22 APIs, 76 methods)
-- Context-aware operations using Go's context package
-- Comprehensive error handling
-- Multiple output formats (CLI: JSON, table, simple text)
-- Flexible tool control (MCP: per-tool enable/disable)
+## SDK
 
-## Installation
+Go client package for interacting with Redmine REST API.
 
-### SDK
+### Installation
 
 ```bash
 go get github.com/kqns91/redmine-go
 ```
 
-### CLI
-
-```bash
-go install github.com/kqns91/redmine-go/cmd/redmine@latest
-```
-
-### MCP Server
-
-```bash
-go install github.com/kqns91/redmine-go/cmd/mcp@latest
-```
-
----
-
-## SDK Usage
-
-The SDK provides a Go client for interacting with Redmine REST API.
-
-### Basic Example
+### Basic Usage
 
 ```go
 package main
@@ -97,7 +76,7 @@ func main() {
 
 ### Supported APIs
 
-The SDK supports Redmine REST APIs:
+The SDK supports the following Redmine REST APIs:
 
 **Core Resources**
 - Projects (CRUD, archive/unarchive)
@@ -135,9 +114,15 @@ For detailed API documentation, see the [pkg/redmine](pkg/redmine) directory.
 
 ---
 
-## CLI Usage
+## CLI
 
 Command-line tool for managing Redmine from the terminal.
+
+### Installation
+
+```bash
+go install github.com/kqns91/redmine-go/cmd/redmine@latest
+```
 
 ### Configuration
 
@@ -227,9 +212,15 @@ redmine issues create --help
 
 ---
 
-## MCP Server Usage
+## MCP Server
 
 The MCP (Model Context Protocol) server enables AI assistants to interact with Redmine.
+
+### Installation
+
+```bash
+go install github.com/kqns91/redmine-go/cmd/mcp@latest
+```
 
 ### Configuration
 
