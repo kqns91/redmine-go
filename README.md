@@ -59,7 +59,7 @@ func main() {
     }
 
     // Create an issue
-    issue := redmine.Issue{
+    issue := redmine.IssueCreateRequest{
         ProjectID:   1,
         Subject:     "Sample issue",
         Description: "Issue description",
@@ -129,27 +129,27 @@ go install github.com/kqns91/redmine-go/cmd/redmine@latest
 Run the config command to set up interactively:
 
 ```bash
-redmine config set url https://your-redmine.com
+redmine config set api_url https://your-redmine.com
 redmine config set api_key your-api-key
 ```
 
 View current configuration:
 
 ```bash
-redmine config list
+redmine config show
 ```
 
-The configuration is stored at `~/.redmine/config.yaml`. You can also edit this file directly if needed.
+The configuration is stored at `~/.config/redmine/config` (JSON format). You can also edit this file directly if needed.
 
 Alternatively, you can use environment variables or command-line flags:
 
 ```bash
 # Environment variables
-export REDMINE_URL="https://your-redmine.com"
+export REDMINE_API_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 
 # Command-line flags
-redmine --url https://your-redmine.com --api-key your-api-key <command>
+redmine --url https://your-redmine.com --key your-api-key <command>
 ```
 
 ### Getting Your API Key
@@ -163,19 +163,19 @@ redmine --url https://your-redmine.com --api-key your-api-key <command>
 
 ```bash
 # Projects
-redmine projects list
-redmine projects show <project-id>
+redmine project list
+redmine project get <project-id>
 
 # Issues
-redmine issues list --project <project-id>
-redmine issues show <issue-id>
-redmine issues create --project <project-id> --subject "Title" --description "Description"
-redmine issues update <issue-id> --status <status-id> --assigned-to <user-id>
+redmine issue list --project-id <project-id>
+redmine issue get <issue-id>
+redmine issue create --project-id <project-id> --tracker-id <tracker-id> --subject "Title" --description "Description"
+redmine issue update <issue-id> --status-id <status-id> --assigned-to-id <user-id>
 
 # Users
-redmine users list
-redmine users show <user-id>
-redmine users current
+redmine user list
+redmine user get <user-id>
+redmine user current
 ```
 
 ### Output Formats
@@ -184,19 +184,19 @@ The CLI supports three output formats:
 
 **Table format** (default)
 ```bash
-redmine projects list --format table
+redmine project list --format table
 ```
 Structured table with columns, suitable for terminal viewing.
 
 **JSON format**
 ```bash
-redmine projects list --format json
+redmine project list --format json
 ```
 Machine-readable JSON output, useful for scripting and integration.
 
 **Text format**
 ```bash
-redmine projects list --format text
+redmine project list --format text
 ```
 Plain text output with minimal formatting.
 
@@ -206,8 +206,8 @@ All commands provide detailed help:
 
 ```bash
 redmine --help
-redmine projects --help
-redmine issues create --help
+redmine project --help
+redmine issue create --help
 ```
 
 ---
@@ -249,7 +249,7 @@ Basic configuration (all tools enabled):
 
 ### Available Tools
 
-The server provides 80 tools across 23 categories:
+The server provides 79 tools across 23 categories:
 
 **Core Resources**
 - Projects (7 tools)

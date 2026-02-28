@@ -73,8 +73,9 @@ func TestListProjects(t *testing.T) {
     }))
     defer server.Close()
 
+    ctx := context.Background()
     client := New(server.URL, "test-api-key")
-    result, err := client.ListProjects(nil)
+    result, err := client.ListProjects(ctx, nil)
     if err != nil {
         t.Fatalf("ListProjects failed: %v", err)
     }

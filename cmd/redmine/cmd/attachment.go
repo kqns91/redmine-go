@@ -17,9 +17,9 @@ var attachmentCmd = &cobra.Command{
 	Long:  `添付ファイルの取得、更新、削除などの操作を行います。`,
 }
 
-var attachmentShowCmd = &cobra.Command{
-	Use:   "show [attachment_id]",
-	Short: "Show an attachment by ID",
+var attachmentGetCmd = &cobra.Command{
+	Use:   "get [attachment_id]",
+	Short: "Get an attachment by ID",
 	Long:  `指定したIDの添付ファイルを取得します。`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -131,12 +131,12 @@ func init() {
 	rootCmd.AddCommand(attachmentCmd)
 
 	// Subcommands
-	attachmentCmd.AddCommand(attachmentShowCmd)
+	attachmentCmd.AddCommand(attachmentGetCmd)
 	attachmentCmd.AddCommand(attachmentUpdateCmd)
 	attachmentCmd.AddCommand(attachmentDeleteCmd)
 
-	// Flags for show command
-	attachmentShowCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
+	// Flags for get command
+	attachmentGetCmd.Flags().StringP("format", "f", formatText, "出力フォーマット (json, text)")
 
 	// Flags for update command
 	attachmentUpdateCmd.Flags().String("filename", "", "ファイル名")

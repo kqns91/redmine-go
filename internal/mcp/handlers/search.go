@@ -19,7 +19,7 @@ func RegisterSearchTools(server *mcp.Server, useCases *usecase.UseCases, cfg *co
 	if cfg.IsToolEnabled(toolGroup, "search") {
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "search",
-			Description: "Search across Redmine for issues, projects, news, documents, changesets, wiki pages, messages, and users.",
+			Description: "Search across Redmine. Filter results by type using issues, wiki_pages, and attachments parameters.",
 		}, handleSearch(useCases))
 	}
 }

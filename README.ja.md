@@ -59,7 +59,7 @@ func main() {
     }
 
     // 課題の作成
-    issue := redmine.Issue{
+    issue := redmine.IssueCreateRequest{
         ProjectID:   1,
         Subject:     "サンプル課題",
         Description: "課題の説明",
@@ -129,27 +129,27 @@ go install github.com/kqns91/redmine-go/cmd/redmine@latest
 config コマンドで対話的に設定：
 
 ```bash
-redmine config set url https://your-redmine.com
+redmine config set api_url https://your-redmine.com
 redmine config set api_key your-api-key
 ```
 
 現在の設定を確認：
 
 ```bash
-redmine config list
+redmine config show
 ```
 
-設定は `~/.redmine/config.yaml` に保存されます。必要に応じて直接編集することもできます。
+設定は `~/.config/redmine/config`（JSON 形式）に保存されます。必要に応じて直接編集することもできます。
 
 環境変数やコマンドラインフラグでも設定できます：
 
 ```bash
 # 環境変数
-export REDMINE_URL="https://your-redmine.com"
+export REDMINE_API_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 
 # コマンドラインフラグ
-redmine --url https://your-redmine.com --api-key your-api-key <command>
+redmine --url https://your-redmine.com --key your-api-key <command>
 ```
 
 ### API キーの取得方法
@@ -163,19 +163,19 @@ redmine --url https://your-redmine.com --api-key your-api-key <command>
 
 ```bash
 # プロジェクト
-redmine projects list
-redmine projects show <project-id>
+redmine project list
+redmine project get <project-id>
 
 # 課題
-redmine issues list --project <project-id>
-redmine issues show <issue-id>
-redmine issues create --project <project-id> --subject "タイトル" --description "説明"
-redmine issues update <issue-id> --status <status-id> --assigned-to <user-id>
+redmine issue list --project-id <project-id>
+redmine issue get <issue-id>
+redmine issue create --project-id <project-id> --tracker-id <tracker-id> --subject "タイトル" --description "説明"
+redmine issue update <issue-id> --status-id <status-id> --assigned-to-id <user-id>
 
 # ユーザー
-redmine users list
-redmine users show <user-id>
-redmine users current
+redmine user list
+redmine user get <user-id>
+redmine user current
 ```
 
 ### 出力フォーマット
@@ -184,19 +184,19 @@ CLI は3つの出力フォーマットをサポートしています：
 
 **テーブルフォーマット**（デフォルト）
 ```bash
-redmine projects list --format table
+redmine project list --format table
 ```
 列を持つ構造化されたテーブルで、ターミナルでの閲覧に適しています。
 
 **JSON フォーマット**
 ```bash
-redmine projects list --format json
+redmine project list --format json
 ```
 機械可読な JSON 出力で、スクリプトや統合に便利です。
 
 **テキストフォーマット**
 ```bash
-redmine projects list --format text
+redmine project list --format text
 ```
 最小限の書式設定を行ったプレーンテキスト出力です。
 
@@ -206,8 +206,8 @@ redmine projects list --format text
 
 ```bash
 redmine --help
-redmine projects --help
-redmine issues create --help
+redmine project --help
+redmine issue create --help
 ```
 
 ---
@@ -249,7 +249,7 @@ MCP クライアントの設定ファイルに追加します。
 
 ### 利用可能なツール
 
-サーバーは 23 カテゴリにわたる 80 のツールを提供します：
+サーバーは 23 カテゴリにわたる 79 のツールを提供します：
 
 **コアリソース**
 - Projects（7 ツール）
