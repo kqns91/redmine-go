@@ -219,7 +219,7 @@ The MCP (Model Context Protocol) server enables AI assistants to interact with R
 ### Installation
 
 ```bash
-go install github.com/kqns91/redmine-go/cmd/mcp@latest
+go install github.com/kqns91/redmine-go/cmd/redmine-mcp@latest
 ```
 
 ### Configuration
@@ -237,7 +237,7 @@ Basic configuration (all tools enabled):
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp",
+      "command": "/path/to/redmine-mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key"
@@ -360,7 +360,7 @@ Use `REDMINE_ENABLED_TOOLS` to specify which tool groups to enable:
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp",
+      "command": "/path/to/redmine-mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key",

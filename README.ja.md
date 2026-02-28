@@ -219,7 +219,7 @@ MCP（Model Context Protocol）サーバーは、AI アシスタントが Redmin
 ### インストール
 
 ```bash
-go install github.com/kqns91/redmine-go/cmd/mcp@latest
+go install github.com/kqns91/redmine-go/cmd/redmine-mcp@latest
 ```
 
 ### 設定
@@ -237,7 +237,7 @@ MCP クライアントの設定ファイルに追加します。
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp",
+      "command": "/path/to/redmine-mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key"
@@ -360,7 +360,7 @@ MCP クライアントの設定ファイルに追加します。
 {
   "mcpServers": {
     "redmine": {
-      "command": "/path/to/mcp",
+      "command": "/path/to/redmine-mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key",

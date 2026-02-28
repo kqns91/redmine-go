@@ -9,8 +9,7 @@
 *.dylib
 
 # Build artifacts
-/mcp-server
-/mcp
+/redmine-mcp
 /redmine
 bin/
 
