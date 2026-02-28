@@ -1,0 +1,72 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: redmine
+    main: ./cmd/redmine
+    binary: redmine
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/kqns91/redmine-go/internal/version.version={{.Version}}
+      - -X github.com/kqns91/redmine-go/internal/version.commit={{.ShortCommit}}
+      - -X github.com/kqns91/redmine-go/internal/version.date={{.Date}}
+
+  - id: redmine-mcp
+    main: ./cmd/redmine-mcp
+    binary: redmine-mcp
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/kqns91/redmine-go/internal/version.version={{.Version}}
+      - -X github.com/kqns91/redmine-go/internal/version.commit={{.ShortCommit}}
+      - -X github.com/kqns91/redmine-go/internal/version.date={{.Date}}
+
+archives:
+  - id: redmine
+    builds:
+      - redmine
+    name_template: "redmine_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+  - id: redmine-mcp
+    builds:
+      - redmine-mcp
+    name_template: "redmine-mcp_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: kqns91
+    name: redmine-go
+  draft: false
+  prerelease: auto

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	cliconfig "github.com/kqns91/redmine-go/cmd/redmine/internal/config"
+	"github.com/kqns91/redmine-go/internal/version"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -25,8 +26,9 @@ var (
 
 // rootCmd はCLIのルートコマンドを表します
 var rootCmd = &cobra.Command{
-	Use:   "redmine",
-	Short: "Redmine API client CLI",
+	Use:     "redmine",
+	Short:   "Redmine API client CLI",
+	Version: version.GetVersion(),
 	Long: `redmine は Redmine の REST API を操作するための CLI ツールです。
 すべての Redmine API 操作を CLI から実行できます。`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -81,6 +83,10 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.SetVersionTemplate(
+		fmt.Sprintf("redmine version %s (commit: %s, built: %s)\n",
+			version.GetVersion(), version.GetCommit(), version.GetDate()))
+
 	// グローバルフラグの定義
 	rootCmd.PersistentFlags().StringVar(&apiURL, "url", "", "Redmine API URL (優先順位: フラグ > 環境変数 > 設定ファイル)")
 	rootCmd.PersistentFlags().StringVar(&apiKey, "key", "", "Redmine API Key (優先順位: フラグ > 環境変数 > 設定ファイル)")

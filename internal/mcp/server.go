@@ -6,6 +6,7 @@ import (
 	"github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/mcp/handlers"
 	"github.com/kqns91/redmine-go/internal/usecase"
+	"github.com/kqns91/redmine-go/internal/version"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
 
@@ -43,7 +44,7 @@ func NewServer(cfg *config.Config) (*mcp.Server, error) {
 	// Create MCP server
 	server := mcp.NewServer(&mcp.Implementation{
 		Name:    "Redmine MCP Server",
-		Version: "1.0.0",
+		Version: version.GetVersion(),
 	}, nil)
 
 	// Register tools conditionally based on configuration

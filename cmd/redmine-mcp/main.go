@@ -9,9 +9,16 @@ import (
 
 	"github.com/kqns91/redmine-go/internal/config"
 	internalMCP "github.com/kqns91/redmine-go/internal/mcp"
+	"github.com/kqns91/redmine-go/internal/version"
 )
 
 func main() {
+	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
+		_, _ = fmt.Fprintf(os.Stdout, "redmine-mcp %s (commit: %s, built: %s)\n",
+			version.GetVersion(), version.GetCommit(), version.GetDate())
+		os.Exit(0)
+	}
+
 	// Load configuration from environment variables
 	cfg, err := config.Load()
 	if err != nil {
