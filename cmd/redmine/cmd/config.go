@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/kqns91/redmine-go/cmd/redmine/internal/config"
+	"github.com/kqns91/redmine-go/internal/config"
 )
 
 var configCmd = &cobra.Command{

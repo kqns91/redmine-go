@@ -1,65 +1,163 @@
 package config
 
-// Config holds the configuration for the Redmine MCP server.
+import (
+	"bufio"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+const (
+	configDirName  = ".config/redmine"
+	configFileName = "config"
+)
+
+// Config represents the CLI configuration
 type Config struct {
-	// RedmineURL is the base URL of the Redmine instance
-	RedmineURL string
-
-	// APIKey is the Redmine API key for authentication
-	APIKey string
-
-	// EnabledToolGroups specifies which tool groups to enable.
-	// If empty, all tool groups are enabled by default.
-	// Examples: "projects", "issues", "users", "all"
-	EnabledToolGroups []string
-
-	// DisabledTools specifies individual tools to disable.
-	// Takes precedence over EnabledToolGroups.
-	// Example: "redmine_delete_project", "redmine_delete_issue"
-	DisabledTools []string
+	APIURL string `json:"api_url"`
+	APIKey string `json:"api_key"`
 }
 
-// IsToolGroupEnabled checks if a tool group is enabled based on configuration.
-// Returns true if:
-// - EnabledToolGroups is empty (default: all groups enabled)
-// - EnabledToolGroups contains "all"
-// - EnabledToolGroups contains the specified group
-func (c *Config) IsToolGroupEnabled(group string) bool {
-	// Default: if no whitelist specified, enable all groups
-	if len(c.EnabledToolGroups) == 0 {
-		return true
+// GetConfigPath returns the full path to the config file
+func GetConfigPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("ホームディレクトリの取得に失敗しました: %w", err)
 	}
 
-	// Check if "all" is specified
-	for _, enabled := range c.EnabledToolGroups {
-		if enabled == "all" || enabled == group {
-			return true
+	return filepath.Join(homeDir, configDirName, configFileName), nil
+}
+
+// Load loads the configuration from the config file
+func Load() (*Config, error) {
+	configPath, err := GetConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	//nolint:gosec // Config file path is constructed internally, not from user input
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, errors.New("設定ファイルが見つかりません。'redmine config init' を実行して初期設定を行ってください")
 		}
+		return nil, fmt.Errorf("設定ファイルの読み込みに失敗しました: %w", err)
 	}
 
-	return false
+	var cfg Config
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("設定ファイルのパースに失敗しました: %w", err)
+	}
+
+	return &cfg, nil
 }
 
-// IsToolDisabled checks if a specific tool is disabled.
-func (c *Config) IsToolDisabled(toolName string) bool {
-	for _, disabled := range c.DisabledTools {
-		if disabled == toolName {
-			return true
-		}
+// Save saves the configuration to the config file
+func Save(cfg *Config) error {
+	configPath, err := GetConfigPath()
+	if err != nil {
+		return err
 	}
-	return false
+
+	// Create config directory if it doesn't exist
+	configDir := filepath.Dir(configPath)
+	//nolint:gosec // 0755 is appropriate for config directory
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
+		return fmt.Errorf("設定ディレクトリの作成に失敗しました: %w", err)
+	}
+
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return fmt.Errorf("設定のシリアライズに失敗しました: %w", err)
+	}
+
+	if err := os.WriteFile(configPath, data, 0o600); err != nil {
+		return fmt.Errorf("設定ファイルの書き込みに失敗しました: %w", err)
+	}
+
+	return nil
 }
 
-// IsToolEnabled checks if a specific tool should be registered.
-// Returns false if:
-// - Tool is explicitly disabled (blacklist check - takes precedence)
-// - Tool group is not enabled (whitelist check)
-func (c *Config) IsToolEnabled(group string, toolName string) bool {
-	// Blacklist takes precedence
-	if c.IsToolDisabled(toolName) {
-		return false
+// Exists checks if the config file exists
+func Exists() (bool, error) {
+	configPath, err := GetConfigPath()
+	if err != nil {
+		return false, err
 	}
 
-	// Check tool group whitelist
-	return c.IsToolGroupEnabled(group)
+	_, err = os.Stat(configPath)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
+// InitInteractive interactively initializes the configuration
+func InitInteractive() (*Config, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("Redmine CLI 初期設定")
+	fmt.Println("==================")
+	fmt.Println()
+
+	// Get API URL
+	fmt.Print("Redmine API URL (例: https://redmine.example.com): ")
+	apiURL, err := reader.ReadString('\n')
+	if err != nil {
+		return nil, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
+	}
+	apiURL = strings.TrimSpace(apiURL)
+	if apiURL == "" {
+		return nil, errors.New("API URLは必須です")
+	}
+
+	// Get API Key
+	fmt.Print("Redmine API Key: ")
+	apiKey, err := reader.ReadString('\n')
+	if err != nil {
+		return nil, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
+	}
+	apiKey = strings.TrimSpace(apiKey)
+	if apiKey == "" {
+		return nil, errors.New("API Keyは必須です")
+	}
+
+	cfg := &Config{
+		APIURL: apiURL,
+		APIKey: apiKey,
+	}
+
+	// Confirm
+	fmt.Println()
+	fmt.Println("設定内容:")
+	fmt.Printf("  API URL: %s\n", cfg.APIURL)
+	fmt.Printf("  API Key: %s\n", maskAPIKey(cfg.APIKey))
+	fmt.Println()
+	fmt.Print("この設定で保存しますか？ (y/N): ")
+
+	confirm, err := reader.ReadString('\n')
+	if err != nil {
+		return nil, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
+	}
+	confirm = strings.ToLower(strings.TrimSpace(confirm))
+
+	if confirm != "y" && confirm != "yes" {
+		return nil, errors.New("設定の保存がキャンセルされました")
+	}
+
+	return cfg, nil
+}
+
+// maskAPIKey masks the API key for display
+func maskAPIKey(key string) string {
+	if len(key) <= 8 {
+		return "********"
+	}
+	return key[:4] + "..." + key[len(key)-4:]
 }
