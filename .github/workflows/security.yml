@@ -1,0 +1,60 @@
+name: Security
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  schedule:
+    # Weekly, so newly disclosed vulnerabilities in existing dependencies are
+    # caught even without new commits.
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  vulnerability:
+    name: Vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Trivy reads go.mod/go.sum and matches dependencies against its
+      # vulnerability database. (govulncheck would be more precise but currently
+      # panics on this codebase under Go 1.26 / x-vuln; revisit when fixed.)
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+  license:
+    name: License check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # Vendor dependencies so their LICENSE files are present on disk for Trivy
+      # to classify. The vendor directory is ephemeral (not committed).
+      - name: Vendor dependencies
+        run: go mod vendor
+
+      - name: Trivy license scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: ./vendor
+          scanners: license
+          severity: HIGH,CRITICAL
+          exit-code: "1"
