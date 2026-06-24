@@ -141,15 +141,11 @@ redmine config show
 
 設定は `~/.config/redmine/config`（JSON 形式）に保存されます。必要に応じて直接編集することもできます。
 
-環境変数やコマンドラインフラグでも設定できます：
+環境変数でも設定できます：
 
 ```bash
-# 環境変数
 export REDMINE_API_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
-
-# コマンドラインフラグ
-redmine --url https://your-redmine.com --key your-api-key <command>
 ```
 
 ### API キーの取得方法
