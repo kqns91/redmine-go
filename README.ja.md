@@ -167,6 +167,16 @@ export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 ```
 
+#### 設定ファイルの場所
+
+設定ファイルはデフォルトで `~/.config/redmine/config` に保存されます。
+`REDMINE_CONFIG` 環境変数または `--config` フラグで変更できます（フラグが優先）：
+
+```bash
+export REDMINE_CONFIG="/path/to/config"
+redmine --config /path/to/config issue list
+```
+
 ### API キーの取得方法
 
 1. Redmine インスタンスにログイン

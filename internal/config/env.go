@@ -16,6 +16,9 @@ const (
 
 	// EnvProfile selects which profile to use for a single invocation.
 	EnvProfile = "REDMINE_PROFILE"
+
+	// EnvConfig overrides the path to the config file.
+	EnvConfig = "REDMINE_CONFIG"
 )
 
 // URLFromEnv returns the Redmine base URL from the environment.
