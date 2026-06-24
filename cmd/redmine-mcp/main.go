@@ -7,8 +7,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/kqns91/redmine-go/internal/config"
 	internalMCP "github.com/kqns91/redmine-go/internal/mcp"
+	"github.com/kqns91/redmine-go/internal/mcp/config"
 	"github.com/kqns91/redmine-go/internal/version"
 )
 

@@ -126,30 +126,57 @@ go install github.com/kqns91/redmine-go/cmd/redmine@latest
 
 ### Configuration
 
-Run the config command to set up interactively:
+Set up interactively:
 
 ```bash
-redmine config set api_url https://your-redmine.com
-redmine config set api_key your-api-key
+redmine config init
 ```
 
-View current configuration:
+The configuration is stored at `~/.config/redmine/config` (JSON format).
+
+#### Profiles
+
+Configurations are organized into named profiles, so you can switch between
+multiple Redmine instances.
 
 ```bash
-redmine config show
+redmine config add work        # add a profile interactively
+redmine config add personal
+redmine config list            # list profiles (current marked with *)
+redmine config use personal    # switch the current profile
+redmine config show            # show the current profile
+redmine config remove personal
 ```
 
-The configuration is stored at `~/.config/redmine/config` (JSON format). You can also edit this file directly if needed.
-
-Alternatively, you can use environment variables or command-line flags:
+Select a profile for a single command without switching:
 
 ```bash
-# Environment variables
-export REDMINE_API_URL="https://your-redmine.com"
+redmine --profile work issue list
+REDMINE_PROFILE=work redmine issue list
+```
+
+The profile is resolved in this order: `--profile` flag, `REDMINE_PROFILE`
+environment variable, then the current profile in the config file.
+
+#### Environment variables
+
+Alternatively, you can provide the connection settings directly via environment
+variables, which take precedence over the config file:
+
+```bash
+export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
+```
 
-# Command-line flags
-redmine --url https://your-redmine.com --key your-api-key <command>
+#### Config file location
+
+By default the config is stored at `~/.config/redmine/config`. You can override
+this with the `REDMINE_CONFIG` environment variable or the `--config` flag (the
+flag takes precedence):
+
+```bash
+export REDMINE_CONFIG="/path/to/config"
+redmine --config /path/to/config issue list
 ```
 
 ### Getting Your API Key
@@ -246,6 +273,32 @@ Basic configuration (all tools enabled):
   }
 }
 ```
+
+`REDMINE_API_URL` is also accepted in place of `REDMINE_URL`.
+
+#### Using a profile
+
+Instead of putting the URL and API key directly in the MCP client config, you
+can reference a profile from the shared CLI config (see [Profiles](#profiles)).
+The server resolves the connection settings from the selected profile:
+
+```json
+{
+  "mcpServers": {
+    "redmine-work": {
+      "command": "/path/to/redmine-mcp",
+      "env": {
+        "REDMINE_PROFILE": "work"
+      }
+    }
+  }
+}
+```
+
+`REDMINE_PROFILE` selects the profile (the current profile is used if unset), and
+`REDMINE_CONFIG` can point at a non-default config file. Registering the server
+under several names with different profiles lets the assistant work with multiple
+Redmine instances.
 
 ### Available Tools
 

@@ -126,30 +126,55 @@ go install github.com/kqns91/redmine-go/cmd/redmine@latest
 
 ### 設定
 
-config コマンドで対話的に設定：
+対話的に設定：
 
 ```bash
-redmine config set api_url https://your-redmine.com
-redmine config set api_key your-api-key
+redmine config init
 ```
 
-現在の設定を確認：
+設定は `~/.config/redmine/config`（JSON 形式）に保存されます。
+
+#### プロファイル
+
+設定は名前付きのプロファイルとして管理され、複数の Redmine インスタンスを
+切り替えて使えます。
 
 ```bash
-redmine config show
+redmine config add work        # プロファイルを対話的に追加
+redmine config add personal
+redmine config list            # 一覧（現在のプロファイルに * 印）
+redmine config use personal    # 現在のプロファイルを切り替え
+redmine config show            # 現在のプロファイルを表示
+redmine config remove personal
 ```
 
-設定は `~/.config/redmine/config`（JSON 形式）に保存されます。必要に応じて直接編集することもできます。
-
-環境変数やコマンドラインフラグでも設定できます：
+切り替えずに単発のコマンドでプロファイルを指定：
 
 ```bash
-# 環境変数
-export REDMINE_API_URL="https://your-redmine.com"
+redmine --profile work issue list
+REDMINE_PROFILE=work redmine issue list
+```
+
+プロファイルは次の順で解決されます: `--profile` フラグ、`REDMINE_PROFILE`
+環境変数、設定ファイルの現在のプロファイル。
+
+#### 環境変数
+
+接続情報を環境変数で直接渡すこともできます（設定ファイルより優先されます）：
+
+```bash
+export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
+```
 
-# コマンドラインフラグ
-redmine --url https://your-redmine.com --key your-api-key <command>
+#### 設定ファイルの場所
+
+設定ファイルはデフォルトで `~/.config/redmine/config` に保存されます。
+`REDMINE_CONFIG` 環境変数または `--config` フラグで変更できます（フラグが優先）：
+
+```bash
+export REDMINE_CONFIG="/path/to/config"
+redmine --config /path/to/config issue list
 ```
 
 ### API キーの取得方法
@@ -246,6 +271,31 @@ MCP クライアントの設定ファイルに追加します。
   }
 }
 ```
+
+`REDMINE_URL` の代わりに `REDMINE_API_URL` も使用できます。
+
+#### プロファイルを使う
+
+URL と API キーを MCP クライアントの設定に直接書く代わりに、CLI と共有の
+設定ファイルのプロファイル（[プロファイル](#プロファイル)参照）を参照できます。
+サーバーは選択されたプロファイルから接続情報を解決します：
+
+```json
+{
+  "mcpServers": {
+    "redmine-work": {
+      "command": "/path/to/redmine-mcp",
+      "env": {
+        "REDMINE_PROFILE": "work"
+      }
+    }
+  }
+}
+```
+
+`REDMINE_PROFILE` でプロファイルを選択し（未指定なら現在のプロファイル）、
+`REDMINE_CONFIG` でデフォルト以外の設定ファイルを指定できます。サーバーを
+異なるプロファイルで複数登録すれば、複数の Redmine インスタンスを扱えます。
 
 ### 利用可能なツール
 

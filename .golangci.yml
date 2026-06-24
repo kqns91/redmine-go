@@ -54,7 +54,9 @@ linters:
       - path: '(.+)_test\.go'
         linters:
           - bodyclose
-      - path: 'cmd/redmine/.*'
+      # CLI-facing code uses fmt prints and Japanese prompts (e.g. interactive
+      # config setup). internal/config holds that shared CLI config code.
+      - path: '(cmd/redmine/|internal/config/)'
         linters:
           - forbidigo
           - gosmopolitan

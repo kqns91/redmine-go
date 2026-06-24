@@ -128,6 +128,17 @@ go build ./...
 - Validate HTTP methods, paths, headers, and request/response data in tests
 - Test both success cases and error cases where applicable
 
+## Documentation
+
+The README is maintained in two languages and they must be kept in sync:
+
+- `README.md` (English)
+- `README.ja.md` (Japanese)
+
+Whenever you change user-facing behavior (commands, flags, configuration, setup
+instructions, etc.), update **both** files in the same change. Do not update one
+without the other.
+
 ## API Coverage
 
 This SDK provides comprehensive coverage of all Redmine REST APIs:
