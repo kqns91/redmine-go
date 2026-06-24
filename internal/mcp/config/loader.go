@@ -16,15 +16,36 @@ var (
 	ErrMissingAPIKey = errors.New("REDMINE_API_KEY environment variable is required")
 )
 
-// Load reads configuration from environment variables.
-// It returns an error if required environment variables are not set.
+// Load reads configuration for the MCP server.
+//
+// Connection settings come from the environment first (REDMINE_URL /
+// REDMINE_API_URL and REDMINE_API_KEY). If either is missing, they are filled
+// from the shared config file's selected profile (REDMINE_PROFILE, or the
+// current profile). This keeps env-only operation working with no config file
+// while also supporting profile-based setups.
 func Load() (*Config, error) {
 	redmineURL := redmineconfig.URLFromEnv()
+	apiKey := redmineconfig.APIKeyFromEnv()
+
+	// Fill any missing value from the shared config file's profile.
+	if redmineURL == "" || apiKey == "" {
+		if cfg, err := redmineconfig.Load(); err == nil {
+			profile, err := cfg.ResolveProfile(redmineconfig.ProfileFromEnv())
+			if err != nil {
+				return nil, err
+			}
+			if redmineURL == "" {
+				redmineURL = profile.APIURL
+			}
+			if apiKey == "" {
+				apiKey = profile.APIKey
+			}
+		}
+	}
+
 	if redmineURL == "" {
 		return nil, ErrMissingRedmineURL
 	}
-
-	apiKey := redmineconfig.APIKeyFromEnv()
 	if apiKey == "" {
 		return nil, ErrMissingAPIKey
 	}

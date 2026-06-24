@@ -276,6 +276,30 @@ Basic configuration (all tools enabled):
 
 `REDMINE_API_URL` is also accepted in place of `REDMINE_URL`.
 
+#### Using a profile
+
+Instead of putting the URL and API key directly in the MCP client config, you
+can reference a profile from the shared CLI config (see [Profiles](#profiles)).
+The server resolves the connection settings from the selected profile:
+
+```json
+{
+  "mcpServers": {
+    "redmine-work": {
+      "command": "/path/to/redmine-mcp",
+      "env": {
+        "REDMINE_PROFILE": "work"
+      }
+    }
+  }
+}
+```
+
+`REDMINE_PROFILE` selects the profile (the current profile is used if unset), and
+`REDMINE_CONFIG` can point at a non-default config file. Registering the server
+under several names with different profiles lets the assistant work with multiple
+Redmine instances.
+
 ### Available Tools
 
 The server provides 79 tools across 23 categories:
