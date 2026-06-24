@@ -18,11 +18,7 @@ const (
 	formatText  = "text"
 )
 
-var (
-	apiURL string
-	apiKey string
-	client *redmine.Client
-)
+var client *redmine.Client
 
 // rootCmd はCLIのルートコマンドを表します
 var rootCmd = &cobra.Command{
@@ -40,15 +36,11 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 
-		// 優先順位: 1. フラグ, 2. 環境変数, 3. 設定ファイル
-		if apiURL == "" {
-			apiURL = os.Getenv("REDMINE_API_URL")
-		}
-		if apiKey == "" {
-			apiKey = os.Getenv("REDMINE_API_KEY")
-		}
+		// 優先順位: 1. 環境変数, 2. 設定ファイル
+		apiURL := os.Getenv("REDMINE_API_URL")
+		apiKey := os.Getenv("REDMINE_API_KEY")
 
-		// 設定ファイルから読み込み（フラグと環境変数が未設定の場合）
+		// 設定ファイルから読み込み（環境変数が未設定の場合）
 		if apiURL == "" || apiKey == "" {
 			cfg, err := cliconfig.Load()
 			if err == nil {
@@ -62,10 +54,10 @@ var rootCmd = &cobra.Command{
 		}
 
 		if apiURL == "" {
-			return errors.New("REDMINE_API_URL が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. --url フラグを指定\n  3. REDMINE_API_URL 環境変数を設定")
+			return errors.New("REDMINE_API_URL が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. REDMINE_API_URL 環境変数を設定")
 		}
 		if apiKey == "" {
-			return errors.New("REDMINE_API_KEY が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. --key フラグを指定\n  3. REDMINE_API_KEY 環境変数を設定")
+			return errors.New("REDMINE_API_KEY が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. REDMINE_API_KEY 環境変数を設定")
 		}
 
 		// Redmine クライアントを初期化
@@ -86,8 +78,4 @@ func init() {
 	rootCmd.SetVersionTemplate(
 		fmt.Sprintf("redmine version %s (commit: %s, built: %s)\n",
 			version.GetVersion(), version.GetCommit(), version.GetDate()))
-
-	// グローバルフラグの定義
-	rootCmd.PersistentFlags().StringVar(&apiURL, "url", "", "Redmine API URL (優先順位: フラグ > 環境変数 > 設定ファイル)")
-	rootCmd.PersistentFlags().StringVar(&apiKey, "key", "", "Redmine API Key (優先順位: フラグ > 環境変数 > 設定ファイル)")
 }

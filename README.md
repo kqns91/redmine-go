@@ -141,15 +141,11 @@ redmine config show
 
 The configuration is stored at `~/.config/redmine/config` (JSON format). You can also edit this file directly if needed.
 
-Alternatively, you can use environment variables or command-line flags:
+Alternatively, you can use environment variables:
 
 ```bash
-# Environment variables
 export REDMINE_API_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
-
-# Command-line flags
-redmine --url https://your-redmine.com --key your-api-key <command>
 ```
 
 ### Getting Your API Key
