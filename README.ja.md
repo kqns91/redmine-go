@@ -126,22 +126,41 @@ go install github.com/kqns91/redmine-go/cmd/redmine@latest
 
 ### 設定
 
-config コマンドで対話的に設定：
+対話的に設定：
 
 ```bash
-redmine config set api_url https://your-redmine.com
-redmine config set api_key your-api-key
+redmine config init
 ```
 
-現在の設定を確認：
+設定は `~/.config/redmine/config`（JSON 形式）に保存されます。
+
+#### プロファイル
+
+設定は名前付きのプロファイルとして管理され、複数の Redmine インスタンスを
+切り替えて使えます。
 
 ```bash
-redmine config show
+redmine config add work        # プロファイルを対話的に追加
+redmine config add personal
+redmine config list            # 一覧（現在のプロファイルに * 印）
+redmine config use personal    # 現在のプロファイルを切り替え
+redmine config show            # 現在のプロファイルを表示
+redmine config remove personal
 ```
 
-設定は `~/.config/redmine/config`（JSON 形式）に保存されます。必要に応じて直接編集することもできます。
+切り替えずに単発のコマンドでプロファイルを指定：
 
-環境変数でも設定できます：
+```bash
+redmine --profile work issue list
+REDMINE_PROFILE=work redmine issue list
+```
+
+プロファイルは次の順で解決されます: `--profile` フラグ、`REDMINE_PROFILE`
+環境変数、設定ファイルの現在のプロファイル。
+
+#### 環境変数
+
+接続情報を環境変数で直接渡すこともできます（設定ファイルより優先されます）：
 
 ```bash
 export REDMINE_URL="https://your-redmine.com"

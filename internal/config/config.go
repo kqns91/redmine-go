@@ -13,15 +13,26 @@ import (
 const (
 	configDirName  = ".config/redmine"
 	configFileName = "config"
+
+	// DefaultProfileName is the name given to the profile created when migrating
+	// a legacy single-profile config, and the default for the first profile.
+	DefaultProfileName = "default"
 )
 
-// Config represents the CLI configuration
-type Config struct {
+// Profile holds the connection settings for a single Redmine instance.
+type Profile struct {
 	APIURL string `json:"api_url"`
 	APIKey string `json:"api_key"`
 }
 
-// GetConfigPath returns the full path to the config file
+// Config represents the CLI configuration. It holds one or more named profiles
+// and a pointer to the currently selected one.
+type Config struct {
+	CurrentProfile string             `json:"current_profile"`
+	Profiles       map[string]Profile `json:"profiles"`
+}
+
+// GetConfigPath returns the full path to the config file.
 func GetConfigPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -31,7 +42,11 @@ func GetConfigPath() (string, error) {
 	return filepath.Join(homeDir, configDirName, configFileName), nil
 }
 
-// Load loads the configuration from the config file
+// Load loads the configuration from the config file.
+//
+// A legacy single-profile config ({"api_url": ..., "api_key": ...}) is migrated
+// in memory to a profile named DefaultProfileName. The migration is
+// non-destructive: the file on disk is only rewritten when a command saves it.
 func Load() (*Config, error) {
 	configPath, err := GetConfigPath()
 	if err != nil {
@@ -47,15 +62,40 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("設定ファイルの読み込みに失敗しました: %w", err)
 	}
 
-	var cfg Config
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	// raw accepts both the current profile-based format and the legacy
+	// single-profile format so older config files keep working.
+	var raw struct {
+		CurrentProfile string             `json:"current_profile"`
+		Profiles       map[string]Profile `json:"profiles"`
+		// Legacy single-profile fields.
+		APIURL string `json:"api_url"`
+		APIKey string `json:"api_key"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
 		return nil, fmt.Errorf("設定ファイルのパースに失敗しました: %w", err)
 	}
 
-	return &cfg, nil
+	cfg := &Config{
+		CurrentProfile: raw.CurrentProfile,
+		Profiles:       raw.Profiles,
+	}
+
+	// Migrate a legacy single-profile config into a named "default" profile.
+	if len(cfg.Profiles) == 0 && (raw.APIURL != "" || raw.APIKey != "") {
+		cfg.Profiles = map[string]Profile{
+			DefaultProfileName: {APIURL: raw.APIURL, APIKey: raw.APIKey},
+		}
+		cfg.CurrentProfile = DefaultProfileName
+	}
+
+	if cfg.Profiles == nil {
+		cfg.Profiles = map[string]Profile{}
+	}
+
+	return cfg, nil
 }
 
-// Save saves the configuration to the config file
+// Save saves the configuration to the config file.
 func Save(cfg *Config) error {
 	configPath, err := GetConfigPath()
 	if err != nil {
@@ -81,7 +121,7 @@ func Save(cfg *Config) error {
 	return nil
 }
 
-// Exists checks if the config file exists
+// Exists checks if the config file exists.
 func Exists() (bool, error) {
 	configPath, err := GetConfigPath()
 	if err != nil {
@@ -98,64 +138,74 @@ func Exists() (bool, error) {
 	return false, err
 }
 
-// InitInteractive interactively initializes the configuration
-func InitInteractive() (*Config, error) {
+// ResolveProfile returns the profile selected by the given name. If name is
+// empty, the current profile is used. It returns an error if no profile is
+// selected or the selected profile does not exist.
+func (c *Config) ResolveProfile(name string) (Profile, error) {
+	if name == "" {
+		name = c.CurrentProfile
+	}
+	if name == "" {
+		return Profile{}, errors.New("プロファイルが選択されていません。'redmine config use <name>' で選択してください")
+	}
+
+	profile, ok := c.Profiles[name]
+	if !ok {
+		return Profile{}, fmt.Errorf("プロファイル %q が見つかりません", name)
+	}
+
+	return profile, nil
+}
+
+// PromptProfile interactively reads a Redmine URL and API key from stdin,
+// shows a masked summary, and asks for confirmation. It returns an error if
+// the input is invalid or the user cancels.
+func PromptProfile() (Profile, error) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Redmine CLI 初期設定")
-	fmt.Println("==================")
-	fmt.Println()
-
-	// Get API URL
-	fmt.Print("Redmine API URL (例: https://redmine.example.com): ")
+	fmt.Print("Redmine URL (例: https://redmine.example.com): ")
 	apiURL, err := reader.ReadString('\n')
 	if err != nil {
-		return nil, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
+		return Profile{}, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
 	}
 	apiURL = strings.TrimSpace(apiURL)
 	if apiURL == "" {
-		return nil, errors.New("API URLは必須です")
+		return Profile{}, errors.New("URLは必須です")
 	}
 
-	// Get API Key
 	fmt.Print("Redmine API Key: ")
 	apiKey, err := reader.ReadString('\n')
 	if err != nil {
-		return nil, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
+		return Profile{}, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
 	}
 	apiKey = strings.TrimSpace(apiKey)
 	if apiKey == "" {
-		return nil, errors.New("API Keyは必須です")
+		return Profile{}, errors.New("API Keyは必須です")
 	}
 
-	cfg := &Config{
-		APIURL: apiURL,
-		APIKey: apiKey,
-	}
+	profile := Profile{APIURL: apiURL, APIKey: apiKey}
 
-	// Confirm
 	fmt.Println()
 	fmt.Println("設定内容:")
-	fmt.Printf("  API URL: %s\n", cfg.APIURL)
-	fmt.Printf("  API Key: %s\n", maskAPIKey(cfg.APIKey))
+	fmt.Printf("  URL:     %s\n", profile.APIURL)
+	fmt.Printf("  API Key: %s\n", MaskAPIKey(profile.APIKey))
 	fmt.Println()
 	fmt.Print("この設定で保存しますか？ (y/N): ")
 
 	confirm, err := reader.ReadString('\n')
 	if err != nil {
-		return nil, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
+		return Profile{}, fmt.Errorf("入力の読み込みに失敗しました: %w", err)
 	}
 	confirm = strings.ToLower(strings.TrimSpace(confirm))
-
 	if confirm != "y" && confirm != "yes" {
-		return nil, errors.New("設定の保存がキャンセルされました")
+		return Profile{}, errors.New("設定の保存がキャンセルされました")
 	}
 
-	return cfg, nil
+	return profile, nil
 }
 
-// maskAPIKey masks the API key for display
-func maskAPIKey(key string) string {
+// MaskAPIKey masks the API key for display.
+func MaskAPIKey(key string) string {
 	if len(key) <= 8 {
 		return "********"
 	}
