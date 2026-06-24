@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cliconfig "github.com/kqns91/redmine-go/cmd/redmine/internal/config"
+	cliconfig "github.com/kqns91/redmine-go/internal/config"
 	"github.com/kqns91/redmine-go/internal/version"
 	"github.com/kqns91/redmine-go/pkg/redmine"
 )
