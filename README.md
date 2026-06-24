@@ -168,6 +168,17 @@ export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 ```
 
+#### Config file location
+
+By default the config is stored at `~/.config/redmine/config`. You can override
+this with the `REDMINE_CONFIG` environment variable or the `--config` flag (the
+flag takes precedence):
+
+```bash
+export REDMINE_CONFIG="/path/to/config"
+redmine --config /path/to/config issue list
+```
+
 ### Getting Your API Key
 
 1. Log in to your Redmine instance

@@ -32,8 +32,30 @@ type Config struct {
 	Profiles       map[string]Profile `json:"profiles"`
 }
 
+// pathOverride, when non-empty, takes precedence over the default config path
+// and the REDMINE_CONFIG environment variable. It is set via SetConfigPath.
+var pathOverride string
+
+// SetConfigPath overrides the config file path for the current process.
+// An empty string clears the override. It takes precedence over the
+// REDMINE_CONFIG environment variable and the default location.
+func SetConfigPath(path string) {
+	pathOverride = path
+}
+
 // GetConfigPath returns the full path to the config file.
+//
+// Resolution order: the path set via SetConfigPath (e.g. the --config flag),
+// then the REDMINE_CONFIG environment variable, then the default location
+// (~/.config/redmine/config).
 func GetConfigPath() (string, error) {
+	if pathOverride != "" {
+		return pathOverride, nil
+	}
+	if env := os.Getenv(EnvConfig); env != "" {
+		return env, nil
+	}
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("ホームディレクトリの取得に失敗しました: %w", err)

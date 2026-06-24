@@ -21,6 +21,7 @@ const (
 var (
 	client      *redmine.Client
 	profileFlag string
+	configFlag  string
 )
 
 // rootCmd はCLIのルートコマンドを表します
@@ -31,6 +32,9 @@ var rootCmd = &cobra.Command{
 	Long: `redmine は Redmine の REST API を操作するための CLI ツールです。
 すべての Redmine API 操作を CLI から実行できます。`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// --config はすべてのコマンド（config サブコマンド含む）に適用する
+		cliconfig.SetConfigPath(configFlag)
+
 		// Skip config initialization for config commands
 		if cmd.Parent() != nil && cmd.Parent().Name() == "config" {
 			return nil
@@ -93,4 +97,6 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&profileFlag, "profile", "",
 		"使用するプロファイル名 (デフォルト: 設定ファイルの current_profile)")
+	rootCmd.PersistentFlags().StringVar(&configFlag, "config", "",
+		"設定ファイルのパス (デフォルト: ~/.config/redmine/config, REDMINE_CONFIG でも指定可)")
 }
