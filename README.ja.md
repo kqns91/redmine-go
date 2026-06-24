@@ -144,7 +144,7 @@ redmine config show
 環境変数でも設定できます：
 
 ```bash
-export REDMINE_API_URL="https://your-redmine.com"
+export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 ```
 
@@ -242,6 +242,8 @@ MCP クライアントの設定ファイルに追加します。
   }
 }
 ```
+
+`REDMINE_URL` の代わりに `REDMINE_API_URL` も使用できます。
 
 ### 利用可能なツール
 
