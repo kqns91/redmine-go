@@ -144,7 +144,7 @@ The configuration is stored at `~/.config/redmine/config` (JSON format). You can
 Alternatively, you can use environment variables:
 
 ```bash
-export REDMINE_API_URL="https://your-redmine.com"
+export REDMINE_URL="https://your-redmine.com"
 export REDMINE_API_KEY="your-api-key"
 ```
 
@@ -242,6 +242,8 @@ Basic configuration (all tools enabled):
   }
 }
 ```
+
+`REDMINE_API_URL` is also accepted in place of `REDMINE_URL`.
 
 ### Available Tools
 

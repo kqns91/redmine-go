@@ -4,11 +4,13 @@ import (
 	"errors"
 	"os"
 	"strings"
+
+	redmineconfig "github.com/kqns91/redmine-go/internal/config"
 )
 
 var (
-	// ErrMissingRedmineURL is returned when REDMINE_URL is not set
-	ErrMissingRedmineURL = errors.New("REDMINE_URL environment variable is required")
+	// ErrMissingRedmineURL is returned when the Redmine URL is not set
+	ErrMissingRedmineURL = errors.New("REDMINE_URL (or REDMINE_API_URL) environment variable is required")
 
 	// ErrMissingAPIKey is returned when REDMINE_API_KEY is not set
 	ErrMissingAPIKey = errors.New("REDMINE_API_KEY environment variable is required")
@@ -17,12 +19,12 @@ var (
 // Load reads configuration from environment variables.
 // It returns an error if required environment variables are not set.
 func Load() (*Config, error) {
-	redmineURL := os.Getenv("REDMINE_URL")
+	redmineURL := redmineconfig.URLFromEnv()
 	if redmineURL == "" {
 		return nil, ErrMissingRedmineURL
 	}
 
-	apiKey := os.Getenv("REDMINE_API_KEY")
+	apiKey := redmineconfig.APIKeyFromEnv()
 	if apiKey == "" {
 		return nil, ErrMissingAPIKey
 	}

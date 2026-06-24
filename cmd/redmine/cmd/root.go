@@ -37,8 +37,8 @@ var rootCmd = &cobra.Command{
 		}
 
 		// 優先順位: 1. 環境変数, 2. 設定ファイル
-		apiURL := os.Getenv("REDMINE_API_URL")
-		apiKey := os.Getenv("REDMINE_API_KEY")
+		apiURL := cliconfig.URLFromEnv()
+		apiKey := cliconfig.APIKeyFromEnv()
 
 		// 設定ファイルから読み込み（環境変数が未設定の場合）
 		if apiURL == "" || apiKey == "" {
@@ -54,7 +54,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		if apiURL == "" {
-			return errors.New("REDMINE_API_URL が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. REDMINE_API_URL 環境変数を設定")
+			return errors.New("REDMINE_URL が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. REDMINE_URL 環境変数を設定")
 		}
 		if apiKey == "" {
 			return errors.New("REDMINE_API_KEY が設定されていません。以下のいずれかの方法で設定してください:\n  1. 'redmine config init' で設定ファイルを作成\n  2. REDMINE_API_KEY 環境変数を設定")
