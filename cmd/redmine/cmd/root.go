@@ -18,7 +18,10 @@ const (
 	formatText  = "text"
 )
 
-var client *redmine.Client
+var (
+	client      *redmine.Client
+	profileFlag string
+)
 
 // rootCmd はCLIのルートコマンドを表します
 var rootCmd = &cobra.Command{
@@ -40,15 +43,24 @@ var rootCmd = &cobra.Command{
 		apiURL := cliconfig.URLFromEnv()
 		apiKey := cliconfig.APIKeyFromEnv()
 
-		// 設定ファイルから読み込み（環境変数が未設定の場合）
+		// 環境変数で揃っていなければ、設定ファイルの選択プロファイルから補完する
 		if apiURL == "" || apiKey == "" {
 			cfg, err := cliconfig.Load()
 			if err == nil {
+				// プロファイル選択: --profile フラグ > REDMINE_PROFILE > current_profile
+				name := profileFlag
+				if name == "" {
+					name = cliconfig.ProfileFromEnv()
+				}
+				profile, err := cfg.ResolveProfile(name)
+				if err != nil {
+					return err
+				}
 				if apiURL == "" {
-					apiURL = cfg.APIURL
+					apiURL = profile.APIURL
 				}
 				if apiKey == "" {
-					apiKey = cfg.APIKey
+					apiKey = profile.APIKey
 				}
 			}
 		}
@@ -78,4 +90,7 @@ func init() {
 	rootCmd.SetVersionTemplate(
 		fmt.Sprintf("redmine version %s (commit: %s, built: %s)\n",
 			version.GetVersion(), version.GetCommit(), version.GetDate()))
+
+	rootCmd.PersistentFlags().StringVar(&profileFlag, "profile", "",
+		"使用するプロファイル名 (デフォルト: 設定ファイルの current_profile)")
 }

@@ -13,6 +13,9 @@ const (
 	// EnvAPIKey is the environment variable for the Redmine API key.
 	//nolint:gosec // G101: this is an environment variable name, not a credential value
 	EnvAPIKey = "REDMINE_API_KEY"
+
+	// EnvProfile selects which profile to use for a single invocation.
+	EnvProfile = "REDMINE_PROFILE"
 )
 
 // URLFromEnv returns the Redmine base URL from the environment.
@@ -27,4 +30,9 @@ func URLFromEnv() string {
 // APIKeyFromEnv returns the Redmine API key from the environment.
 func APIKeyFromEnv() string {
 	return os.Getenv(EnvAPIKey)
+}
+
+// ProfileFromEnv returns the profile name selected via REDMINE_PROFILE.
+func ProfileFromEnv() string {
+	return os.Getenv(EnvProfile)
 }

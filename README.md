@@ -126,22 +126,42 @@ go install github.com/kqns91/redmine-go/cmd/redmine@latest
 
 ### Configuration
 
-Run the config command to set up interactively:
+Set up interactively:
 
 ```bash
-redmine config set api_url https://your-redmine.com
-redmine config set api_key your-api-key
+redmine config init
 ```
 
-View current configuration:
+The configuration is stored at `~/.config/redmine/config` (JSON format).
+
+#### Profiles
+
+Configurations are organized into named profiles, so you can switch between
+multiple Redmine instances.
 
 ```bash
-redmine config show
+redmine config add work        # add a profile interactively
+redmine config add personal
+redmine config list            # list profiles (current marked with *)
+redmine config use personal    # switch the current profile
+redmine config show            # show the current profile
+redmine config remove personal
 ```
 
-The configuration is stored at `~/.config/redmine/config` (JSON format). You can also edit this file directly if needed.
+Select a profile for a single command without switching:
 
-Alternatively, you can use environment variables:
+```bash
+redmine --profile work issue list
+REDMINE_PROFILE=work redmine issue list
+```
+
+The profile is resolved in this order: `--profile` flag, `REDMINE_PROFILE`
+environment variable, then the current profile in the config file.
+
+#### Environment variables
+
+Alternatively, you can provide the connection settings directly via environment
+variables, which take precedence over the config file:
 
 ```bash
 export REDMINE_URL="https://your-redmine.com"
