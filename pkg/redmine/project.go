@@ -136,6 +136,11 @@ type ShowProjectOptions struct {
 
 // ShowProject retrieves a single project by ID or identifier
 func (c *Client) ShowProject(ctx context.Context, idOrIdentifier string, opts *ShowProjectOptions) (*ProjectResponse, error) {
+	idOrIdentifier, err := pathSegment(idOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s.json", c.baseURL, idOrIdentifier)
 
 	if opts != nil && opts.Include != "" {
@@ -201,6 +206,11 @@ func (c *Client) CreateProject(ctx context.Context, req ProjectCreateRequest) (*
 
 // UpdateProject updates an existing project
 func (c *Client) UpdateProject(ctx context.Context, idOrIdentifier string, req ProjectUpdateRequest) error {
+	idOrIdentifier, err := pathSegment(idOrIdentifier)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s.json", c.baseURL, idOrIdentifier)
 
 	reqBody := ProjectUpdateRequestWrapper{Project: req}
@@ -226,6 +236,11 @@ func (c *Client) UpdateProject(ctx context.Context, idOrIdentifier string, req P
 
 // DeleteProject deletes a project
 func (c *Client) DeleteProject(ctx context.Context, idOrIdentifier string) error {
+	idOrIdentifier, err := pathSegment(idOrIdentifier)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s.json", c.baseURL, idOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
@@ -245,6 +260,11 @@ func (c *Client) DeleteProject(ctx context.Context, idOrIdentifier string) error
 
 // ArchiveProject archives a project (available since Redmine 5.0)
 func (c *Client) ArchiveProject(ctx context.Context, idOrIdentifier string) error {
+	idOrIdentifier, err := pathSegment(idOrIdentifier)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/archive.json", c.baseURL, idOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodPut, endpoint, nil)
@@ -264,6 +284,11 @@ func (c *Client) ArchiveProject(ctx context.Context, idOrIdentifier string) erro
 
 // UnarchiveProject unarchives a project (available since Redmine 5.0)
 func (c *Client) UnarchiveProject(ctx context.Context, idOrIdentifier string) error {
+	idOrIdentifier, err := pathSegment(idOrIdentifier)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/unarchive.json", c.baseURL, idOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodPut, endpoint, nil)
