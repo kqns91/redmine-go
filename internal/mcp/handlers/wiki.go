@@ -40,7 +40,7 @@ func RegisterWikiTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_or_update_wiki_page",
 			Description: "Create or update a wiki page. If the page exists, it will be updated; otherwise, a new page is created.",
-			Annotations: additiveTool(),
+			Annotations: destructiveTool(),
 		}, handleCreateOrUpdateWikiPage(useCases))
 	}
 

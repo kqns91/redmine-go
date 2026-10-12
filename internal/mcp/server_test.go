@@ -46,6 +46,42 @@ func listTools(t *testing.T) []*mcp.Tool {
 	return result.Tools
 }
 
+// annotationKind classifies annotations into the kinds used by the handlers.
+func annotationKind(a *mcp.ToolAnnotations) string {
+	switch {
+	case a.ReadOnlyHint:
+		return "read-only"
+	case a.DestructiveHint == nil:
+		return "unspecified"
+	case *a.DestructiveHint && a.IdempotentHint:
+		return "destructive-idempotent"
+	case *a.DestructiveHint:
+		return "destructive"
+	case a.IdempotentHint:
+		return "additive-idempotent"
+	default:
+		return "additive"
+	}
+}
+
+// wantKindByName holds the expected kind of tools whose name does not follow
+// the list_/show_/create_/update_/delete_ convention checked below.
+var wantKindByName = map[string]string{
+	"search":                     "read-only",
+	"current_user":               "read-only",
+	"analyze_project_health":     "read-only",
+	"adjust_estimates":           "read-only",
+	"upload_file":                "additive",
+	"add_watcher":                "additive-idempotent",
+	"add_group_user":             "additive-idempotent",
+	"create_or_update_wiki_page": "destructive",
+	"suggest_reschedule":         "destructive",
+	"remove_watcher":             "destructive-idempotent",
+	"remove_group_user":          "destructive-idempotent",
+	"archive_project":            "destructive-idempotent",
+	"unarchive_project":          "destructive-idempotent",
+}
+
 func TestAllToolsHaveAnnotations(t *testing.T) {
 	tools := listTools(t)
 	if len(tools) == 0 {
@@ -65,19 +101,23 @@ func TestAllToolsHaveAnnotations(t *testing.T) {
 			t.Errorf("%s: DestructiveHint must be set for a tool that is not read-only", tool.Name)
 		}
 
-		switch {
-		case strings.HasPrefix(tool.Name, "list_"), strings.HasPrefix(tool.Name, "show_"):
-			if !a.ReadOnlyHint {
-				t.Errorf("%s: expected ReadOnlyHint", tool.Name)
+		want, ok := wantKindByName[tool.Name]
+		if !ok {
+			switch {
+			case strings.HasPrefix(tool.Name, "list_"), strings.HasPrefix(tool.Name, "show_"):
+				want = "read-only"
+			case strings.HasPrefix(tool.Name, "create_"):
+				want = "additive"
+			case strings.HasPrefix(tool.Name, "update_"), strings.HasPrefix(tool.Name, "delete_"):
+				want = "destructive-idempotent"
+			default:
+				t.Errorf("%s: add the expected annotation kind to wantKindByName", tool.Name)
+				continue
 			}
-		case strings.HasPrefix(tool.Name, "delete_"), strings.HasPrefix(tool.Name, "update_"):
-			if a.ReadOnlyHint || a.DestructiveHint == nil || !*a.DestructiveHint {
-				t.Errorf("%s: expected DestructiveHint", tool.Name)
-			}
-		case strings.HasPrefix(tool.Name, "create_") && tool.Name != "create_or_update_wiki_page":
-			if a.ReadOnlyHint || a.DestructiveHint == nil || *a.DestructiveHint {
-				t.Errorf("%s: expected a non-destructive write tool", tool.Name)
-			}
+		}
+
+		if got := annotationKind(a); got != want {
+			t.Errorf("%s: annotation kind = %s, want %s", tool.Name, got, want)
 		}
 	}
 }
