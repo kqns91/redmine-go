@@ -13,9 +13,9 @@ import (
 // IssueCategory represents an issue category returned by GET endpoints
 type IssueCategory struct {
 	ID         int      `json:"id,omitempty"`
-	Project    Resource `json:"project,omitempty"`
+	Project    Resource `json:"project"`
 	Name       string   `json:"name,omitempty"`
-	AssignedTo Resource `json:"assigned_to,omitempty"`
+	AssignedTo Resource `json:"assigned_to"`
 }
 
 // IssueCategoryCreateRequest represents the request body for creating a new issue category

@@ -10,7 +10,7 @@ import (
 
 type Journal struct {
 	ID        int             `json:"id,omitempty"`
-	User      Resource        `json:"user,omitempty"`
+	User      Resource        `json:"user"`
 	Notes     string          `json:"notes,omitempty"`
 	CreatedOn string          `json:"created_on,omitempty"`
 	Details   []JournalDetail `json:"details,omitempty"`

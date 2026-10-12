@@ -12,8 +12,8 @@ import (
 
 type News struct {
 	ID          int      `json:"id,omitempty"`
-	Project     Resource `json:"project,omitempty"`
-	Author      Resource `json:"author,omitempty"`
+	Project     Resource `json:"project"`
+	Author      Resource `json:"author"`
 	Title       string   `json:"title,omitempty"`
 	Summary     string   `json:"summary,omitempty"`
 	Description string   `json:"description,omitempty"`

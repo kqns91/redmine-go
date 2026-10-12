@@ -16,8 +16,8 @@ type File struct {
 	ContentType string   `json:"content_type,omitempty"`
 	Description string   `json:"description,omitempty"`
 	ContentURL  string   `json:"content_url,omitempty"`
-	Author      Resource `json:"author,omitempty"`
-	Version     Resource `json:"version,omitempty"`
+	Author      Resource `json:"author"`
+	Version     Resource `json:"version"`
 	Digest      string   `json:"digest,omitempty"`
 	Downloads   int      `json:"downloads,omitempty"`
 	CreatedOn   string   `json:"created_on,omitempty"`
