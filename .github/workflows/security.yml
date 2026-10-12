@@ -2,9 +2,9 @@ name: Security
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
-    branches: [main, dev]
+    branches: [main]
   schedule:
     # Weekly, so newly disclosed vulnerabilities in existing dependencies are
     # caught even without new commits.
