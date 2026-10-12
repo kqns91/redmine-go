@@ -11,7 +11,7 @@ import (
 
 type Version struct {
 	ID             int      `json:"id,omitempty"`
-	Project        Resource `json:"project,omitempty"`
+	Project        Resource `json:"project"`
 	Name           string   `json:"name,omitempty"`
 	Description    string   `json:"description,omitempty"`
 	Status         string   `json:"status,omitempty"`

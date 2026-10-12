@@ -11,9 +11,9 @@ import (
 
 type Membership struct {
 	ID      int        `json:"id,omitempty"`
-	Project Resource   `json:"project,omitempty"`
-	User    Resource   `json:"user,omitempty"`
-	Group   Resource   `json:"group,omitempty"`
+	Project Resource   `json:"project"`
+	User    Resource   `json:"user"`
+	Group   Resource   `json:"group"`
 	Roles   []Resource `json:"roles,omitempty"`
 }
 
