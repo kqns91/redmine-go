@@ -22,6 +22,7 @@ func RegisterVersionTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_versions",
 			Description: "List versions for a specific project in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListVersions(useCases))
 	}
 
@@ -30,6 +31,7 @@ func RegisterVersionTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_version",
 			Description: "Get details of a specific version by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowVersion(useCases))
 	}
 
@@ -38,6 +40,7 @@ func RegisterVersionTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_version",
 			Description: "Create a new version for a project in Redmine.",
+			Annotations: additiveTool(),
 		}, handleCreateVersion(useCases))
 	}
 
@@ -46,6 +49,7 @@ func RegisterVersionTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_version",
 			Description: "Update an existing version in Redmine.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateVersion(useCases))
 	}
 
@@ -54,6 +58,7 @@ func RegisterVersionTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_version",
 			Description: "Delete a version from Redmine. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteVersion(useCases))
 	}
 }

@@ -20,6 +20,7 @@ func RegisterCategoryTools(server *mcp.Server, useCases *usecase.UseCases, cfg *
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_issue_categories",
 			Description: "List issue categories for a specific project.",
+			Annotations: readOnlyTool(),
 		}, handleListIssueCategories(useCases))
 	}
 
@@ -27,6 +28,7 @@ func RegisterCategoryTools(server *mcp.Server, useCases *usecase.UseCases, cfg *
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_issue_category",
 			Description: "Get details of a specific issue category by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowIssueCategory(useCases))
 	}
 
@@ -34,6 +36,7 @@ func RegisterCategoryTools(server *mcp.Server, useCases *usecase.UseCases, cfg *
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_issue_category",
 			Description: "Create a new issue category for a project.",
+			Annotations: additiveTool(),
 		}, handleCreateIssueCategory(useCases))
 	}
 
@@ -41,6 +44,7 @@ func RegisterCategoryTools(server *mcp.Server, useCases *usecase.UseCases, cfg *
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_issue_category",
 			Description: "Update an existing issue category.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateIssueCategory(useCases))
 	}
 
@@ -48,6 +52,7 @@ func RegisterCategoryTools(server *mcp.Server, useCases *usecase.UseCases, cfg *
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_issue_category",
 			Description: "Delete an issue category.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteIssueCategory(useCases))
 	}
 }

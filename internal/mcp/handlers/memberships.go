@@ -24,6 +24,7 @@ func RegisterMembershipTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_memberships",
 			Description: "List memberships for a project in Redmine. Shows users/groups assigned to a project with their roles.",
+			Annotations: readOnlyTool(),
 		}, handleListMemberships(useCases))
 	}
 
@@ -32,6 +33,7 @@ func RegisterMembershipTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_membership",
 			Description: "Get details of a specific membership by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowMembership(useCases))
 	}
 
@@ -40,6 +42,7 @@ func RegisterMembershipTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_membership",
 			Description: "Create a new membership in Redmine. Add a user or group to a project with specified roles.",
+			Annotations: additiveTool(),
 		}, handleCreateMembership(useCases))
 	}
 
@@ -48,6 +51,7 @@ func RegisterMembershipTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_membership",
 			Description: "Update an existing membership in Redmine. Modify the roles assigned to a user/group.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateMembership(useCases))
 	}
 
@@ -56,6 +60,7 @@ func RegisterMembershipTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_membership",
 			Description: "Delete a membership from Redmine. Remove a user/group from a project. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteMembership(useCases))
 	}
 }

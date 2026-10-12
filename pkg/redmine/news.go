@@ -71,6 +71,11 @@ func (c *Client) ListNews(ctx context.Context, opts *ListNewsOptions) (*NewsResp
 
 // ListProjectNews retrieves all news from a specific project with pagination
 func (c *Client) ListProjectNews(ctx context.Context, projectIDOrIdentifier string, opts *ListNewsOptions) (*NewsResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/news.json", c.baseURL, projectIDOrIdentifier)
 
 	if opts != nil {

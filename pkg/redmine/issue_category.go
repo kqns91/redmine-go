@@ -48,6 +48,11 @@ type IssueCategoryUpdateRequestWrapper struct {
 
 // ListIssueCategories retrieves all issue categories for a specific project
 func (c *Client) ListIssueCategories(ctx context.Context, projectIDOrIdentifier string) (*IssueCategoriesResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/issue_categories.json", c.baseURL, projectIDOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
@@ -96,6 +101,11 @@ func (c *Client) ShowIssueCategory(ctx context.Context, id int) (*IssueCategoryR
 
 // CreateIssueCategory creates a new issue category for a project
 func (c *Client) CreateIssueCategory(ctx context.Context, projectIDOrIdentifier string, req IssueCategoryCreateRequest) (*IssueCategoryResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/issue_categories.json", c.baseURL, projectIDOrIdentifier)
 
 	reqBody := IssueCategoryCreateRequestWrapper{IssueCategory: req}

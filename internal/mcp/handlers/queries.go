@@ -21,6 +21,7 @@ func RegisterQueryTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_queries",
 			Description: "List all saved queries visible by the user in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListQueries(useCases))
 	}
 }

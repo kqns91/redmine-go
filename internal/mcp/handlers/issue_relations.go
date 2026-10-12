@@ -23,6 +23,7 @@ func RegisterIssueRelationTools(server *mcp.Server, useCases *usecase.UseCases, 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_issue_relations",
 			Description: "List all relations for a specific issue in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListIssueRelations(useCases))
 	}
 
@@ -31,6 +32,7 @@ func RegisterIssueRelationTools(server *mcp.Server, useCases *usecase.UseCases, 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_issue_relation",
 			Description: "Get details of a specific issue relation by relation ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowIssueRelation(useCases))
 	}
 
@@ -39,6 +41,7 @@ func RegisterIssueRelationTools(server *mcp.Server, useCases *usecase.UseCases, 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_issue_relation",
 			Description: "Create a new issue relation in Redmine.",
+			Annotations: additiveTool(),
 		}, handleCreateIssueRelation(useCases))
 	}
 
@@ -47,6 +50,7 @@ func RegisterIssueRelationTools(server *mcp.Server, useCases *usecase.UseCases, 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_issue_relation",
 			Description: "Delete an issue relation from Redmine. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteIssueRelation(useCases))
 	}
 }

@@ -5,7 +5,7 @@ Unofficial Redmine API client in Go
 [![Go Version](https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go)](https://go.dev/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/kqns91/redmine-go.svg)](https://pkg.go.dev/github.com/kqns91/redmine-go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kqns91/redmine-go)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-blue)](https://deepwiki.com/kqns91/redmine-go)
 
 English | [日本語](README.ja.md)
 
@@ -400,6 +400,23 @@ Three tools help monitor and manage project progress:
 - Suggests new dates with configurable buffer days
 - Can auto-apply changes or just preview
 - Supports critical-path-only mode
+
+### Tool Annotations
+
+Every tool declares [tool annotations](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-annotations)
+describing how it affects Redmine. MCP clients can use them, for example, to run
+read-only tools without asking and to confirm destructive ones with you.
+
+| Kind | Annotations | Tools |
+|---|---|---|
+| Read-only | `readOnlyHint: true` | `list_*`, `show_*`, `search`, `current_user`, `analyze_project_health`, `adjust_estimates` |
+| Additive | `destructiveHint: false` | `create_*` (except `create_or_update_wiki_page`), `create_task_tree`, `upload_file` |
+| Additive, idempotent | `destructiveHint: false`, `idempotentHint: true` | `add_watcher`, `add_group_user` |
+| Destructive | `destructiveHint: true` | `create_or_update_wiki_page`, `suggest_reschedule` (changes issues only with `auto_apply`) |
+| Destructive, idempotent | `destructiveHint: true`, `idempotentHint: true` | `update_*`, `delete_*`, `remove_watcher`, `remove_group_user`, `archive_project`, `unarchive_project` |
+
+Annotations are hints for the client and do not restrict what a tool can do.
+To prevent an operation, disable the tool as described below.
 
 ### Tool Control
 

@@ -39,6 +39,11 @@ type MembershipCreateUpdate struct {
 
 // ListMemberships retrieves paginated list of project memberships
 func (c *Client) ListMemberships(ctx context.Context, projectIDOrIdentifier string) (*MembershipsResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/memberships.json", c.baseURL, projectIDOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
@@ -87,6 +92,11 @@ func (c *Client) ShowMembership(ctx context.Context, id int) (*MembershipRespons
 
 // CreateMembership adds a new project member
 func (c *Client) CreateMembership(ctx context.Context, projectIDOrIdentifier string, membership MembershipCreateUpdate) (*MembershipResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/memberships.json", c.baseURL, projectIDOrIdentifier)
 
 	reqBody := MembershipRequest{Membership: membership}

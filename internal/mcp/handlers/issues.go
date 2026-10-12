@@ -21,6 +21,7 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_issues",
 			Description: "List issues in Redmine. Supports filtering, pagination, and sorting.",
+			Annotations: readOnlyTool(),
 		}, handleListIssues(useCases))
 	}
 
@@ -29,6 +30,7 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_issue",
 			Description: "Get details of a specific issue by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowIssue(useCases))
 	}
 
@@ -37,6 +39,7 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_issue",
 			Description: "Create a new issue in Redmine.",
+			Annotations: additiveTool(),
 		}, handleCreateIssue(useCases))
 	}
 
@@ -45,6 +48,7 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_issue",
 			Description: "Update an existing issue in Redmine.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateIssue(useCases))
 	}
 
@@ -53,6 +57,7 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_issue",
 			Description: "Delete an issue from Redmine. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteIssue(useCases))
 	}
 
@@ -61,6 +66,7 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "add_watcher",
 			Description: "Add a watcher to an issue.",
+			Annotations: additiveIdempotentTool(),
 		}, handleAddWatcher(useCases))
 	}
 
@@ -69,6 +75,7 @@ func RegisterIssueTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "remove_watcher",
 			Description: "Remove a watcher from an issue.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleRemoveWatcher(useCases))
 	}
 }

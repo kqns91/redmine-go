@@ -250,3 +250,81 @@ func TestHTTPClientCheckRedirectStripsAPIKeyOnDowngrade(t *testing.T) {
 		})
 	}
 }
+
+func TestPathSegment(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      string
+		want    string
+		wantErr bool
+	}{
+		{name: "identifier", in: "my-project_1", want: "my-project_1"},
+		{name: "numeric id", in: "42", want: "42"},
+		{name: "wiki title", in: "Getting_Started", want: "Getting_Started"},
+		{name: "non-ASCII", in: "\u65e5\u672c\u8a9e\u30da\u30fc\u30b8", want: "%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83%9A%E3%83%BC%E3%82%B8"},
+		{name: "space", in: "My Page", want: "My%20Page"},
+		{name: "query and fragment", in: "Page?x=1#y", want: "Page%3Fx=1%23y"},
+		{name: "percent", in: "100%", want: "100%25"},
+		{name: "backslash", in: `a\b`, want: "a%5Cb"},
+		{name: "empty", in: "", wantErr: true},
+		{name: "dot", in: ".", wantErr: true},
+		{name: "double dot", in: "..", wantErr: true},
+		{name: "slash", in: "a/b", wantErr: true},
+		{name: "traversal", in: "../../projects/victim", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := pathSegment(tt.in)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("pathSegment(%q) = %q, want error", tt.in, got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("pathSegment(%q) failed: %v", tt.in, err)
+			}
+			if got != tt.want {
+				t.Errorf("pathSegment(%q) = %q, want %q", tt.in, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPathSegmentsCannotChangeEndpoint(t *testing.T) {
+	var gotPath, gotRawQuery string
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		gotPath = r.URL.EscapedPath()
+		gotRawQuery = r.URL.RawQuery
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	client := New(server.URL, "test-api-key")
+	ctx := context.Background()
+
+	// Traversal is rejected before any request is sent.
+	if err := client.DeleteWikiPage(ctx, "demo", "../../../../projects/victim"); err == nil {
+		t.Error("Expected error for traversal in wiki page name, got nil")
+	}
+	if err := client.DeleteProject(ctx, ".."); err == nil {
+		t.Error("Expected error for '..' project identifier, got nil")
+	}
+	if requests != 0 {
+		t.Fatalf("Expected no request for invalid path segments, got %d", requests)
+	}
+
+	// "?" and "#" stay inside the page name instead of starting a query.
+	if err := client.DeleteWikiPage(ctx, "demo", "Page?foo=bar#x"); err != nil {
+		t.Fatalf("DeleteWikiPage failed: %v", err)
+	}
+	if want := "/projects/demo/wiki/Page%3Ffoo=bar%23x.json"; gotPath != want {
+		t.Errorf("Expected path %s, got %s", want, gotPath)
+	}
+	if gotRawQuery != "" {
+		t.Errorf("Expected no query string, got %q", gotRawQuery)
+	}
+}

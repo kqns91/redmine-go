@@ -39,6 +39,11 @@ type VersionRequest struct {
 
 // ListVersions retrieves versions for a specific project
 func (c *Client) ListVersions(ctx context.Context, projectIDOrIdentifier string) (*VersionsResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/versions.json", c.baseURL, projectIDOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
@@ -87,6 +92,11 @@ func (c *Client) ShowVersion(ctx context.Context, id int) (*VersionResponse, err
 
 // CreateVersion creates a new version for a project
 func (c *Client) CreateVersion(ctx context.Context, projectIDOrIdentifier string, version Version) (*VersionResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/versions.json", c.baseURL, projectIDOrIdentifier)
 
 	reqBody := VersionRequest{Version: version}

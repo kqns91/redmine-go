@@ -22,6 +22,7 @@ func RegisterMyAccountTools(server *mcp.Server, useCases *usecase.UseCases, cfg 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_my_account",
 			Description: "Get details of the current user (the API key owner).",
+			Annotations: readOnlyTool(),
 		}, handleShowMyAccount(useCases))
 	}
 
@@ -30,6 +31,7 @@ func RegisterMyAccountTools(server *mcp.Server, useCases *usecase.UseCases, cfg 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_my_account",
 			Description: "Update current user's account information.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateMyAccount(useCases))
 	}
 }
