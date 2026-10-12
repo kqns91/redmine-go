@@ -6,55 +6,54 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Weekly, so newly disclosed vulnerabilities in existing dependencies are
-    # caught even without new commits.
+    # Weekly, so newly disclosed vulnerabilities in the Go standard library are
+    # caught even without new commits. (Dependency vulnerabilities are reported
+    # by Dependabot alerts as soon as they are published.)
     - cron: "0 0 * * 1"
 
 permissions:
   contents: read
 
 jobs:
-  vulnerability:
-    name: Vulnerability scan
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Trivy reads go.mod/go.sum and matches dependencies against its
-      # vulnerability database. (govulncheck would be more precise but currently
-      # panics on this codebase under Go 1.26 / x-vuln; revisit when fixed.)
-      - name: Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          scan-type: fs
-          scan-ref: .
-          scanners: vuln
-          severity: HIGH,CRITICAL
-          exit-code: "1"
+          persist-credentials: false
 
-  license:
-    name: License check
+      # Fails only on dependencies added or updated by this PR, so unrelated PRs
+      # are not blocked by vulnerabilities that already exist on main.
+      - name: Dependency review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          # golang.org/x/* modules are licensed as BSD-3-Clause plus Google's
+          # patent grant, which is reported as the LicenseRef below.
+          allow-licenses: >-
+            MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC,
+            LicenseRef-scancode-google-patent-license-golang
+
+  govulncheck:
+    name: govulncheck
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
+      # Use the same Go as the release build, so standard library findings
+      # reflect what is actually shipped.
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: go.mod
+          go-version: stable
 
-      # Vendor dependencies so their LICENSE files are present on disk for Trivy
-      # to classify. The vendor directory is ephemeral (not committed).
-      - name: Vendor dependencies
-        run: go mod vendor
-
-      - name: Trivy license scan
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: ./vendor
-          scanners: license
-          severity: HIGH,CRITICAL
-          exit-code: "1"
+      # Reports only vulnerabilities in code paths this module actually calls,
+      # including the Go standard library.
+      - name: Run govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...

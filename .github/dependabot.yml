@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Go modules are compiled into the released binaries, so updates use the
+  # "fix(deps)" prefix to trigger a patch release via go-semantic-release.
+  # commit-message also applies to Dependabot security updates.
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: fix
+      include: scope
+
+  # Actions only affect CI, so updates use "ci(deps)" and do not trigger a
+  # release.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+      include: scope
