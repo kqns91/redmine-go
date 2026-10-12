@@ -58,7 +58,7 @@ func IsColorEnabled() bool {
 }
 
 // OutputJSON outputs data in JSON format.
-func OutputJSON(data interface{}) error {
+func OutputJSON(data any) error {
 	output, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return fmt.Errorf("JSONのシリアライズに失敗しました: %w", err)

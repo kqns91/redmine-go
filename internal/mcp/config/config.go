@@ -1,5 +1,7 @@
 package config
 
+import "slices"
+
 // Config holds the configuration for the Redmine MCP server.
 type Config struct {
 	// RedmineURL is the base URL of the Redmine instance
@@ -42,12 +44,7 @@ func (c *Config) IsToolGroupEnabled(group string) bool {
 
 // IsToolDisabled checks if a specific tool is disabled.
 func (c *Config) IsToolDisabled(toolName string) bool {
-	for _, disabled := range c.DisabledTools {
-		if disabled == toolName {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(c.DisabledTools, toolName)
 }
 
 // IsToolEnabled checks if a specific tool should be registered.

@@ -14,10 +14,10 @@ import (
 // TimeEntry represents a time entry returned by GET endpoints
 type TimeEntry struct {
 	ID           int           `json:"id,omitempty"`
-	Project      Resource      `json:"project,omitempty"`
-	Issue        Resource      `json:"issue,omitempty"`
-	User         Resource      `json:"user,omitempty"`
-	Activity     Resource      `json:"activity,omitempty"`
+	Project      Resource      `json:"project"`
+	Issue        Resource      `json:"issue"`
+	User         Resource      `json:"user"`
+	Activity     Resource      `json:"activity"`
 	Hours        float64       `json:"hours,omitempty"`
 	Comments     string        `json:"comments,omitempty"`
 	SpentOn      string        `json:"spent_on,omitempty"`
