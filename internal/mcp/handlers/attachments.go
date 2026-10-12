@@ -23,6 +23,7 @@ func RegisterAttachmentTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_attachment",
 			Description: "Get details of a specific attachment by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowAttachment(useCases))
 	}
 
@@ -31,6 +32,7 @@ func RegisterAttachmentTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_attachment",
 			Description: "Update attachment metadata (filename, description).",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateAttachment(useCases))
 	}
 
@@ -39,6 +41,7 @@ func RegisterAttachmentTools(server *mcp.Server, useCases *usecase.UseCases, cfg
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_attachment",
 			Description: "Delete an attachment from Redmine. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteAttachment(useCases))
 	}
 }

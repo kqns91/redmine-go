@@ -22,6 +22,7 @@ func RegisterWikiTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_wiki_pages",
 			Description: "List all wiki pages in a project. Returns an index of wiki pages with basic information.",
+			Annotations: readOnlyTool(),
 		}, handleListWikiPages(useCases))
 	}
 
@@ -30,6 +31,7 @@ func RegisterWikiTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_wiki_page",
 			Description: "Get details of a specific wiki page by title. Optionally retrieve a specific version.",
+			Annotations: readOnlyTool(),
 		}, handleShowWikiPage(useCases))
 	}
 
@@ -38,6 +40,7 @@ func RegisterWikiTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_or_update_wiki_page",
 			Description: "Create or update a wiki page. If the page exists, it will be updated; otherwise, a new page is created.",
+			Annotations: additiveTool(),
 		}, handleCreateOrUpdateWikiPage(useCases))
 	}
 
@@ -46,6 +49,7 @@ func RegisterWikiTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_wiki_page",
 			Description: "Delete a wiki page from a project. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteWikiPage(useCases))
 	}
 }

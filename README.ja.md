@@ -398,6 +398,24 @@ URL と API キーを MCP クライアントの設定に直接書く代わりに
 - 変更を自動適用またはプレビューのみ
 - クリティカルパスのみモードをサポート
 
+### ツールアノテーション
+
+すべてのツールは、Redmine にどのような影響を与えるかを表す
+[ツールアノテーション](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-annotations)
+を宣言しています。MCP クライアントはこれを使って、たとえば読み取り専用のツールを確認なしで実行したり、
+破壊的なツールの実行前にユーザーへ確認したりできます。
+
+| 種類 | アノテーション | ツール |
+|---|---|---|
+| 読み取り専用 | `readOnlyHint: true` | `list_*`、`show_*`、`search`、`current_user`、`analyze_project_health`、`adjust_estimates` |
+| 追加のみ | `destructiveHint: false` | `create_*`（`create_or_update_wiki_page` を除く）、`create_task_tree`、`upload_file` |
+| 追加のみ・冪等 | `destructiveHint: false`、`idempotentHint: true` | `add_watcher`、`add_group_user` |
+| 破壊的 | `destructiveHint: true` | `create_or_update_wiki_page`、`suggest_reschedule`（`auto_apply` 指定時のみ課題を変更） |
+| 破壊的・冪等 | `destructiveHint: true`、`idempotentHint: true` | `update_*`、`delete_*`、`remove_watcher`、`remove_group_user`、`archive_project`、`unarchive_project` |
+
+アノテーションはクライアント向けのヒントであり、ツールの動作を制限するものではありません。
+操作を禁止したい場合は、以下の方法でツールを無効にしてください。
+
 ### ツール制御
 
 環境変数を使用して、どのツールを有効にするかを制御できます。

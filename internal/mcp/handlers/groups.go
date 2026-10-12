@@ -22,6 +22,7 @@ func RegisterGroupTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_groups",
 			Description: "List all groups in Redmine (admin only). Supports optional includes.",
+			Annotations: readOnlyTool(),
 		}, handleListGroups(useCases))
 	}
 
@@ -30,6 +31,7 @@ func RegisterGroupTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_group",
 			Description: "Get details of a specific group by ID (admin only).",
+			Annotations: readOnlyTool(),
 		}, handleShowGroup(useCases))
 	}
 
@@ -38,6 +40,7 @@ func RegisterGroupTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_group",
 			Description: "Create a new group in Redmine (admin only).",
+			Annotations: additiveTool(),
 		}, handleCreateGroup(useCases))
 	}
 
@@ -46,6 +49,7 @@ func RegisterGroupTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_group",
 			Description: "Update an existing group in Redmine (admin only).",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateGroup(useCases))
 	}
 
@@ -54,6 +58,7 @@ func RegisterGroupTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_group",
 			Description: "Delete a group from Redmine (admin only). This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteGroup(useCases))
 	}
 
@@ -62,6 +67,7 @@ func RegisterGroupTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "add_group_user",
 			Description: "Add a user to a group in Redmine (admin only).",
+			Annotations: additiveIdempotentTool(),
 		}, handleAddGroupUser(useCases))
 	}
 
@@ -70,6 +76,7 @@ func RegisterGroupTools(server *mcp.Server, useCases *usecase.UseCases, cfg *con
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "remove_group_user",
 			Description: "Remove a user from a group in Redmine (admin only).",
+			Annotations: destructiveIdempotentTool(),
 		}, handleRemoveGroupUser(useCases))
 	}
 }

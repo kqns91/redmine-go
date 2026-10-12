@@ -22,6 +22,7 @@ func RegisterFileTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_files",
 			Description: "List all files in a project.",
+			Annotations: readOnlyTool(),
 		}, handleListFiles(useCases))
 	}
 
@@ -30,6 +31,7 @@ func RegisterFileTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "upload_file",
 			Description: "Upload a file to a project.",
+			Annotations: additiveTool(),
 		}, handleUploadFile(useCases))
 	}
 }

@@ -23,6 +23,7 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_projects",
 			Description: "List all projects in Redmine. Supports pagination and optional includes.",
+			Annotations: readOnlyTool(),
 		}, handleListProjects(useCases))
 	}
 
@@ -31,6 +32,7 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_project",
 			Description: "Get details of a specific project by ID or identifier.",
+			Annotations: readOnlyTool(),
 		}, handleShowProject(useCases))
 	}
 
@@ -39,6 +41,7 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_project",
 			Description: "Create a new project in Redmine.",
+			Annotations: additiveTool(),
 		}, handleCreateProject(useCases))
 	}
 
@@ -47,6 +50,7 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_project",
 			Description: "Update an existing project in Redmine.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateProject(useCases))
 	}
 
@@ -55,6 +59,7 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_project",
 			Description: "Delete a project from Redmine. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteProject(useCases))
 	}
 
@@ -63,6 +68,7 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "archive_project",
 			Description: "Archive a project in Redmine (Redmine 5.0+).",
+			Annotations: destructiveIdempotentTool(),
 		}, handleArchiveProject(useCases))
 	}
 
@@ -71,6 +77,7 @@ func RegisterProjectTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "unarchive_project",
 			Description: "Unarchive a project in Redmine (Redmine 5.0+).",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUnarchiveProject(useCases))
 	}
 }

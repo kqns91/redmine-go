@@ -23,6 +23,7 @@ func RegisterProgressMonitoringTools(server *mcp.Server, useCases *usecase.UseCa
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "analyze_project_health",
 			Description: "Analyze project health by checking issue progress, delays, and critical path status. Returns summary statistics and lists of at-risk and delayed issues.",
+			Annotations: readOnlyTool(),
 		}, handleAnalyzeProjectHealth(useCases))
 	}
 
@@ -31,6 +32,7 @@ func RegisterProgressMonitoringTools(server *mcp.Server, useCases *usecase.UseCa
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "suggest_reschedule",
 			Description: "Suggest rescheduling for delayed tasks based on dependencies and current progress. Optionally apply the suggested changes automatically.",
+			Annotations: destructiveTool(),
 		}, handleSuggestReschedule(useCases))
 	}
 
@@ -39,6 +41,7 @@ func RegisterProgressMonitoringTools(server *mcp.Server, useCases *usecase.UseCa
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "adjust_estimates",
 			Description: "Adjust estimated hours based on actual time entries and current progress. Provides forecasted completion dates.",
+			Annotations: readOnlyTool(),
 		}, handleAdjustEstimates(useCases))
 	}
 }

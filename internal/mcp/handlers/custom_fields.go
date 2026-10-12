@@ -21,6 +21,7 @@ func RegisterCustomFieldTools(server *mcp.Server, useCases *usecase.UseCases, cf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_custom_fields",
 			Description: "List all custom field definitions in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListCustomFields(useCases))
 	}
 }

@@ -21,6 +21,7 @@ func RegisterEnumerationTools(server *mcp.Server, useCases *usecase.UseCases, cf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_issue_priorities",
 			Description: "List all issue priorities in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListIssuePriorities(useCases))
 	}
 
@@ -29,6 +30,7 @@ func RegisterEnumerationTools(server *mcp.Server, useCases *usecase.UseCases, cf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_time_entry_activities",
 			Description: "List all time entry activities in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListTimeEntryActivities(useCases))
 	}
 
@@ -37,6 +39,7 @@ func RegisterEnumerationTools(server *mcp.Server, useCases *usecase.UseCases, cf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_document_categories",
 			Description: "List all document categories in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListDocumentCategories(useCases))
 	}
 }

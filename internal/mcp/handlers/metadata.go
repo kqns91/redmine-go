@@ -19,6 +19,7 @@ func RegisterMetadataTools(server *mcp.Server, useCases *usecase.UseCases, cfg *
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_trackers",
 			Description: "List all available trackers in Redmine (e.g., Bug, Feature, Support).",
+			Annotations: readOnlyTool(),
 		}, handleListTrackers(useCases))
 	}
 
@@ -26,6 +27,7 @@ func RegisterMetadataTools(server *mcp.Server, useCases *usecase.UseCases, cfg *
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_issue_statuses",
 			Description: "List all available issue statuses in Redmine (e.g., New, In Progress, Closed).",
+			Annotations: readOnlyTool(),
 		}, handleListIssueStatuses(useCases))
 	}
 }

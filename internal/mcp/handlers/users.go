@@ -20,6 +20,7 @@ func RegisterUserTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_users",
 			Description: "List users in Redmine with filtering options.",
+			Annotations: readOnlyTool(),
 		}, handleListUsers(useCases))
 	}
 
@@ -27,6 +28,7 @@ func RegisterUserTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_user",
 			Description: "Get details of a specific user by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowUser(useCases))
 	}
 
@@ -34,6 +36,7 @@ func RegisterUserTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "current_user",
 			Description: "Get details of the current authenticated user.",
+			Annotations: readOnlyTool(),
 		}, handleGetCurrentUser(useCases))
 	}
 
@@ -41,6 +44,7 @@ func RegisterUserTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_user",
 			Description: "Create a new user in Redmine (admin only).",
+			Annotations: additiveTool(),
 		}, handleCreateUser(useCases))
 	}
 
@@ -48,6 +52,7 @@ func RegisterUserTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_user",
 			Description: "Update an existing user in Redmine (admin only).",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateUser(useCases))
 	}
 
@@ -55,6 +60,7 @@ func RegisterUserTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_user",
 			Description: "Delete a user from Redmine (admin only).",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteUser(useCases))
 	}
 }

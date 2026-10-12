@@ -22,6 +22,7 @@ func RegisterNewsTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_news",
 			Description: "List all news from all projects in Redmine. Supports optional pagination and includes.",
+			Annotations: readOnlyTool(),
 		}, handleListNews(useCases))
 	}
 
@@ -30,6 +31,7 @@ func RegisterNewsTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_project_news",
 			Description: "List news for a specific project in Redmine. Supports optional pagination and includes.",
+			Annotations: readOnlyTool(),
 		}, handleListProjectNews(useCases))
 	}
 }

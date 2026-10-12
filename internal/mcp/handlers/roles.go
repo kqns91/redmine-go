@@ -21,6 +21,7 @@ func RegisterRoleTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_roles",
 			Description: "List all roles in Redmine.",
+			Annotations: readOnlyTool(),
 		}, handleListRoles(useCases))
 	}
 
@@ -29,6 +30,7 @@ func RegisterRoleTools(server *mcp.Server, useCases *usecase.UseCases, cfg *conf
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_role",
 			Description: "Get details of a specific role by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowRole(useCases))
 	}
 }

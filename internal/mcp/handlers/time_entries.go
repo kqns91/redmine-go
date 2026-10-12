@@ -22,6 +22,7 @@ func RegisterTimeEntryTools(server *mcp.Server, useCases *usecase.UseCases, cfg 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "list_time_entries",
 			Description: "List time entries in Redmine. Supports filtering by user, project, date range, and pagination.",
+			Annotations: readOnlyTool(),
 		}, handleListTimeEntries(useCases))
 	}
 
@@ -30,6 +31,7 @@ func RegisterTimeEntryTools(server *mcp.Server, useCases *usecase.UseCases, cfg 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_time_entry",
 			Description: "Get details of a specific time entry by ID.",
+			Annotations: readOnlyTool(),
 		}, handleShowTimeEntry(useCases))
 	}
 
@@ -38,6 +40,7 @@ func RegisterTimeEntryTools(server *mcp.Server, useCases *usecase.UseCases, cfg 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_time_entry",
 			Description: "Create a new time entry in Redmine.",
+			Annotations: additiveTool(),
 		}, handleCreateTimeEntry(useCases))
 	}
 
@@ -46,6 +49,7 @@ func RegisterTimeEntryTools(server *mcp.Server, useCases *usecase.UseCases, cfg 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "update_time_entry",
 			Description: "Update an existing time entry in Redmine.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleUpdateTimeEntry(useCases))
 	}
 
@@ -54,6 +58,7 @@ func RegisterTimeEntryTools(server *mcp.Server, useCases *usecase.UseCases, cfg 
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "delete_time_entry",
 			Description: "Delete a time entry from Redmine. This action cannot be undone.",
+			Annotations: destructiveIdempotentTool(),
 		}, handleDeleteTimeEntry(useCases))
 	}
 }

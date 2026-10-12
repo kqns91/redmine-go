@@ -22,6 +22,7 @@ func RegisterBatchOperationTools(server *mcp.Server, useCases *usecase.UseCases,
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "create_task_tree",
 			Description: "Batch create a flat list of tasks with parent-child relationships, dependencies, and estimates. Use 'parent_ref' to reference parent tasks. Ideal for creating 10-30 related tickets for a single feature.",
+			Annotations: additiveTool(),
 		}, handleCreateTaskTree(useCases))
 	}
 }

@@ -401,6 +401,23 @@ Three tools help monitor and manage project progress:
 - Can auto-apply changes or just preview
 - Supports critical-path-only mode
 
+### Tool Annotations
+
+Every tool declares [tool annotations](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-annotations)
+describing how it affects Redmine. MCP clients can use them, for example, to run
+read-only tools without asking and to confirm destructive ones with you.
+
+| Kind | Annotations | Tools |
+|---|---|---|
+| Read-only | `readOnlyHint: true` | `list_*`, `show_*`, `search`, `current_user`, `analyze_project_health`, `adjust_estimates` |
+| Additive | `destructiveHint: false` | `create_*` (except `create_or_update_wiki_page`), `create_task_tree`, `upload_file` |
+| Additive, idempotent | `destructiveHint: false`, `idempotentHint: true` | `add_watcher`, `add_group_user` |
+| Destructive | `destructiveHint: true` | `create_or_update_wiki_page`, `suggest_reschedule` (changes issues only with `auto_apply`) |
+| Destructive, idempotent | `destructiveHint: true`, `idempotentHint: true` | `update_*`, `delete_*`, `remove_watcher`, `remove_group_user`, `archive_project`, `unarchive_project` |
+
+Annotations are hints for the client and do not restrict what a tool can do.
+To prevent an operation, disable the tool as described below.
+
 ### Tool Control
 
 You can control which tools are enabled using environment variables.

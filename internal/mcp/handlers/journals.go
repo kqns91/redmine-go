@@ -21,6 +21,7 @@ func RegisterJournalTools(server *mcp.Server, useCases *usecase.UseCases, cfg *c
 		mcp.AddTool(server, &mcp.Tool{
 			Name:        "show_journal",
 			Description: "Get details of a specific journal by ID. Note: Journals are typically accessed through issues with include=journals parameter.",
+			Annotations: readOnlyTool(),
 		}, handleShowJournal(useCases))
 	}
 }
