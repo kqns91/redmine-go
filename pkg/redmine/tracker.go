@@ -11,7 +11,7 @@ import (
 type Tracker struct {
 	ID                    int      `json:"id,omitempty"`
 	Name                  string   `json:"name,omitempty"`
-	DefaultStatus         Resource `json:"default_status,omitempty"`
+	DefaultStatus         Resource `json:"default_status"`
 	Description           string   `json:"description,omitempty"`
 	EnabledStandardFields []string `json:"enabled_standard_fields,omitempty"`
 }

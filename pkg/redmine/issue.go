@@ -14,13 +14,13 @@ import (
 // Issue represents an issue returned by GET endpoints
 type Issue struct {
 	ID              int             `json:"id,omitempty"`
-	Project         Resource        `json:"project,omitempty"`
-	Tracker         Resource        `json:"tracker,omitempty"`
-	Status          Resource        `json:"status,omitempty"`
-	Priority        Resource        `json:"priority,omitempty"`
-	Author          Resource        `json:"author,omitempty"`
-	AssignedTo      Resource        `json:"assigned_to,omitempty"`
-	Category        Resource        `json:"category,omitempty"`
+	Project         Resource        `json:"project"`
+	Tracker         Resource        `json:"tracker"`
+	Status          Resource        `json:"status"`
+	Priority        Resource        `json:"priority"`
+	Author          Resource        `json:"author"`
+	AssignedTo      Resource        `json:"assigned_to"`
+	Category        Resource        `json:"category"`
 	Subject         string          `json:"subject,omitempty"`
 	Description     string          `json:"description,omitempty"`
 	StartDate       string          `json:"start_date,omitempty"`

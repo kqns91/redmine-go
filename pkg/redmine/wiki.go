@@ -14,8 +14,8 @@ type WikiPage struct {
 	Title       string       `json:"title,omitempty"`
 	Text        string       `json:"text,omitempty"`
 	Version     int          `json:"version,omitempty"`
-	Author      Resource     `json:"author,omitempty"`
-	Parent      Resource     `json:"parent,omitempty"`
+	Author      Resource     `json:"author"`
+	Parent      Resource     `json:"parent"`
 	Comments    string       `json:"comments,omitempty"`
 	CreatedOn   string       `json:"created_on,omitempty"`
 	UpdatedOn   string       `json:"updated_on,omitempty"`
@@ -31,7 +31,7 @@ type WikiPageIndex struct {
 	Version   int      `json:"version,omitempty"`
 	CreatedOn string   `json:"created_on,omitempty"`
 	UpdatedOn string   `json:"updated_on,omitempty"`
-	Parent    Resource `json:"parent,omitempty"`
+	Parent    Resource `json:"parent"`
 }
 
 type WikiPageResponse struct {

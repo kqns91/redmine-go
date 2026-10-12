@@ -16,7 +16,7 @@ type Attachment struct {
 	ContentType string   `json:"content_type,omitempty"`
 	Description string   `json:"description,omitempty"`
 	ContentURL  string   `json:"content_url,omitempty"`
-	Author      Resource `json:"author,omitempty"`
+	Author      Resource `json:"author"`
 	CreatedOn   string   `json:"created_on,omitempty"`
 }
 

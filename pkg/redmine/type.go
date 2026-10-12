@@ -18,7 +18,7 @@ type Watcher struct {
 
 type Changeset struct {
 	Revision    string   `json:"revision,omitempty"`
-	User        Resource `json:"user,omitempty"`
+	User        Resource `json:"user"`
 	Comments    string   `json:"comments,omitempty"`
 	CommittedOn string   `json:"committed_on,omitempty"`
 }

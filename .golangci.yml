@@ -35,11 +35,6 @@ linters:
     - noinlineerr  # Inline error handling is idiomatic in Go
     - funlen  # Parameter building functions can be long but simple
   settings:
-    modernize:
-      disable:
-        # Switching omitempty to omitzero on struct fields changes the JSON
-        # sent to and decoded from Redmine, so it is handled separately.
-        - omitzero
     cyclop:
       max-complexity: 30  # Allow slightly more complex functions for parameter building
     gocognit:
