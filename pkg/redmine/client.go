@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -86,4 +87,20 @@ func (c *Client) httpClient() *http.Client {
 	}
 
 	return &client
+}
+
+// pathSegment validates s as a single segment of a request path and escapes it.
+//
+// Project identifiers and wiki page titles are interpolated into the path, so
+// without this a value such as "../../projects/foo" or "Page?x=1" could change
+// which endpoint the request is sent to. Redmine does not allow "/" or "." in
+// project identifiers or wiki page titles, so "/", "." and ".." are rejected
+// rather than escaped: some reverse proxies decode "%2F" before resolving dot
+// segments. Everything else, including "?", "#" and "%", is percent-encoded.
+func pathSegment(s string) (string, error) {
+	if s == "" || s == "." || s == ".." || strings.Contains(s, "/") {
+		return "", fmt.Errorf("invalid path segment: %q", s)
+	}
+
+	return url.PathEscape(s), nil
 }

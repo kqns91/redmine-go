@@ -40,6 +40,11 @@ type FileUpload struct {
 
 // ListFiles retrieves files available for a specific project
 func (c *Client) ListFiles(ctx context.Context, projectIDOrIdentifier string) (*FilesResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/files.json", c.baseURL, projectIDOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
@@ -64,6 +69,11 @@ func (c *Client) ListFiles(ctx context.Context, projectIDOrIdentifier string) (*
 
 // UploadFile uploads a file to a specific project
 func (c *Client) UploadFile(ctx context.Context, projectIDOrIdentifier string, fileUpload FileUpload) error {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/files.json", c.baseURL, projectIDOrIdentifier)
 
 	reqBody := FileUploadRequest{File: fileUpload}

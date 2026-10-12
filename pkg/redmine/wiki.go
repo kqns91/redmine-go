@@ -51,6 +51,11 @@ type WikiPageUpdate struct {
 
 // ListWikiPages retrieves wiki pages index for a project
 func (c *Client) ListWikiPages(ctx context.Context, projectIDOrIdentifier string) (*WikiPagesResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/index.json", c.baseURL, projectIDOrIdentifier)
 
 	resp, err := c.do(ctx, http.MethodGet, endpoint, nil)
@@ -80,6 +85,15 @@ type GetWikiPageOptions struct {
 
 // GetWikiPage retrieves a specific wiki page
 func (c *Client) GetWikiPage(ctx context.Context, projectIDOrIdentifier string, pageName string, opts *GetWikiPageOptions) (*WikiPageResponse, error) {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return nil, err
+	}
+	pageName, err = pathSegment(pageName)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/%s.json", c.baseURL, projectIDOrIdentifier, pageName)
 
 	if opts != nil {
@@ -116,6 +130,15 @@ func (c *Client) GetWikiPage(ctx context.Context, projectIDOrIdentifier string, 
 
 // CreateOrUpdateWikiPage creates or updates a wiki page
 func (c *Client) CreateOrUpdateWikiPage(ctx context.Context, projectIDOrIdentifier string, pageName string, page WikiPageUpdate) error {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return err
+	}
+	pageName, err = pathSegment(pageName)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/%s.json", c.baseURL, projectIDOrIdentifier, pageName)
 
 	reqBody := WikiPageRequest{WikiPage: page}
@@ -141,6 +164,15 @@ func (c *Client) CreateOrUpdateWikiPage(ctx context.Context, projectIDOrIdentifi
 
 // DeleteWikiPage deletes a wiki page
 func (c *Client) DeleteWikiPage(ctx context.Context, projectIDOrIdentifier string, pageName string) error {
+	projectIDOrIdentifier, err := pathSegment(projectIDOrIdentifier)
+	if err != nil {
+		return err
+	}
+	pageName, err = pathSegment(pageName)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf("%s/projects/%s/wiki/%s.json", c.baseURL, projectIDOrIdentifier, pageName)
 
 	resp, err := c.do(ctx, http.MethodDelete, endpoint, nil)
